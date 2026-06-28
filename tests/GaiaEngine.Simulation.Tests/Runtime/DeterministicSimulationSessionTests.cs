@@ -2,12 +2,16 @@ using System;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
+using GaiaEngine.Foundation.Configuration;
+using GaiaEngine.Foundation.Determinism;
+using GaiaEngine.Foundation.Versioning;
 using GaiaEngine.Simulation.Diagnostics;
 using GaiaEngine.Simulation.Events;
 using GaiaEngine.Simulation.Pipeline;
 using GaiaEngine.Simulation.Runtime;
 using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
+using GaiaEngine.Simulation.World.Climate;
 using Xunit;
 
 namespace GaiaEngine.Simulation.Tests.Runtime;
@@ -23,6 +27,7 @@ public sealed class DeterministicSimulationSessionTests
         DeterministicSimulationScheduler scheduler = new(
             new[]
             {
+                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Climate, SimulationTickPhase.WorldUpdate, 10, 0),
                 new ScheduledSimulationSystemDefinition(SimulationSystemNames.Statistics, SimulationTickPhase.PostUpdate, 100, 0),
             });
         DeterministicSimulationTickPipeline pipeline = new(
@@ -30,7 +35,11 @@ public sealed class DeterministicSimulationSessionTests
             {
                 new NoOpSimulationTickPhase(SimulationTickPhase.InputCollection),
                 new NoOpSimulationTickPhase(SimulationTickPhase.PreUpdate),
-                new WorldUpdateTimePhase(timeSystem, eventPublisher),
+                new WorldUpdateTimePhase(
+                    timeSystem,
+                    scheduler,
+                    new DeterministicClimateSystem(new ClimateSystemSettings(300, 18, 10, 55, 1012, 4)),
+                    eventPublisher),
                 new NoOpSimulationTickPhase(SimulationTickPhase.OrganismUpdate),
                 new NoOpSimulationTickPhase(SimulationTickPhase.InteractionSystems),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
@@ -38,7 +47,7 @@ public sealed class DeterministicSimulationSessionTests
                 new PostUpdateStatisticsPhase(new SimulationDiagnosticsCollector()),
             },
             scheduler);
-        DeterministicSimulationSession session = new(pipeline, new WorldTimeState(99, 0, "Spring", 0));
+        DeterministicSimulationSession session = new(pipeline, CreateWorld(99, 0, "Spring", 0));
 
         SimulationTickResult result = session.AdvanceTick();
 
@@ -47,6 +56,7 @@ public sealed class DeterministicSimulationSessionTests
         Assert.Equal(8, result.ExecutedPhases.Count);
         Assert.Equal(2UL, result.NextEventSequence);
         Assert.NotNull(result.Diagnostics);
+        Assert.Equal(100, session.CurrentWorld.TimeState.CurrentTick);
     }
 
     [Fact]
@@ -58,6 +68,7 @@ public sealed class DeterministicSimulationSessionTests
         DeterministicSimulationScheduler scheduler = new(
             new[]
             {
+                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Climate, SimulationTickPhase.WorldUpdate, 10, 0),
                 new ScheduledSimulationSystemDefinition(SimulationSystemNames.Statistics, SimulationTickPhase.PostUpdate, 100, 0),
             });
         DeterministicSimulationTickPipeline pipeline = new(
@@ -65,7 +76,11 @@ public sealed class DeterministicSimulationSessionTests
             {
                 new NoOpSimulationTickPhase(SimulationTickPhase.InputCollection),
                 new NoOpSimulationTickPhase(SimulationTickPhase.PreUpdate),
-                new WorldUpdateTimePhase(timeSystem, eventPublisher),
+                new WorldUpdateTimePhase(
+                    timeSystem,
+                    scheduler,
+                    new DeterministicClimateSystem(new ClimateSystemSettings(300, 18, 10, 55, 1012, 4)),
+                    eventPublisher),
                 new NoOpSimulationTickPhase(SimulationTickPhase.OrganismUpdate),
                 new NoOpSimulationTickPhase(SimulationTickPhase.InteractionSystems),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
@@ -73,7 +88,7 @@ public sealed class DeterministicSimulationSessionTests
                 new PostUpdateStatisticsPhase(new SimulationDiagnosticsCollector()),
             },
             scheduler);
-        DeterministicSimulationSession session = new(pipeline, new WorldTimeState(3, 0, "Spring", 0));
+        DeterministicSimulationSession session = new(pipeline, CreateWorld(3, 0, "Spring", 0));
 
         SimulationTickResult first = session.AdvanceTick();
         SimulationTickResult second = session.AdvanceTick();
@@ -82,5 +97,48 @@ public sealed class DeterministicSimulationSessionTests
         Assert.Equal(2UL, second.NextEventSequence);
         Assert.Null(first.Diagnostics);
         Assert.Null(second.Diagnostics);
+    }
+
+    private static GaiaEngine.Domain.World.World CreateWorld(long tick, int day, string season, int year)
+    {
+        WorldId worldId = WorldId.FromSequence(new EntitySequence(1));
+        return new GaiaEngine.Domain.World.World(
+            new WorldMetadata(
+                worldId,
+                "Gaia",
+                new WorldSeed(42),
+                "2026-06-28",
+                new EngineVersion(1, 0, 0),
+                new ConfigurationVersion("2026.06.28")),
+            new WorldDimensions(32, 32, 16, 4, 200),
+            new WorldTimeState(tick, day, season, year),
+            new[]
+            {
+                CreateChunk(worldId, 2, new ChunkCoordinates(0, 0)),
+                CreateChunk(worldId, 3, new ChunkCoordinates(1, 0)),
+                CreateChunk(worldId, 4, new ChunkCoordinates(0, 1)),
+                CreateChunk(worldId, 5, new ChunkCoordinates(1, 1)),
+            });
+    }
+
+    private static Chunk CreateChunk(WorldId worldId, ulong sequence, ChunkCoordinates coordinates)
+    {
+        return new Chunk(
+            new ChunkMetadata(
+                ChunkId.FromSequence(new EntitySequence(sequence)),
+                worldId,
+                coordinates,
+                new WorldSeed((long)sequence * 10),
+                16),
+            ChunkState.Active,
+            new ClimateState(
+                ClimateZone.Temperate,
+                WeatherState.Clear,
+                new TemperatureState(18, 18, 18, 0),
+                new HumidityState(55, 3, 2),
+                new WindState(90, 4, 6),
+                new PrecipitationState(PrecipitationType.None, 0, 0, 0),
+                new PressureState(1012)),
+            Array.Empty<OrganismId>());
     }
 }

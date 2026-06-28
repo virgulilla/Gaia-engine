@@ -30,7 +30,8 @@ public sealed partial class GaiaEngineBootstrap : Node
     {
         string engineConfigurationPath = ProjectSettings.GlobalizePath("res://Configuration/Engine/EngineConfiguration.json");
         string simulationConfigurationPath = ProjectSettings.GlobalizePath("res://Configuration/Simulation/SimulationConfiguration.json");
-        application = GaiaEngineCompositionRoot.CreateApplication(engineConfigurationPath, simulationConfigurationPath);
+        string worldConfigurationPath = ProjectSettings.GlobalizePath("res://Configuration/World/WorldConfiguration.json");
+        application = GaiaEngineCompositionRoot.CreateApplication(engineConfigurationPath, simulationConfigurationPath, worldConfigurationPath);
         runtime = application.Initialize();
         tickLabel = GetNode<Label>(TickLabelPath);
         dayLabel = GetNode<Label>(DayLabelPath);

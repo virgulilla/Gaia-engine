@@ -55,15 +55,15 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
     }
 
     /// <summary>
-    /// Executes one deterministic simulation tick starting from the supplied world time state.
+    /// Executes one deterministic simulation tick starting from the supplied world state.
     /// </summary>
-    /// <param name="timeState">The current world time state.</param>
+    /// <param name="world">The current world state.</param>
     /// <param name="nextEventSequence">The next deterministic event sequence value to use.</param>
     /// <returns>The deterministic result of the tick pipeline execution.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="timeState"/> is <see langword="null"/>.</exception>
-    public SimulationTickResult Execute(WorldTimeState timeState, ulong nextEventSequence)
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="world"/> is <see langword="null"/>.</exception>
+    public SimulationTickResult Execute(GaiaEngine.Domain.World.World world, ulong nextEventSequence)
     {
-        SimulationTickContext context = new(timeState ?? throw new ArgumentNullException(nameof(timeState)), nextEventSequence);
+        SimulationTickContext context = new(world ?? throw new ArgumentNullException(nameof(world)), nextEventSequence);
         List<SimulationTickPhase> executedPhases = new(phases.Count);
 
         foreach (ISimulationTickPhase phase in phases)
@@ -72,13 +72,15 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
             context.RegisterExecutedPhase(phase.Phase);
             executedPhases.Add(phase.Phase);
 
-            if (phase.Phase == SimulationTickPhase.WorldUpdate)
+            if (phase.Phase == SimulationTickPhase.WorldUpdate
+                && context.Schedule.ExecutingTick != context.CurrentTimeState.CurrentTick)
             {
                 context.ApplySchedule(scheduler.CreateSchedule(context.CurrentTimeState.CurrentTick));
             }
         }
 
         return new SimulationTickResult(
+            context.CurrentWorld,
             context.CurrentTimeState,
             executedPhases.AsReadOnly(),
             context.Schedule,

@@ -1,5 +1,6 @@
 using System;
 using GaiaEngine.App.Configuration;
+using GaiaEngine.Domain.World;
 using GaiaEngine.Simulation.Runtime;
 
 namespace GaiaEngine.App.Bootstrap;
@@ -42,4 +43,9 @@ public sealed class GaiaEngineRuntime
     /// Gets the initialized simulation session.
     /// </summary>
     public ISimulationSession SimulationSession { get; }
+
+    /// <summary>
+    /// Gets the initialized world bootstrap state.
+    /// </summary>
+    public GaiaEngine.Domain.World.World World => SimulationSession.CurrentWorld;
 }

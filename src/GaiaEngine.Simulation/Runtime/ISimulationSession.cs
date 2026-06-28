@@ -10,6 +10,11 @@ namespace GaiaEngine.Simulation.Runtime;
 public interface ISimulationSession
 {
     /// <summary>
+    /// Gets the current simulation world state.
+    /// </summary>
+    public GaiaEngine.Domain.World.World CurrentWorld { get; }
+
+    /// <summary>
     /// Gets the current simulation world time state.
     /// </summary>
     public WorldTimeState CurrentTimeState { get; }

@@ -9,6 +9,7 @@ using GaiaEngine.Simulation.Pipeline;
 using GaiaEngine.Simulation.Runtime;
 using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
+using GaiaEngine.Simulation.World.Climate;
 
 namespace GaiaEngine.App.Bootstrap;
 
@@ -19,6 +20,7 @@ public sealed class GaiaEngineApplication
 {
     private readonly IEngineConfigurationProvider configurationProvider;
     private readonly ISimulationConfigurationProvider simulationConfigurationProvider;
+    private readonly IWorldConfigurationProvider worldConfigurationProvider;
     private GaiaEngineRuntime? runtime;
 
     /// <summary>
@@ -26,15 +28,18 @@ public sealed class GaiaEngineApplication
     /// </summary>
     /// <param name="configurationProvider">The configuration provider used during startup.</param>
     /// <param name="simulationConfigurationProvider">The simulation configuration provider used during startup.</param>
+    /// <param name="worldConfigurationProvider">The world configuration provider used during startup.</param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="configurationProvider"/> or <paramref name="simulationConfigurationProvider"/> is <see langword="null"/>.
+    /// Thrown when any required provider is <see langword="null"/>.
     /// </exception>
     public GaiaEngineApplication(
         IEngineConfigurationProvider configurationProvider,
-        ISimulationConfigurationProvider simulationConfigurationProvider)
+        ISimulationConfigurationProvider simulationConfigurationProvider,
+        IWorldConfigurationProvider worldConfigurationProvider)
     {
         this.configurationProvider = configurationProvider ?? throw new ArgumentNullException(nameof(configurationProvider));
         this.simulationConfigurationProvider = simulationConfigurationProvider ?? throw new ArgumentNullException(nameof(simulationConfigurationProvider));
+        this.worldConfigurationProvider = worldConfigurationProvider ?? throw new ArgumentNullException(nameof(worldConfigurationProvider));
     }
 
     /// <summary>
@@ -51,27 +56,42 @@ public sealed class GaiaEngineApplication
     {
         EngineConfiguration engineConfiguration = configurationProvider.Load();
         SimulationConfiguration simulationConfiguration = simulationConfigurationProvider.Load();
+        WorldConfiguration worldConfiguration = worldConfigurationProvider.Load();
         SimulationCalendar calendar = new(simulationConfiguration.TicksPerDay, simulationConfiguration.DaysPerSeason);
         DeterministicTimeSystem timeSystem = new(calendar);
         EventBus eventBus = new();
         DeterministicEntityIdGenerator eventIdGenerator = new();
         SimulationEventPublisher eventPublisher = new(eventBus, eventIdGenerator);
         SimulationDiagnosticsCollector diagnosticsCollector = new();
+        ClimateSystemSettings climateSettings = new(
+            simulationConfiguration.TicksPerDay,
+            baseTemperature: 18,
+            seasonalTemperatureDelta: 10,
+            baseHumidity: 55,
+            basePressure: 1012,
+            baseWindSpeed: 4);
+        DeterministicClimateSystem climateSystem = new(climateSettings);
         DeterministicSimulationScheduler scheduler = new(
             new[]
             {
+                new ScheduledSimulationSystemDefinition(
+                    SimulationSystemNames.Climate,
+                    SimulationTickPhase.WorldUpdate,
+                    frequency: 10,
+                    priority: 0),
                 new ScheduledSimulationSystemDefinition(
                     SimulationSystemNames.Statistics,
                     SimulationTickPhase.PostUpdate,
                     frequency: 100,
                     priority: 0),
             });
+        DeterministicWorldBootstrapFactory worldBootstrapFactory = new(worldConfiguration, engineConfiguration, simulationConfiguration, eventIdGenerator);
         DeterministicSimulationTickPipeline tickPipeline = new(
             new ISimulationTickPhase[]
             {
                 new NoOpSimulationTickPhase(SimulationTickPhase.InputCollection),
                 new NoOpSimulationTickPhase(SimulationTickPhase.PreUpdate),
-                new WorldUpdateTimePhase(timeSystem, eventPublisher),
+                new WorldUpdateTimePhase(timeSystem, scheduler, climateSystem, eventPublisher),
                 new NoOpSimulationTickPhase(SimulationTickPhase.OrganismUpdate),
                 new NoOpSimulationTickPhase(SimulationTickPhase.InteractionSystems),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
@@ -81,11 +101,7 @@ public sealed class GaiaEngineApplication
             scheduler);
         DeterministicSimulationSession simulationSession = new(
             tickPipeline,
-            new WorldTimeState(
-                currentTick: 0,
-                currentDay: simulationConfiguration.StartingDay,
-                currentSeason: simulationConfiguration.StartingSeason,
-                currentYear: simulationConfiguration.StartingYear));
+            worldBootstrapFactory.CreateWorld());
 
         return new GaiaEngineRuntime(engineConfiguration, simulationConfiguration, simulationSession);
     }

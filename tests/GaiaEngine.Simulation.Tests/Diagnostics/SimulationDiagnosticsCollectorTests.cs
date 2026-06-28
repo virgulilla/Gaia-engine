@@ -14,7 +14,7 @@ public sealed class SimulationDiagnosticsCollectorTests
     [Fact]
     public void Capture_ShouldCreateDeterministicSnapshotFromTickContext()
     {
-        SimulationTickContext context = new(new WorldTimeState(100, 2, "Summer", 1), 4);
+        SimulationTickContext context = new(CreateWorldState(100, 2, "Summer", 1), 4);
         context.ApplySchedule(
             new SimulationTickSchedule(
                 100,
@@ -46,5 +46,40 @@ public sealed class SimulationDiagnosticsCollectorTests
         Assert.Equal(1, diagnostics.ScheduledSystemCount);
         Assert.Equal(1, diagnostics.PublishedEventCount);
         Assert.Equal(1, diagnostics.ProcessedEventCount);
+    }
+
+    private static GaiaEngine.Domain.World.World CreateWorldState(long tick, int day, string season, int year)
+    {
+        GaiaEngine.Domain.Identifiers.WorldId worldId = GaiaEngine.Domain.Identifiers.WorldId.FromSequence(new GaiaEngine.Domain.Identifiers.EntitySequence(1));
+        return new GaiaEngine.Domain.World.World(
+            new GaiaEngine.Domain.World.WorldMetadata(
+                worldId,
+                "Gaia",
+                new GaiaEngine.Foundation.Determinism.WorldSeed(42),
+                "2026-06-28",
+                new GaiaEngine.Foundation.Versioning.EngineVersion(1, 0, 0),
+                new GaiaEngine.Foundation.Configuration.ConfigurationVersion("2026.06.28")),
+            new GaiaEngine.Domain.World.WorldDimensions(32, 32, 16, 1, 200),
+            new WorldTimeState(tick, day, season, year),
+            new[]
+            {
+                new GaiaEngine.Domain.World.Chunk(
+                    new GaiaEngine.Domain.World.ChunkMetadata(
+                        GaiaEngine.Domain.Identifiers.ChunkId.FromSequence(new GaiaEngine.Domain.Identifiers.EntitySequence(2)),
+                        worldId,
+                        new GaiaEngine.Domain.World.ChunkCoordinates(0, 0),
+                        new GaiaEngine.Foundation.Determinism.WorldSeed(100),
+                        16),
+                    GaiaEngine.Domain.World.ChunkState.Active,
+                    new GaiaEngine.Domain.World.ClimateState(
+                        GaiaEngine.Domain.World.ClimateZone.Temperate,
+                        GaiaEngine.Domain.World.WeatherState.Clear,
+                        new GaiaEngine.Domain.World.TemperatureState(18, 18, 18, 0),
+                        new GaiaEngine.Domain.World.HumidityState(55, 3, 2),
+                        new GaiaEngine.Domain.World.WindState(90, 4, 6),
+                        new GaiaEngine.Domain.World.PrecipitationState(GaiaEngine.Domain.World.PrecipitationType.None, 0, 0, 0),
+                        new GaiaEngine.Domain.World.PressureState(1012)),
+                    System.Array.Empty<GaiaEngine.Domain.Identifiers.OrganismId>()),
+            });
     }
 }

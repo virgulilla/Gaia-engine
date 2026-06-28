@@ -1,6 +1,9 @@
 using System;
+using GaiaEngine.Simulation.Diagnostics;
 using GaiaEngine.Simulation.Events;
+using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
+using GaiaEngine.Simulation.World.Climate;
 
 namespace GaiaEngine.Simulation.Pipeline;
 
@@ -10,19 +13,29 @@ namespace GaiaEngine.Simulation.Pipeline;
 public sealed class WorldUpdateTimePhase : ISimulationTickPhase
 {
     private readonly ITimeSystem timeSystem;
+    private readonly ISimulationScheduler scheduler;
+    private readonly IClimateSystem climateSystem;
     private readonly ISimulationEventPublisher eventPublisher;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorldUpdateTimePhase"/> class.
     /// </summary>
     /// <param name="timeSystem">The Time System used to advance deterministic world time.</param>
+    /// <param name="scheduler">The scheduler used to create the deterministic tick schedule.</param>
+    /// <param name="climateSystem">The climate system used to update world climate state.</param>
     /// <param name="eventPublisher">The simulation event publisher used to enqueue time events.</param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="timeSystem"/> or <paramref name="eventPublisher"/> is <see langword="null"/>.
+    /// Thrown when any supplied dependency is <see langword="null"/>.
     /// </exception>
-    public WorldUpdateTimePhase(ITimeSystem timeSystem, ISimulationEventPublisher eventPublisher)
+    public WorldUpdateTimePhase(
+        ITimeSystem timeSystem,
+        ISimulationScheduler scheduler,
+        IClimateSystem climateSystem,
+        ISimulationEventPublisher eventPublisher)
     {
         this.timeSystem = timeSystem ?? throw new ArgumentNullException(nameof(timeSystem));
+        this.scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
+        this.climateSystem = climateSystem ?? throw new ArgumentNullException(nameof(climateSystem));
         this.eventPublisher = eventPublisher ?? throw new ArgumentNullException(nameof(eventPublisher));
     }
 
@@ -42,6 +55,17 @@ public sealed class WorldUpdateTimePhase : ISimulationTickPhase
 
         TimeAdvanceResult timeAdvanceResult = timeSystem.Advance(context.CurrentTimeState);
         context.ApplyTimeAdvance(timeAdvanceResult);
+        context.ApplySchedule(scheduler.CreateSchedule(context.CurrentTimeState.CurrentTick));
+
+        foreach (ScheduledSimulationSystem scheduledSystem in context.Schedule.GetSystemsForPhase(SimulationTickPhase.WorldUpdate))
+        {
+            if (scheduledSystem.SystemName == SimulationSystemNames.Climate)
+            {
+                context.ApplyWorld(climateSystem.UpdateWorld(context.CurrentWorld));
+                break;
+            }
+        }
+
         context.ApplyEventPublicationResult(eventPublisher.PublishTimeEvents(timeAdvanceResult, context.NextEventSequence));
     }
 }

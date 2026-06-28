@@ -24,7 +24,7 @@ public sealed class EventDispatchPhaseTests
         eventBus.Publish(new NewYearSimulationEvent(EventId.FromSequence(new EntitySequence(3)), 8, 8, 0, "Spring", 1));
 
         EventDispatchPhase phase = new(eventBus);
-        SimulationTickContext context = new(new WorldTimeState(8, 0, "Spring", 1), 4);
+        SimulationTickContext context = new(CreateWorldState(8, "Spring", 1), 4);
 
         phase.Execute(context);
 
@@ -38,5 +38,40 @@ public sealed class EventDispatchPhaseTests
             },
             receivedEvents);
         Assert.Equal(0, eventBus.PendingEventCount);
+    }
+
+    private static GaiaEngine.Domain.World.World CreateWorldState(long tick, string season, int year)
+    {
+        GaiaEngine.Domain.Identifiers.WorldId worldId = GaiaEngine.Domain.Identifiers.WorldId.FromSequence(new GaiaEngine.Domain.Identifiers.EntitySequence(1));
+        return new GaiaEngine.Domain.World.World(
+            new GaiaEngine.Domain.World.WorldMetadata(
+                worldId,
+                "Gaia",
+                new GaiaEngine.Foundation.Determinism.WorldSeed(42),
+                "2026-06-28",
+                new GaiaEngine.Foundation.Versioning.EngineVersion(1, 0, 0),
+                new GaiaEngine.Foundation.Configuration.ConfigurationVersion("2026.06.28")),
+            new GaiaEngine.Domain.World.WorldDimensions(32, 32, 16, 1, 200),
+            new WorldTimeState(tick, 0, season, year),
+            new[]
+            {
+                new GaiaEngine.Domain.World.Chunk(
+                    new GaiaEngine.Domain.World.ChunkMetadata(
+                        GaiaEngine.Domain.Identifiers.ChunkId.FromSequence(new GaiaEngine.Domain.Identifiers.EntitySequence(2)),
+                        worldId,
+                        new GaiaEngine.Domain.World.ChunkCoordinates(0, 0),
+                        new GaiaEngine.Foundation.Determinism.WorldSeed(100),
+                        16),
+                    GaiaEngine.Domain.World.ChunkState.Active,
+                    new GaiaEngine.Domain.World.ClimateState(
+                        GaiaEngine.Domain.World.ClimateZone.Temperate,
+                        GaiaEngine.Domain.World.WeatherState.Clear,
+                        new GaiaEngine.Domain.World.TemperatureState(18, 18, 18, 0),
+                        new GaiaEngine.Domain.World.HumidityState(55, 3, 2),
+                        new GaiaEngine.Domain.World.WindState(90, 4, 6),
+                        new GaiaEngine.Domain.World.PrecipitationState(GaiaEngine.Domain.World.PrecipitationType.None, 0, 0, 0),
+                        new GaiaEngine.Domain.World.PressureState(1012)),
+                    System.Array.Empty<GaiaEngine.Domain.Identifiers.OrganismId>()),
+            });
     }
 }

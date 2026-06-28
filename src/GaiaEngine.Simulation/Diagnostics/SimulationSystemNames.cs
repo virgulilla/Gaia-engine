@@ -6,6 +6,11 @@ namespace GaiaEngine.Simulation.Diagnostics;
 public static class SimulationSystemNames
 {
     /// <summary>
+    /// Gets the logical name of the climate system.
+    /// </summary>
+    public const string Climate = "Climate";
+
+    /// <summary>
     /// Gets the logical name of the statistics system.
     /// </summary>
     public const string Statistics = "Statistics";

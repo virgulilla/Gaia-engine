@@ -17,6 +17,7 @@ public sealed record SimulationTickResult
     /// <summary>
     /// Initializes a new instance of the <see cref="SimulationTickResult"/> class.
     /// </summary>
+    /// <param name="world">The resulting world state.</param>
     /// <param name="timeState">The resulting world time state.</param>
     /// <param name="executedPhases">The deterministic list of executed phases.</param>
     /// <param name="schedule">The deterministic schedule selected for the tick.</param>
@@ -29,6 +30,7 @@ public sealed record SimulationTickResult
     /// Thrown when <paramref name="timeState"/> or <paramref name="executedPhases"/> is <see langword="null"/>.
     /// </exception>
     public SimulationTickResult(
+        GaiaEngine.Domain.World.World world,
         WorldTimeState timeState,
         IReadOnlyList<SimulationTickPhase> executedPhases,
         SimulationTickSchedule schedule,
@@ -38,6 +40,7 @@ public sealed record SimulationTickResult
         ulong nextEventSequence,
         TimeAdvanceResult? timeAdvanceResult)
     {
+        World = world ?? throw new ArgumentNullException(nameof(world));
         TimeState = timeState ?? throw new ArgumentNullException(nameof(timeState));
         ExecutedPhases = executedPhases ?? throw new ArgumentNullException(nameof(executedPhases));
         Schedule = schedule ?? throw new ArgumentNullException(nameof(schedule));
@@ -52,6 +55,11 @@ public sealed record SimulationTickResult
         NextEventSequence = nextEventSequence;
         TimeAdvanceResult = timeAdvanceResult;
     }
+
+    /// <summary>
+    /// Gets the resulting world state.
+    /// </summary>
+    public GaiaEngine.Domain.World.World World { get; }
 
     /// <summary>
     /// Gets the resulting world time state.

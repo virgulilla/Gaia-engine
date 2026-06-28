@@ -1,0 +1,9 @@
+{
+  "worldName": "Gaia",
+  "worldSeed": 42,
+  "chunkColumns": 2,
+  "chunkRows": 2,
+  "chunkSize": 16,
+  "maximumElevation": 200,
+  "defaultClimateZone": "Temperate"
+}

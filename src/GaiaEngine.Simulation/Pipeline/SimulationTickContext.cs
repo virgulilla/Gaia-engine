@@ -17,13 +17,13 @@ public sealed class SimulationTickContext
     /// <summary>
     /// Initializes a new instance of the <see cref="SimulationTickContext"/> class.
     /// </summary>
-    /// <param name="timeState">The initial world time state for the tick.</param>
+    /// <param name="world">The initial world state for the tick.</param>
     /// <param name="nextEventSequence">The next deterministic event sequence value to use.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="timeState"/> is <see langword="null"/>.</exception>
-    public SimulationTickContext(WorldTimeState timeState, ulong nextEventSequence)
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="world"/> is <see langword="null"/>.</exception>
+    public SimulationTickContext(GaiaEngine.Domain.World.World world, ulong nextEventSequence)
     {
-        CurrentTimeState = timeState ?? throw new ArgumentNullException(nameof(timeState));
-        Schedule = new SimulationTickSchedule(timeState.CurrentTick, Array.Empty<ScheduledSimulationSystem>());
+        CurrentWorld = world ?? throw new ArgumentNullException(nameof(world));
+        Schedule = new SimulationTickSchedule(world.TimeState.CurrentTick, Array.Empty<ScheduledSimulationSystem>());
         if (nextEventSequence == 0)
         {
             throw new ArgumentOutOfRangeException(nameof(nextEventSequence), "The next event sequence value must be greater than zero.");
@@ -34,9 +34,14 @@ public sealed class SimulationTickContext
     }
 
     /// <summary>
+    /// Gets the current world state being updated by the pipeline.
+    /// </summary>
+    public GaiaEngine.Domain.World.World CurrentWorld { get; private set; }
+
+    /// <summary>
     /// Gets the current world time state being updated by the pipeline.
     /// </summary>
-    public WorldTimeState CurrentTimeState { get; private set; }
+    public WorldTimeState CurrentTimeState => CurrentWorld.TimeState;
 
     /// <summary>
     /// Gets the time advancement produced during the current tick, when available.
@@ -85,7 +90,7 @@ public sealed class SimulationTickContext
         ArgumentNullException.ThrowIfNull(result);
 
         TimeAdvanceResult = result;
-        CurrentTimeState = result.TimeState;
+        CurrentWorld = new GaiaEngine.Domain.World.World(CurrentWorld.Metadata, CurrentWorld.Dimensions, result.TimeState, CurrentWorld.GetChunks());
     }
 
     /// <summary>
@@ -138,5 +143,15 @@ public sealed class SimulationTickContext
     public void ApplyDiagnostics(SimulationTickDiagnostics diagnostics)
     {
         Diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
+    }
+
+    /// <summary>
+    /// Applies the updated world state produced during the current tick.
+    /// </summary>
+    /// <param name="world">The updated world state.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="world"/> is <see langword="null"/>.</exception>
+    public void ApplyWorld(GaiaEngine.Domain.World.World world)
+    {
+        CurrentWorld = world ?? throw new ArgumentNullException(nameof(world));
     }
 }

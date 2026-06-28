@@ -12,11 +12,13 @@ public static class GaiaEngineCompositionRoot
     /// </summary>
     /// <param name="configurationPath">The absolute path to the engine configuration file.</param>
     /// <param name="simulationConfigurationPath">The absolute path to the simulation configuration file.</param>
+    /// <param name="worldConfigurationPath">The absolute path to the world configuration file.</param>
     /// <returns>A configured application instance.</returns>
-    public static GaiaEngineApplication CreateApplication(string configurationPath, string simulationConfigurationPath)
+    public static GaiaEngineApplication CreateApplication(string configurationPath, string simulationConfigurationPath, string worldConfigurationPath)
     {
         IEngineConfigurationProvider configurationProvider = new JsonEngineConfigurationProvider(configurationPath);
         ISimulationConfigurationProvider simulationConfigurationProvider = new JsonSimulationConfigurationProvider(simulationConfigurationPath);
-        return new GaiaEngineApplication(configurationProvider, simulationConfigurationProvider);
+        IWorldConfigurationProvider worldConfigurationProvider = new JsonWorldConfigurationProvider(worldConfigurationPath);
+        return new GaiaEngineApplication(configurationProvider, simulationConfigurationProvider, worldConfigurationProvider);
     }
 }
