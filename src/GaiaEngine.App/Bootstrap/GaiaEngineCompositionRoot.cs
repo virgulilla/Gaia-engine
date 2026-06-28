@@ -11,10 +11,12 @@ public static class GaiaEngineCompositionRoot
     /// Creates the application bootstrap graph for the supplied configuration path.
     /// </summary>
     /// <param name="configurationPath">The absolute path to the engine configuration file.</param>
+    /// <param name="simulationConfigurationPath">The absolute path to the simulation configuration file.</param>
     /// <returns>A configured application instance.</returns>
-    public static GaiaEngineApplication CreateApplication(string configurationPath)
+    public static GaiaEngineApplication CreateApplication(string configurationPath, string simulationConfigurationPath)
     {
         IEngineConfigurationProvider configurationProvider = new JsonEngineConfigurationProvider(configurationPath);
-        return new GaiaEngineApplication(configurationProvider);
+        ISimulationConfigurationProvider simulationConfigurationProvider = new JsonSimulationConfigurationProvider(simulationConfigurationPath);
+        return new GaiaEngineApplication(configurationProvider, simulationConfigurationProvider);
     }
 }

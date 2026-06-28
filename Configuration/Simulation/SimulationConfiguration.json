@@ -1,0 +1,7 @@
+{
+  "ticksPerDay": 300,
+  "daysPerSeason": 12,
+  "startingDay": 0,
+  "startingSeason": "Spring",
+  "startingYear": 0
+}

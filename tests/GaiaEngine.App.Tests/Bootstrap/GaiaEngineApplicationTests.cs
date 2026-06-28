@@ -12,13 +12,17 @@ public sealed class GaiaEngineApplicationTests
     public void Initialize_ShouldCacheLoadedConfiguration()
     {
         FakeEngineConfigurationProvider configurationProvider = new();
-        GaiaEngineApplication application = new(configurationProvider);
+        FakeSimulationConfigurationProvider simulationConfigurationProvider = new();
+        GaiaEngineApplication application = new(configurationProvider, simulationConfigurationProvider);
 
-        EngineConfiguration first = application.Initialize();
-        EngineConfiguration second = application.Initialize();
+        GaiaEngineRuntime first = application.Initialize();
+        GaiaEngineRuntime second = application.Initialize();
 
         Assert.Same(first, second);
         Assert.Equal(1, configurationProvider.LoadCallCount);
+        Assert.Equal(1, simulationConfigurationProvider.LoadCallCount);
+        Assert.Equal(0, first.SimulationSession.CurrentTimeState.CurrentTick);
+        Assert.Equal("Spring", first.SimulationSession.CurrentTimeState.CurrentSeason);
     }
 
     private sealed class FakeEngineConfigurationProvider : IEngineConfigurationProvider
@@ -29,6 +33,19 @@ public sealed class GaiaEngineApplicationTests
         public int LoadCallCount { get; private set; }
 
         public EngineConfiguration Load()
+        {
+            LoadCallCount++;
+            return configuration;
+        }
+    }
+
+    private sealed class FakeSimulationConfigurationProvider : ISimulationConfigurationProvider
+    {
+        private readonly SimulationConfiguration configuration = new(300, 12, 0, "Spring", 0);
+
+        public int LoadCallCount { get; private set; }
+
+        public SimulationConfiguration Load()
         {
             LoadCallCount++;
             return configuration;

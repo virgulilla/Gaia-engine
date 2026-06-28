@@ -1,0 +1,83 @@
+using System;
+
+namespace GaiaEngine.App.Configuration;
+
+/// <summary>
+/// Represents the immutable startup configuration of the Gaia Engine simulation module.
+/// </summary>
+public sealed record SimulationConfiguration
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SimulationConfiguration"/> class.
+    /// </summary>
+    /// <param name="ticksPerDay">The number of deterministic simulation ticks contained in one world day.</param>
+    /// <param name="daysPerSeason">The number of world days contained in one season.</param>
+    /// <param name="startingDay">The initial world day.</param>
+    /// <param name="startingSeason">The initial season name.</param>
+    /// <param name="startingYear">The initial world year.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when numeric values are outside their valid ranges.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="startingSeason"/> is empty.</exception>
+    public SimulationConfiguration(
+        int ticksPerDay,
+        int daysPerSeason,
+        int startingDay,
+        string startingSeason,
+        int startingYear)
+    {
+        if (ticksPerDay <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(ticksPerDay), "The ticks-per-day value must be greater than zero.");
+        }
+
+        if (daysPerSeason <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(daysPerSeason), "The days-per-season value must be greater than zero.");
+        }
+
+        if (startingDay < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(startingDay), "The starting day must be zero or greater.");
+        }
+
+        if (string.IsNullOrWhiteSpace(startingSeason))
+        {
+            throw new ArgumentException("The starting season must contain a value.", nameof(startingSeason));
+        }
+
+        if (startingYear < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(startingYear), "The starting year must be zero or greater.");
+        }
+
+        TicksPerDay = ticksPerDay;
+        DaysPerSeason = daysPerSeason;
+        StartingDay = startingDay;
+        StartingSeason = startingSeason;
+        StartingYear = startingYear;
+    }
+
+    /// <summary>
+    /// Gets the number of deterministic simulation ticks contained in one world day.
+    /// </summary>
+    public int TicksPerDay { get; }
+
+    /// <summary>
+    /// Gets the number of world days contained in one season.
+    /// </summary>
+    public int DaysPerSeason { get; }
+
+    /// <summary>
+    /// Gets the initial world day.
+    /// </summary>
+    public int StartingDay { get; }
+
+    /// <summary>
+    /// Gets the initial season name.
+    /// </summary>
+    public string StartingSeason { get; }
+
+    /// <summary>
+    /// Gets the initial world year.
+    /// </summary>
+    public int StartingYear { get; }
+}

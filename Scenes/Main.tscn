@@ -4,3 +4,37 @@
 
 [node name="GaiaEngineBootstrap" type="Node"]
 script = ExtResource("1")
+
+[node name="DiagnosticsLayer" type="CanvasLayer" parent="."]
+
+[node name="SimulationStatusPanel" type="PanelContainer" parent="DiagnosticsLayer"]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 276.0
+offset_bottom = 156.0
+
+[node name="SimulationStatusMargin" type="MarginContainer" parent="DiagnosticsLayer/SimulationStatusPanel"]
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="SimulationStatusRows" type="VBoxContainer" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin"]
+
+[node name="SimulationStatusTitleLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Gaia Engine Debug"
+
+[node name="TickLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Tick: 0"
+
+[node name="DayLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Day: 0"
+
+[node name="SeasonLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Season: Spring"
+
+[node name="YearLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Year: 0"
+
+[node name="TickRateLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Tick Rate: 0"

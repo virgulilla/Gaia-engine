@@ -1,5 +1,8 @@
 using System;
 using GaiaEngine.App.Configuration;
+using GaiaEngine.Domain.World;
+using GaiaEngine.Simulation.Runtime;
+using GaiaEngine.Simulation.Time;
 
 namespace GaiaEngine.App.Bootstrap;
 
@@ -9,25 +12,49 @@ namespace GaiaEngine.App.Bootstrap;
 public sealed class GaiaEngineApplication
 {
     private readonly IEngineConfigurationProvider configurationProvider;
-    private EngineConfiguration? configuration;
+    private readonly ISimulationConfigurationProvider simulationConfigurationProvider;
+    private GaiaEngineRuntime? runtime;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GaiaEngineApplication"/> class.
     /// </summary>
     /// <param name="configurationProvider">The configuration provider used during startup.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configurationProvider"/> is <see langword="null"/>.</exception>
-    public GaiaEngineApplication(IEngineConfigurationProvider configurationProvider)
+    /// <param name="simulationConfigurationProvider">The simulation configuration provider used during startup.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="configurationProvider"/> or <paramref name="simulationConfigurationProvider"/> is <see langword="null"/>.
+    /// </exception>
+    public GaiaEngineApplication(
+        IEngineConfigurationProvider configurationProvider,
+        ISimulationConfigurationProvider simulationConfigurationProvider)
     {
         this.configurationProvider = configurationProvider ?? throw new ArgumentNullException(nameof(configurationProvider));
+        this.simulationConfigurationProvider = simulationConfigurationProvider ?? throw new ArgumentNullException(nameof(simulationConfigurationProvider));
     }
 
     /// <summary>
-    /// Loads the immutable engine configuration for the current host process.
+    /// Loads the immutable runtime graph for the current host process.
     /// </summary>
-    /// <returns>The loaded engine configuration.</returns>
-    public EngineConfiguration Initialize()
+    /// <returns>The initialized runtime graph.</returns>
+    public GaiaEngineRuntime Initialize()
     {
-        configuration ??= configurationProvider.Load();
-        return configuration;
+        runtime ??= CreateRuntime();
+        return runtime;
+    }
+
+    private GaiaEngineRuntime CreateRuntime()
+    {
+        EngineConfiguration engineConfiguration = configurationProvider.Load();
+        SimulationConfiguration simulationConfiguration = simulationConfigurationProvider.Load();
+        SimulationCalendar calendar = new(simulationConfiguration.TicksPerDay, simulationConfiguration.DaysPerSeason);
+        DeterministicTimeSystem timeSystem = new(calendar);
+        DeterministicSimulationSession simulationSession = new(
+            timeSystem,
+            new WorldTimeState(
+                currentTick: 0,
+                currentDay: simulationConfiguration.StartingDay,
+                currentSeason: simulationConfiguration.StartingSeason,
+                currentYear: simulationConfiguration.StartingYear));
+
+        return new GaiaEngineRuntime(engineConfiguration, simulationConfiguration, simulationSession);
     }
 }
