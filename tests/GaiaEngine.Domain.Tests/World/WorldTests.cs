@@ -93,6 +93,14 @@ public sealed class WorldTests
                 new WorldSeed((long)sequence),
                 16),
             ChunkState.Active,
+            new ClimateState(
+                ClimateZone.Temperate,
+                WeatherState.Clear,
+                new TemperatureState(18, 18, 18, 0),
+                new HumidityState(55, 3, 2),
+                new WindState(90, 4, 6),
+                new PrecipitationState(PrecipitationType.None, 0, 0, 0),
+                new PressureState(1012)),
             Array.Empty<OrganismId>());
     }
 }

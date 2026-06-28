@@ -79,6 +79,26 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                     Seed = chunk.Metadata.Seed.Value,
                     Size = chunk.Metadata.Size,
                     State = chunk.State.ToString(),
+                    Climate = new ClimateStateDocument
+                    {
+                        Zone = chunk.Climate.Zone.ToString(),
+                        WeatherState = chunk.Climate.WeatherState.ToString(),
+                        CurrentTemperature = chunk.Climate.Temperature.CurrentTemperature,
+                        DailyAverageTemperature = chunk.Climate.Temperature.DailyAverage,
+                        SeasonalAverageTemperature = chunk.Climate.Temperature.SeasonalAverage,
+                        DailyTemperatureVariation = chunk.Climate.Temperature.DailyVariation,
+                        RelativeHumidity = chunk.Climate.Humidity.RelativeHumidity,
+                        EvaporationRate = chunk.Climate.Humidity.EvaporationRate,
+                        CondensationRate = chunk.Climate.Humidity.CondensationRate,
+                        WindDirection = chunk.Climate.Wind.Direction,
+                        WindSpeed = chunk.Climate.Wind.Speed,
+                        WindGustStrength = chunk.Climate.Wind.GustStrength,
+                        PrecipitationType = chunk.Climate.Precipitation.Type.ToString(),
+                        PrecipitationIntensity = chunk.Climate.Precipitation.Intensity,
+                        PrecipitationDuration = chunk.Climate.Precipitation.Duration,
+                        PrecipitationCoverage = chunk.Climate.Precipitation.Coverage,
+                        Pressure = chunk.Climate.Pressure.CurrentPressure,
+                    },
                     OrganismIds = organismIds,
                 });
         }
@@ -160,6 +180,28 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                         new WorldSeed(chunkDocument.Seed),
                         chunkDocument.Size),
                     parsedState,
+                    new ClimateState(
+                        Enum.Parse<ClimateZone>(chunkDocument.Climate.Zone, ignoreCase: false),
+                        Enum.Parse<WeatherState>(chunkDocument.Climate.WeatherState, ignoreCase: false),
+                        new TemperatureState(
+                            chunkDocument.Climate.CurrentTemperature,
+                            chunkDocument.Climate.DailyAverageTemperature,
+                            chunkDocument.Climate.SeasonalAverageTemperature,
+                            chunkDocument.Climate.DailyTemperatureVariation),
+                        new HumidityState(
+                            chunkDocument.Climate.RelativeHumidity,
+                            chunkDocument.Climate.EvaporationRate,
+                            chunkDocument.Climate.CondensationRate),
+                        new WindState(
+                            chunkDocument.Climate.WindDirection,
+                            chunkDocument.Climate.WindSpeed,
+                            chunkDocument.Climate.WindGustStrength),
+                        new PrecipitationState(
+                            Enum.Parse<PrecipitationType>(chunkDocument.Climate.PrecipitationType, ignoreCase: false),
+                            chunkDocument.Climate.PrecipitationIntensity,
+                            chunkDocument.Climate.PrecipitationDuration,
+                            chunkDocument.Climate.PrecipitationCoverage),
+                        new PressureState(chunkDocument.Climate.Pressure)),
                     organismIds.AsReadOnly()));
         }
 

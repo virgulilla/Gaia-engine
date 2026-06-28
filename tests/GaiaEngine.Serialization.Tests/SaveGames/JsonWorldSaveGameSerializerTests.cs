@@ -27,6 +27,8 @@ public sealed class JsonWorldSaveGameSerializerTests
         Assert.Equal(saveGame.World.TimeState.CurrentTick, restored.World.TimeState.CurrentTick);
         Assert.Equal(saveGame.World.ChunkCount, restored.World.ChunkCount);
         Assert.Equal(saveGame.World.GetChunks()[0].Metadata.Coordinates, restored.World.GetChunks()[0].Metadata.Coordinates);
+        Assert.Equal(saveGame.World.GetChunks()[0].Climate.Zone, restored.World.GetChunks()[0].Climate.Zone);
+        Assert.Equal(saveGame.World.GetChunks()[0].Climate.Temperature.CurrentTemperature, restored.World.GetChunks()[0].Climate.Temperature.CurrentTemperature);
     }
 
     [Fact]
@@ -76,6 +78,14 @@ public sealed class JsonWorldSaveGameSerializerTests
                         new WorldSeed(100),
                         16),
                     ChunkState.Active,
+                    new ClimateState(
+                        ClimateZone.Temperate,
+                        WeatherState.Clear,
+                        new TemperatureState(18, 18, 18, 0),
+                        new HumidityState(55, 3, 2),
+                        new WindState(90, 4, 6),
+                        new PrecipitationState(PrecipitationType.None, 0, 0, 0),
+                        new PressureState(1012)),
                     Array.Empty<OrganismId>()),
             });
 
