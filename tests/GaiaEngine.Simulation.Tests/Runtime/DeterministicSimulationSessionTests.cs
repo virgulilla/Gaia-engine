@@ -12,6 +12,7 @@ using GaiaEngine.Simulation.Runtime;
 using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
 using GaiaEngine.Simulation.World.Climate;
+using GaiaEngine.Simulation.World.Resources;
 using Xunit;
 
 namespace GaiaEngine.Simulation.Tests.Runtime;
@@ -28,6 +29,7 @@ public sealed class DeterministicSimulationSessionTests
             new[]
             {
                 new ScheduledSimulationSystemDefinition(SimulationSystemNames.Climate, SimulationTickPhase.WorldUpdate, 10, 0),
+                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Resources, SimulationTickPhase.WorldUpdate, 20, 0),
                 new ScheduledSimulationSystemDefinition(SimulationSystemNames.Statistics, SimulationTickPhase.PostUpdate, 100, 0),
             });
         DeterministicSimulationTickPipeline pipeline = new(
@@ -39,6 +41,7 @@ public sealed class DeterministicSimulationSessionTests
                     timeSystem,
                     scheduler,
                     new DeterministicClimateSystem(new ClimateSystemSettings(300, 18, 10, 55, 1012, 4)),
+                    new DeterministicResourceSystem(new ResourceSystemSettings(3, 2, 3, 4)),
                     eventPublisher),
                 new NoOpSimulationTickPhase(SimulationTickPhase.OrganismUpdate),
                 new NoOpSimulationTickPhase(SimulationTickPhase.InteractionSystems),
@@ -57,6 +60,8 @@ public sealed class DeterministicSimulationSessionTests
         Assert.Equal(2UL, result.NextEventSequence);
         Assert.NotNull(result.Diagnostics);
         Assert.Equal(100, session.CurrentWorld.TimeState.CurrentTick);
+        Assert.True(session.CurrentWorld.GetChunks()[0].Resources.TryGet(ResourceType.Vegetation, out ResourceState? vegetation));
+        Assert.NotNull(vegetation);
     }
 
     [Fact]
@@ -69,6 +74,7 @@ public sealed class DeterministicSimulationSessionTests
             new[]
             {
                 new ScheduledSimulationSystemDefinition(SimulationSystemNames.Climate, SimulationTickPhase.WorldUpdate, 10, 0),
+                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Resources, SimulationTickPhase.WorldUpdate, 20, 0),
                 new ScheduledSimulationSystemDefinition(SimulationSystemNames.Statistics, SimulationTickPhase.PostUpdate, 100, 0),
             });
         DeterministicSimulationTickPipeline pipeline = new(
@@ -80,6 +86,7 @@ public sealed class DeterministicSimulationSessionTests
                     timeSystem,
                     scheduler,
                     new DeterministicClimateSystem(new ClimateSystemSettings(300, 18, 10, 55, 1012, 4)),
+                    new DeterministicResourceSystem(new ResourceSystemSettings(3, 2, 3, 4)),
                     eventPublisher),
                 new NoOpSimulationTickPhase(SimulationTickPhase.OrganismUpdate),
                 new NoOpSimulationTickPhase(SimulationTickPhase.InteractionSystems),
@@ -139,6 +146,42 @@ public sealed class DeterministicSimulationSessionTests
                 new WindState(90, 4, 6),
                 new PrecipitationState(PrecipitationType.None, 0, 0, 0),
                 new PressureState(1012)),
+            CreateResources(sequence),
             Array.Empty<OrganismId>());
+    }
+
+    private static ChunkResources CreateResources(ulong sequence)
+    {
+        return new ChunkResources(
+            new ResourceState[]
+            {
+                new(
+                    ResourceId.FromSequence(new EntitySequence((sequence * 10) + 1)),
+                    ResourceType.Vegetation,
+                    ResourceCategory.Renewable,
+                    400,
+                    500,
+                    4,
+                    70,
+                    800),
+                new(
+                    ResourceId.FromSequence(new EntitySequence((sequence * 10) + 2)),
+                    ResourceType.FreshWater,
+                    ResourceCategory.Renewable,
+                    300,
+                    400,
+                    3,
+                    80,
+                    750),
+                new(
+                    ResourceId.FromSequence(new EntitySequence((sequence * 10) + 3)),
+                    ResourceType.Minerals,
+                    ResourceCategory.NonRenewable,
+                    250,
+                    250,
+                    0,
+                    65,
+                    500),
+            });
     }
 }

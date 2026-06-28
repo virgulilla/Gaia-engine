@@ -69,6 +69,23 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                 organismIds.Add(organismId.ToString());
             }
 
+            List<ResourceStateDocument> resourceDocuments = new(chunk.Resources.Count);
+            foreach (ResourceState resource in chunk.Resources.GetAll())
+            {
+                resourceDocuments.Add(
+                    new ResourceStateDocument
+                    {
+                        ResourceId = resource.ResourceId.ToString(),
+                        Type = resource.Type.ToString(),
+                        Category = resource.Category.ToString(),
+                        CurrentAmount = resource.CurrentAmount,
+                        MaximumCapacity = resource.MaximumCapacity,
+                        RegenerationRate = resource.RegenerationRate,
+                        Quality = resource.Quality,
+                        Availability = resource.Availability,
+                    });
+            }
+
             chunkDocuments.Add(
                 new ChunkDocument
                 {
@@ -99,6 +116,7 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                         PrecipitationCoverage = chunk.Climate.Precipitation.Coverage,
                         Pressure = chunk.Climate.Pressure.CurrentPressure,
                     },
+                    Resources = resourceDocuments,
                     OrganismIds = organismIds,
                 });
         }
@@ -170,6 +188,21 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                 organismIds.Add(OrganismId.Parse(organismId));
             }
 
+            List<ResourceState> resourceStates = new(chunkDocument.Resources.Count);
+            foreach (ResourceStateDocument resourceDocument in chunkDocument.Resources)
+            {
+                resourceStates.Add(
+                    new ResourceState(
+                        ResourceId.Parse(resourceDocument.ResourceId),
+                        Enum.Parse<ResourceType>(resourceDocument.Type, ignoreCase: false),
+                        Enum.Parse<ResourceCategory>(resourceDocument.Category, ignoreCase: false),
+                        resourceDocument.CurrentAmount,
+                        resourceDocument.MaximumCapacity,
+                        resourceDocument.RegenerationRate,
+                        resourceDocument.Quality,
+                        resourceDocument.Availability));
+            }
+
             ChunkState parsedState = Enum.Parse<ChunkState>(chunkDocument.State, ignoreCase: false);
             chunks.Add(
                 new Chunk(
@@ -202,6 +235,7 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                             chunkDocument.Climate.PrecipitationDuration,
                             chunkDocument.Climate.PrecipitationCoverage),
                         new PressureState(chunkDocument.Climate.Pressure)),
+                    new ChunkResources(resourceStates.AsReadOnly()),
                     organismIds.AsReadOnly()));
         }
 

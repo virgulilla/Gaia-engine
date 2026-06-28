@@ -16,14 +16,16 @@ public sealed class Chunk : IEntity<ChunkId>
     /// <param name="metadata">The immutable chunk metadata.</param>
     /// <param name="state">The runtime chunk state.</param>
     /// <param name="climate">The passive chunk climate state.</param>
+    /// <param name="resources">The passive chunk resource state.</param>
     /// <param name="organismIds">The organism references currently contained by the chunk.</param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="metadata"/>, <paramref name="climate"/>, or <paramref name="organismIds"/> is <see langword="null"/>.
+    /// Thrown when <paramref name="metadata"/>, <paramref name="climate"/>, <paramref name="resources"/>, or <paramref name="organismIds"/> is <see langword="null"/>.
     /// </exception>
-    public Chunk(ChunkMetadata metadata, ChunkState state, ClimateState climate, IReadOnlyList<OrganismId> organismIds)
+    public Chunk(ChunkMetadata metadata, ChunkState state, ClimateState climate, ChunkResources resources, IReadOnlyList<OrganismId> organismIds)
     {
         Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
         Climate = climate ?? throw new ArgumentNullException(nameof(climate));
+        Resources = resources ?? throw new ArgumentNullException(nameof(resources));
         OrganismIds = organismIds ?? throw new ArgumentNullException(nameof(organismIds));
         State = state;
     }
@@ -47,6 +49,11 @@ public sealed class Chunk : IEntity<ChunkId>
     /// Gets the passive chunk climate state.
     /// </summary>
     public ClimateState Climate { get; }
+
+    /// <summary>
+    /// Gets the passive chunk resource state.
+    /// </summary>
+    public ChunkResources Resources { get; }
 
     /// <summary>
     /// Gets the immutable organism references currently contained by the chunk.

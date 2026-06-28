@@ -10,6 +10,7 @@ using GaiaEngine.Simulation.Runtime;
 using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
 using GaiaEngine.Simulation.World.Climate;
+using GaiaEngine.Simulation.World.Resources;
 
 namespace GaiaEngine.App.Bootstrap;
 
@@ -71,6 +72,12 @@ public sealed class GaiaEngineApplication
             basePressure: 1012,
             baseWindSpeed: 4);
         DeterministicClimateSystem climateSystem = new(climateSettings);
+        ResourceSystemSettings resourceSettings = new(
+            vegetationSeasonBonus: 3,
+            waterSeasonBonus: 2,
+            precipitationDivider: 3,
+            evaporationDivider: 4);
+        DeterministicResourceSystem resourceSystem = new(resourceSettings);
         DeterministicSimulationScheduler scheduler = new(
             new[]
             {
@@ -78,6 +85,11 @@ public sealed class GaiaEngineApplication
                     SimulationSystemNames.Climate,
                     SimulationTickPhase.WorldUpdate,
                     frequency: 10,
+                    priority: 0),
+                new ScheduledSimulationSystemDefinition(
+                    SimulationSystemNames.Resources,
+                    SimulationTickPhase.WorldUpdate,
+                    frequency: 20,
                     priority: 0),
                 new ScheduledSimulationSystemDefinition(
                     SimulationSystemNames.Statistics,
@@ -91,7 +103,7 @@ public sealed class GaiaEngineApplication
             {
                 new NoOpSimulationTickPhase(SimulationTickPhase.InputCollection),
                 new NoOpSimulationTickPhase(SimulationTickPhase.PreUpdate),
-                new WorldUpdateTimePhase(timeSystem, scheduler, climateSystem, eventPublisher),
+                new WorldUpdateTimePhase(timeSystem, scheduler, climateSystem, resourceSystem, eventPublisher),
                 new NoOpSimulationTickPhase(SimulationTickPhase.OrganismUpdate),
                 new NoOpSimulationTickPhase(SimulationTickPhase.InteractionSystems),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),

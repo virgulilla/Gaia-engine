@@ -101,6 +101,42 @@ public sealed class WorldTests
                 new WindState(90, 4, 6),
                 new PrecipitationState(PrecipitationType.None, 0, 0, 0),
                 new PressureState(1012)),
+            CreateResources(sequence),
             Array.Empty<OrganismId>());
+    }
+
+    private static ChunkResources CreateResources(ulong sequence)
+    {
+        return new ChunkResources(
+            new ResourceState[]
+            {
+                new(
+                    ResourceId.FromSequence(new EntitySequence((sequence * 10) + 1)),
+                    ResourceType.Vegetation,
+                    ResourceCategory.Renewable,
+                    400,
+                    500,
+                    4,
+                    70,
+                    800),
+                new(
+                    ResourceId.FromSequence(new EntitySequence((sequence * 10) + 2)),
+                    ResourceType.FreshWater,
+                    ResourceCategory.Renewable,
+                    300,
+                    400,
+                    3,
+                    80,
+                    750),
+                new(
+                    ResourceId.FromSequence(new EntitySequence((sequence * 10) + 3)),
+                    ResourceType.Minerals,
+                    ResourceCategory.NonRenewable,
+                    250,
+                    250,
+                    0,
+                    65,
+                    500),
+            });
     }
 }

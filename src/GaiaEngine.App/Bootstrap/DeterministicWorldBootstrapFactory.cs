@@ -104,6 +104,42 @@ public sealed class DeterministicWorldBootstrapFactory
                 new WindState(90, 4, 6),
                 new PrecipitationState(PrecipitationType.None, 0, 0, 0),
                 new PressureState(1012)),
+            CreateDefaultResources(sequence),
             Array.Empty<OrganismId>());
+    }
+
+    private static ChunkResources CreateDefaultResources(ulong chunkSequence)
+    {
+        return new ChunkResources(
+            new ResourceState[]
+            {
+                new(
+                    ResourceId.FromSequence(new EntitySequence((chunkSequence * 10) + 1)),
+                    ResourceType.Vegetation,
+                    ResourceCategory.Renewable,
+                    400,
+                    500,
+                    4,
+                    70,
+                    800),
+                new(
+                    ResourceId.FromSequence(new EntitySequence((chunkSequence * 10) + 2)),
+                    ResourceType.FreshWater,
+                    ResourceCategory.Renewable,
+                    300,
+                    400,
+                    3,
+                    80,
+                    750),
+                new(
+                    ResourceId.FromSequence(new EntitySequence((chunkSequence * 10) + 3)),
+                    ResourceType.Minerals,
+                    ResourceCategory.NonRenewable,
+                    250,
+                    250,
+                    0,
+                    65,
+                    500),
+            });
     }
 }

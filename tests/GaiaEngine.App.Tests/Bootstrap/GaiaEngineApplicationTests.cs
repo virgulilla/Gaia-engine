@@ -28,6 +28,7 @@ public sealed class GaiaEngineApplicationTests
         Assert.Equal("Spring", first.SimulationSession.CurrentTimeState.CurrentSeason);
         Assert.Equal("Gaia", first.World.Metadata.WorldName);
         Assert.Equal(4, first.World.ChunkCount);
+        Assert.Equal(3, first.World.GetChunks()[0].Resources.Count);
     }
 
     private sealed class FakeEngineConfigurationProvider : IEngineConfigurationProvider

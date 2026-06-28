@@ -11,6 +11,11 @@ public static class SimulationSystemNames
     public const string Climate = "Climate";
 
     /// <summary>
+    /// Gets the logical name of the resource system.
+    /// </summary>
+    public const string Resources = "Resources";
+
+    /// <summary>
     /// Gets the logical name of the statistics system.
     /// </summary>
     public const string Statistics = "Statistics";

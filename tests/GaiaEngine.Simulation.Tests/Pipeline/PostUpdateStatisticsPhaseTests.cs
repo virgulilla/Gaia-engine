@@ -87,7 +87,43 @@ public sealed class PostUpdateStatisticsPhaseTests
                         new GaiaEngine.Domain.World.WindState(90, 4, 6),
                         new GaiaEngine.Domain.World.PrecipitationState(GaiaEngine.Domain.World.PrecipitationType.None, 0, 0, 0),
                         new GaiaEngine.Domain.World.PressureState(1012)),
+                    CreateResources(2),
                     System.Array.Empty<GaiaEngine.Domain.Identifiers.OrganismId>()),
+            });
+    }
+
+    private static GaiaEngine.Domain.World.ChunkResources CreateResources(ulong sequence)
+    {
+        return new GaiaEngine.Domain.World.ChunkResources(
+            new GaiaEngine.Domain.World.ResourceState[]
+            {
+                new(
+                    GaiaEngine.Domain.Identifiers.ResourceId.FromSequence(new GaiaEngine.Domain.Identifiers.EntitySequence((sequence * 10) + 1)),
+                    GaiaEngine.Domain.World.ResourceType.Vegetation,
+                    GaiaEngine.Domain.World.ResourceCategory.Renewable,
+                    400,
+                    500,
+                    4,
+                    70,
+                    800),
+                new(
+                    GaiaEngine.Domain.Identifiers.ResourceId.FromSequence(new GaiaEngine.Domain.Identifiers.EntitySequence((sequence * 10) + 2)),
+                    GaiaEngine.Domain.World.ResourceType.FreshWater,
+                    GaiaEngine.Domain.World.ResourceCategory.Renewable,
+                    300,
+                    400,
+                    3,
+                    80,
+                    750),
+                new(
+                    GaiaEngine.Domain.Identifiers.ResourceId.FromSequence(new GaiaEngine.Domain.Identifiers.EntitySequence((sequence * 10) + 3)),
+                    GaiaEngine.Domain.World.ResourceType.Minerals,
+                    GaiaEngine.Domain.World.ResourceCategory.NonRenewable,
+                    250,
+                    250,
+                    0,
+                    65,
+                    500),
             });
     }
 }
