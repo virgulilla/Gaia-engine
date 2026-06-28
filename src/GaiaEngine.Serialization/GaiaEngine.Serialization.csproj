@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>GaiaEngine.Serialization</AssemblyName>
+    <RootNamespace>GaiaEngine.Serialization</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GaiaEngine.Foundation\GaiaEngine.Foundation.csproj" />
+    <ProjectReference Include="..\GaiaEngine.Domain\GaiaEngine.Domain.csproj" />
+  </ItemGroup>
+</Project>
