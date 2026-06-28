@@ -1,6 +1,6 @@
 using System;
 using GaiaEngine.Domain.World;
-using GaiaEngine.Simulation.Time;
+using GaiaEngine.Simulation.Pipeline;
 
 namespace GaiaEngine.Simulation.Runtime;
 
@@ -9,19 +9,19 @@ namespace GaiaEngine.Simulation.Runtime;
 /// </summary>
 public sealed class DeterministicSimulationSession : ISimulationSession
 {
-    private readonly ITimeSystem timeSystem;
+    private readonly ISimulationTickPipeline tickPipeline;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeterministicSimulationSession"/> class.
     /// </summary>
-    /// <param name="timeSystem">The Time System responsible for advancing simulation time.</param>
+    /// <param name="tickPipeline">The deterministic tick pipeline responsible for advancing simulation state.</param>
     /// <param name="initialTimeState">The initial world time state.</param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="timeSystem"/> or <paramref name="initialTimeState"/> is <see langword="null"/>.
+    /// Thrown when <paramref name="tickPipeline"/> or <paramref name="initialTimeState"/> is <see langword="null"/>.
     /// </exception>
-    public DeterministicSimulationSession(ITimeSystem timeSystem, WorldTimeState initialTimeState)
+    public DeterministicSimulationSession(ISimulationTickPipeline tickPipeline, WorldTimeState initialTimeState)
     {
-        this.timeSystem = timeSystem ?? throw new ArgumentNullException(nameof(timeSystem));
+        this.tickPipeline = tickPipeline ?? throw new ArgumentNullException(nameof(tickPipeline));
         CurrentTimeState = initialTimeState ?? throw new ArgumentNullException(nameof(initialTimeState));
     }
 
@@ -33,10 +33,10 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// <summary>
     /// Advances the simulation by one deterministic tick.
     /// </summary>
-    /// <returns>The advance result produced by the Time System.</returns>
-    public TimeAdvanceResult AdvanceTick()
+    /// <returns>The deterministic tick pipeline result.</returns>
+    public SimulationTickResult AdvanceTick()
     {
-        TimeAdvanceResult result = timeSystem.Advance(CurrentTimeState);
+        SimulationTickResult result = tickPipeline.Execute(CurrentTimeState);
         CurrentTimeState = result.TimeState;
         return result;
     }

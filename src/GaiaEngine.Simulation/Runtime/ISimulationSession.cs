@@ -1,4 +1,5 @@
 using GaiaEngine.Domain.World;
+using GaiaEngine.Simulation.Pipeline;
 using GaiaEngine.Simulation.Time;
 
 namespace GaiaEngine.Simulation.Runtime;
@@ -16,6 +17,6 @@ public interface ISimulationSession
     /// <summary>
     /// Advances the simulation by one deterministic tick.
     /// </summary>
-    /// <returns>The advance result produced by the Time System.</returns>
-    public TimeAdvanceResult AdvanceTick();
+    /// <returns>The deterministic tick pipeline result.</returns>
+    public SimulationTickResult AdvanceTick();
 }
