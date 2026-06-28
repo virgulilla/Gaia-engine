@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
+using GaiaEngine.Simulation.Diagnostics;
 using GaiaEngine.Simulation.Events;
 using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
@@ -52,6 +54,11 @@ public sealed class SimulationTickContext
     public EventDispatchResult? EventDispatchResult { get; private set; }
 
     /// <summary>
+    /// Gets the deterministic diagnostics snapshot captured during the current tick, when available.
+    /// </summary>
+    public SimulationTickDiagnostics? Diagnostics { get; private set; }
+
+    /// <summary>
     /// Gets the deterministic schedule selected for the current tick, when available.
     /// </summary>
     public SimulationTickSchedule Schedule { get; private set; }
@@ -60,6 +67,13 @@ public sealed class SimulationTickContext
     /// Gets the next deterministic event sequence value to use.
     /// </summary>
     public ulong NextEventSequence { get; private set; }
+
+    /// <summary>
+    /// Gets the deterministic list of phases already executed during the current tick.
+    /// </summary>
+    public IReadOnlyList<SimulationTickPhase> ExecutedPhases => executedPhases.AsReadOnly();
+
+    private readonly List<SimulationTickPhase> executedPhases = new();
 
     /// <summary>
     /// Applies the time advancement produced by the Time System to the current context.
@@ -105,5 +119,24 @@ public sealed class SimulationTickContext
     public void ApplyEventDispatchResult(EventDispatchResult result)
     {
         EventDispatchResult = result ?? throw new ArgumentNullException(nameof(result));
+    }
+
+    /// <summary>
+    /// Registers one executed phase in deterministic order.
+    /// </summary>
+    /// <param name="phase">The executed phase.</param>
+    public void RegisterExecutedPhase(SimulationTickPhase phase)
+    {
+        executedPhases.Add(phase);
+    }
+
+    /// <summary>
+    /// Applies the deterministic diagnostics snapshot captured during the current tick.
+    /// </summary>
+    /// <param name="diagnostics">The diagnostics snapshot to apply.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="diagnostics"/> is <see langword="null"/>.</exception>
+    public void ApplyDiagnostics(SimulationTickDiagnostics diagnostics)
+    {
+        Diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
     }
 }

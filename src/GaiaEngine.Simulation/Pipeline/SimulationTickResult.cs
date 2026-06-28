@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
+using GaiaEngine.Simulation.Diagnostics;
 using GaiaEngine.Simulation.Events;
 using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
@@ -21,6 +22,7 @@ public sealed record SimulationTickResult
     /// <param name="schedule">The deterministic schedule selected for the tick.</param>
     /// <param name="eventPublicationResult">The deterministic event publication result produced during the tick.</param>
     /// <param name="eventDispatchResult">The deterministic event dispatch result produced during the tick, when available.</param>
+    /// <param name="diagnostics">The deterministic diagnostics snapshot captured during the tick, when available.</param>
     /// <param name="nextEventSequence">The next deterministic event sequence value to use.</param>
     /// <param name="timeAdvanceResult">The time advancement produced during the tick, when available.</param>
     /// <exception cref="ArgumentNullException">
@@ -32,6 +34,7 @@ public sealed record SimulationTickResult
         SimulationTickSchedule schedule,
         SimulationEventPublicationResult eventPublicationResult,
         EventDispatchResult? eventDispatchResult,
+        SimulationTickDiagnostics? diagnostics,
         ulong nextEventSequence,
         TimeAdvanceResult? timeAdvanceResult)
     {
@@ -40,6 +43,7 @@ public sealed record SimulationTickResult
         Schedule = schedule ?? throw new ArgumentNullException(nameof(schedule));
         EventPublicationResult = eventPublicationResult ?? throw new ArgumentNullException(nameof(eventPublicationResult));
         EventDispatchResult = eventDispatchResult;
+        Diagnostics = diagnostics;
         if (nextEventSequence == 0)
         {
             throw new ArgumentOutOfRangeException(nameof(nextEventSequence), "The next event sequence value must be greater than zero.");
@@ -73,6 +77,11 @@ public sealed record SimulationTickResult
     /// Gets the deterministic event dispatch result produced during the tick, when available.
     /// </summary>
     public EventDispatchResult? EventDispatchResult { get; }
+
+    /// <summary>
+    /// Gets the deterministic diagnostics snapshot captured during the tick, when available.
+    /// </summary>
+    public SimulationTickDiagnostics? Diagnostics { get; }
 
     /// <summary>
     /// Gets the next deterministic event sequence value to use.

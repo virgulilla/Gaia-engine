@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
+using GaiaEngine.Simulation.Diagnostics;
 using GaiaEngine.Simulation.Events;
 using GaiaEngine.Simulation.Pipeline;
 using GaiaEngine.Simulation.Scheduling;
@@ -18,13 +19,19 @@ public sealed class DeterministicSimulationTickPipelineTests
     {
         DeterministicTimeSystem timeSystem = new(new SimulationCalendar(4, 3));
         EventBus eventBus = new();
+        DeterministicSimulationScheduler scheduler = new(
+            new[]
+            {
+                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Statistics, SimulationTickPhase.PostUpdate, 100, 0),
+            });
         DeterministicSimulationTickPipeline pipeline = CreatePipeline(
             timeSystem,
-            new DeterministicSimulationScheduler(Array.Empty<ScheduledSimulationSystemDefinition>()),
+            scheduler,
             CreateEventPublisher(eventBus),
-            eventBus);
+            eventBus,
+            new SimulationDiagnosticsCollector());
 
-        SimulationTickResult result = pipeline.Execute(new WorldTimeState(0, 0, "Spring", 0), 1);
+        SimulationTickResult result = pipeline.Execute(new WorldTimeState(99, 0, "Spring", 0), 1);
 
         Assert.Equal(8, result.ExecutedPhases.Count);
         Assert.Equal(SimulationTickPhase.InputCollection, result.ExecutedPhases[0]);
@@ -35,10 +42,11 @@ public sealed class DeterministicSimulationTickPipelineTests
         Assert.Equal(SimulationTickPhase.EnvironmentUpdate, result.ExecutedPhases[5]);
         Assert.Equal(SimulationTickPhase.EventDispatch, result.ExecutedPhases[6]);
         Assert.Equal(SimulationTickPhase.PostUpdate, result.ExecutedPhases[7]);
-        Assert.Equal(1, result.TimeState.CurrentTick);
-        Assert.Empty(result.Schedule.Systems);
-        Assert.Empty(result.EventPublicationResult.PublishedEvents);
+        Assert.Equal(100, result.TimeState.CurrentTick);
+        Assert.Single(result.Schedule.Systems);
+        Assert.Single(result.EventPublicationResult.PublishedEvents);
         Assert.NotNull(result.EventDispatchResult);
+        Assert.NotNull(result.Diagnostics);
     }
 
     [Fact]
@@ -51,10 +59,11 @@ public sealed class DeterministicSimulationTickPipelineTests
             {
                 new ScheduledSimulationSystemDefinition("Climate", SimulationTickPhase.WorldUpdate, 4, 1),
                 new ScheduledSimulationSystemDefinition("Terrain", SimulationTickPhase.WorldUpdate, 2, 0),
+                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Statistics, SimulationTickPhase.PostUpdate, 100, 0),
             });
         List<string> receivedEvents = new();
         eventBus.Subscribe<NewDaySimulationEvent>(eventInstance => receivedEvents.Add(eventInstance.EventType));
-        DeterministicSimulationTickPipeline pipeline = CreatePipeline(timeSystem, scheduler, CreateEventPublisher(eventBus), eventBus);
+        DeterministicSimulationTickPipeline pipeline = CreatePipeline(timeSystem, scheduler, CreateEventPublisher(eventBus), eventBus, new SimulationDiagnosticsCollector());
 
         SimulationTickResult result = pipeline.Execute(new WorldTimeState(3, 0, "Spring", 0), 1);
 
@@ -66,6 +75,7 @@ public sealed class DeterministicSimulationTickPipelineTests
         Assert.Single(result.EventPublicationResult.PublishedEvents);
         Assert.Equal(1, result.EventDispatchResult!.ProcessedEventCount);
         Assert.Single(receivedEvents);
+        Assert.Null(result.Diagnostics);
     }
 
     [Fact]
@@ -91,7 +101,8 @@ public sealed class DeterministicSimulationTickPipelineTests
         ITimeSystem timeSystem,
         ISimulationScheduler scheduler,
         ISimulationEventPublisher eventPublisher,
-        IEventBus eventBus)
+        IEventBus eventBus,
+        ISimulationDiagnosticsCollector diagnosticsCollector)
     {
         return new DeterministicSimulationTickPipeline(
             new ISimulationTickPhase[]
@@ -103,7 +114,7 @@ public sealed class DeterministicSimulationTickPipelineTests
                 new NoOpSimulationTickPhase(SimulationTickPhase.InteractionSystems),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
                 new EventDispatchPhase(eventBus),
-                new NoOpSimulationTickPhase(SimulationTickPhase.PostUpdate),
+                new PostUpdateStatisticsPhase(diagnosticsCollector),
             },
             scheduler);
     }

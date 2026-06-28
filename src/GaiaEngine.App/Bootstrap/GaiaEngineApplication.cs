@@ -1,5 +1,6 @@
 using System;
 using GaiaEngine.App.Configuration;
+using GaiaEngine.Simulation.Diagnostics;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
@@ -55,7 +56,16 @@ public sealed class GaiaEngineApplication
         EventBus eventBus = new();
         DeterministicEntityIdGenerator eventIdGenerator = new();
         SimulationEventPublisher eventPublisher = new(eventBus, eventIdGenerator);
-        DeterministicSimulationScheduler scheduler = new(Array.Empty<ScheduledSimulationSystemDefinition>());
+        SimulationDiagnosticsCollector diagnosticsCollector = new();
+        DeterministicSimulationScheduler scheduler = new(
+            new[]
+            {
+                new ScheduledSimulationSystemDefinition(
+                    SimulationSystemNames.Statistics,
+                    SimulationTickPhase.PostUpdate,
+                    frequency: 100,
+                    priority: 0),
+            });
         DeterministicSimulationTickPipeline tickPipeline = new(
             new ISimulationTickPhase[]
             {
@@ -66,7 +76,7 @@ public sealed class GaiaEngineApplication
                 new NoOpSimulationTickPhase(SimulationTickPhase.InteractionSystems),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
                 new EventDispatchPhase(eventBus),
-                new NoOpSimulationTickPhase(SimulationTickPhase.PostUpdate),
+                new PostUpdateStatisticsPhase(diagnosticsCollector),
             },
             scheduler);
         DeterministicSimulationSession simulationSession = new(

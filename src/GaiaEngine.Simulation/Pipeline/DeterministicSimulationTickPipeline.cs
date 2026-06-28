@@ -69,6 +69,7 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
         foreach (ISimulationTickPhase phase in phases)
         {
             phase.Execute(context);
+            context.RegisterExecutedPhase(phase.Phase);
             executedPhases.Add(phase.Phase);
 
             if (phase.Phase == SimulationTickPhase.WorldUpdate)
@@ -83,6 +84,7 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
             context.Schedule,
             context.EventPublicationResult,
             context.EventDispatchResult,
+            context.Diagnostics,
             context.NextEventSequence,
             context.TimeAdvanceResult);
     }
