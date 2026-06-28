@@ -1,4 +1,4 @@
-namespace GaiaEngine.Engine.Identifiers;
+namespace GaiaEngine.Domain.Identifiers;
 
 /// <summary>
 /// Generates deterministic persistent identifiers for engine entities.

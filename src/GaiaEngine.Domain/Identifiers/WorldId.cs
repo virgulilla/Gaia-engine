@@ -1,6 +1,6 @@
 using System;
 
-namespace GaiaEngine.Engine.Identifiers;
+namespace GaiaEngine.Domain.Identifiers;
 
 /// <summary>
 /// Represents the immutable identifier of a world entity.

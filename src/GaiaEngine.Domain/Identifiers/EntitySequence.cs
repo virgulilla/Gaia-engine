@@ -1,6 +1,6 @@
 using System;
 
-namespace GaiaEngine.Engine.Identifiers;
+namespace GaiaEngine.Domain.Identifiers;
 
 /// <summary>
 /// Represents a deterministic sequence value used to generate persistent identifiers.

@@ -1,4 +1,4 @@
-namespace GaiaEngine.Engine.Identifiers;
+namespace GaiaEngine.Domain.Identifiers;
 
 /// <summary>
 /// Creates deterministic typed identifiers without relying on hidden mutable state.

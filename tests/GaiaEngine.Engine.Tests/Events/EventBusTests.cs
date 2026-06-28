@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using GaiaEngine.Engine.Events;
-using GaiaEngine.Engine.Identifiers;
+using GaiaEngine.Domain.Identifiers;
 using Xunit;
 
 namespace GaiaEngine.Engine.Tests.Events;

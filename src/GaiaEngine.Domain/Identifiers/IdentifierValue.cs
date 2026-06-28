@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-namespace GaiaEngine.Engine.Identifiers;
+namespace GaiaEngine.Domain.Identifiers;
 
 /// <summary>
 /// Provides shared helpers for building deterministic typed identifier values.

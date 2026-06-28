@@ -1,4 +1,4 @@
-using GaiaEngine.Engine.Identifiers;
+using GaiaEngine.Domain.Identifiers;
 
 namespace GaiaEngine.Engine.Events;
 

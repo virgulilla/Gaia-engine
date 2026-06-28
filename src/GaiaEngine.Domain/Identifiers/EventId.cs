@@ -1,17 +1,17 @@
-namespace GaiaEngine.Engine.Identifiers;
+namespace GaiaEngine.Domain.Identifiers;
 
 /// <summary>
-/// Represents the immutable identifier of a genome entity.
+/// Represents the immutable identifier of a runtime event.
 /// </summary>
-public readonly record struct GenomeId
+public readonly record struct EventId
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="GenomeId"/> struct.
+    /// Initializes a new instance of the <see cref="EventId"/> struct.
     /// </summary>
     /// <param name="value">The raw identifier value.</param>
-    public GenomeId(ulong value)
+    public EventId(ulong value)
     {
-        IdentifierValue.ValidateCategory(value, IdentifierCategory.Genome);
+        IdentifierValue.ValidateCategory(value, IdentifierCategory.Event);
         Value = value;
     }
 
@@ -21,19 +21,19 @@ public readonly record struct GenomeId
     public ulong Value { get; }
 
     /// <summary>
-    /// Creates a genome identifier from a deterministic sequence.
+    /// Creates an event identifier from a deterministic sequence.
     /// </summary>
-    public static GenomeId FromSequence(EntitySequence sequence)
+    public static EventId FromSequence(EntitySequence sequence)
     {
-        return new GenomeId(IdentifierValue.Create(IdentifierCategory.Genome, sequence));
+        return new EventId(IdentifierValue.Create(IdentifierCategory.Event, sequence));
     }
 
     /// <summary>
-    /// Parses a serialized genome identifier.
+    /// Parses a serialized event identifier.
     /// </summary>
-    public static GenomeId Parse(string value)
+    public static EventId Parse(string value)
     {
-        return new GenomeId(IdentifierValue.Parse(value, IdentifierCategory.Genome));
+        return new EventId(IdentifierValue.Parse(value, IdentifierCategory.Event));
     }
 
     /// <summary>

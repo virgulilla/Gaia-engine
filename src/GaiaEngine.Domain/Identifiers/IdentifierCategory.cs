@@ -1,4 +1,4 @@
-namespace GaiaEngine.Engine.Identifiers;
+namespace GaiaEngine.Domain.Identifiers;
 
 /// <summary>
 /// Defines the persistent identifier categories used by the engine.

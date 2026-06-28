@@ -5,6 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GaiaEngine.Foundation\GaiaEngine.Foundation.csproj" />
+    <ProjectReference Include="..\GaiaEngine.Domain\GaiaEngine.Domain.csproj" />
   </ItemGroup>
 </Project>

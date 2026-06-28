@@ -1,6 +1,6 @@
 using GaiaEngine.Foundation.Determinism;
 
-namespace GaiaEngine.Engine.Identifiers;
+namespace GaiaEngine.Domain.Identifiers;
 
 /// <summary>
 /// Represents the immutable deterministic context associated with identifier generation.
