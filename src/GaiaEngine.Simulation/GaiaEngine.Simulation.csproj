@@ -6,5 +6,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GaiaEngine.Domain\GaiaEngine.Domain.csproj" />
+    <ProjectReference Include="..\GaiaEngine.Engine\GaiaEngine.Engine.csproj" />
   </ItemGroup>
 </Project>

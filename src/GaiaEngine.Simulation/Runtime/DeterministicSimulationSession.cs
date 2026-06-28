@@ -10,6 +10,7 @@ namespace GaiaEngine.Simulation.Runtime;
 public sealed class DeterministicSimulationSession : ISimulationSession
 {
     private readonly ISimulationTickPipeline tickPipeline;
+    private ulong nextEventSequence = 1;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeterministicSimulationSession"/> class.
@@ -36,8 +37,9 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// <returns>The deterministic tick pipeline result.</returns>
     public SimulationTickResult AdvanceTick()
     {
-        SimulationTickResult result = tickPipeline.Execute(CurrentTimeState);
+        SimulationTickResult result = tickPipeline.Execute(CurrentTimeState, nextEventSequence);
         CurrentTimeState = result.TimeState;
+        nextEventSequence = result.NextEventSequence;
         return result;
     }
 }

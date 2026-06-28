@@ -58,11 +58,12 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
     /// Executes one deterministic simulation tick starting from the supplied world time state.
     /// </summary>
     /// <param name="timeState">The current world time state.</param>
+    /// <param name="nextEventSequence">The next deterministic event sequence value to use.</param>
     /// <returns>The deterministic result of the tick pipeline execution.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="timeState"/> is <see langword="null"/>.</exception>
-    public SimulationTickResult Execute(WorldTimeState timeState)
+    public SimulationTickResult Execute(WorldTimeState timeState, ulong nextEventSequence)
     {
-        SimulationTickContext context = new(timeState ?? throw new ArgumentNullException(nameof(timeState)));
+        SimulationTickContext context = new(timeState ?? throw new ArgumentNullException(nameof(timeState)), nextEventSequence);
         List<SimulationTickPhase> executedPhases = new(phases.Count);
 
         foreach (ISimulationTickPhase phase in phases)
@@ -76,6 +77,13 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
             }
         }
 
-        return new SimulationTickResult(context.CurrentTimeState, executedPhases.AsReadOnly(), context.Schedule, context.TimeAdvanceResult);
+        return new SimulationTickResult(
+            context.CurrentTimeState,
+            executedPhases.AsReadOnly(),
+            context.Schedule,
+            context.EventPublicationResult,
+            context.EventDispatchResult,
+            context.NextEventSequence,
+            context.TimeAdvanceResult);
     }
 }

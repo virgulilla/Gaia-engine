@@ -1,6 +1,9 @@
 using System;
 using GaiaEngine.App.Configuration;
+using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Domain.World;
+using GaiaEngine.Engine.Events;
+using GaiaEngine.Simulation.Events;
 using GaiaEngine.Simulation.Pipeline;
 using GaiaEngine.Simulation.Runtime;
 using GaiaEngine.Simulation.Scheduling;
@@ -49,17 +52,20 @@ public sealed class GaiaEngineApplication
         SimulationConfiguration simulationConfiguration = simulationConfigurationProvider.Load();
         SimulationCalendar calendar = new(simulationConfiguration.TicksPerDay, simulationConfiguration.DaysPerSeason);
         DeterministicTimeSystem timeSystem = new(calendar);
+        EventBus eventBus = new();
+        DeterministicEntityIdGenerator eventIdGenerator = new();
+        SimulationEventPublisher eventPublisher = new(eventBus, eventIdGenerator);
         DeterministicSimulationScheduler scheduler = new(Array.Empty<ScheduledSimulationSystemDefinition>());
         DeterministicSimulationTickPipeline tickPipeline = new(
             new ISimulationTickPhase[]
             {
                 new NoOpSimulationTickPhase(SimulationTickPhase.InputCollection),
                 new NoOpSimulationTickPhase(SimulationTickPhase.PreUpdate),
-                new WorldUpdateTimePhase(timeSystem),
+                new WorldUpdateTimePhase(timeSystem, eventPublisher),
                 new NoOpSimulationTickPhase(SimulationTickPhase.OrganismUpdate),
                 new NoOpSimulationTickPhase(SimulationTickPhase.InteractionSystems),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
-                new NoOpSimulationTickPhase(SimulationTickPhase.EventDispatch),
+                new EventDispatchPhase(eventBus),
                 new NoOpSimulationTickPhase(SimulationTickPhase.PostUpdate),
             },
             scheduler);

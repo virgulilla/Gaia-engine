@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using GaiaEngine.Domain.World;
+using GaiaEngine.Engine.Events;
+using GaiaEngine.Simulation.Events;
 using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
 
@@ -17,6 +19,9 @@ public sealed record SimulationTickResult
     /// <param name="timeState">The resulting world time state.</param>
     /// <param name="executedPhases">The deterministic list of executed phases.</param>
     /// <param name="schedule">The deterministic schedule selected for the tick.</param>
+    /// <param name="eventPublicationResult">The deterministic event publication result produced during the tick.</param>
+    /// <param name="eventDispatchResult">The deterministic event dispatch result produced during the tick, when available.</param>
+    /// <param name="nextEventSequence">The next deterministic event sequence value to use.</param>
     /// <param name="timeAdvanceResult">The time advancement produced during the tick, when available.</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="timeState"/> or <paramref name="executedPhases"/> is <see langword="null"/>.
@@ -25,11 +30,22 @@ public sealed record SimulationTickResult
         WorldTimeState timeState,
         IReadOnlyList<SimulationTickPhase> executedPhases,
         SimulationTickSchedule schedule,
+        SimulationEventPublicationResult eventPublicationResult,
+        EventDispatchResult? eventDispatchResult,
+        ulong nextEventSequence,
         TimeAdvanceResult? timeAdvanceResult)
     {
         TimeState = timeState ?? throw new ArgumentNullException(nameof(timeState));
         ExecutedPhases = executedPhases ?? throw new ArgumentNullException(nameof(executedPhases));
         Schedule = schedule ?? throw new ArgumentNullException(nameof(schedule));
+        EventPublicationResult = eventPublicationResult ?? throw new ArgumentNullException(nameof(eventPublicationResult));
+        EventDispatchResult = eventDispatchResult;
+        if (nextEventSequence == 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(nextEventSequence), "The next event sequence value must be greater than zero.");
+        }
+
+        NextEventSequence = nextEventSequence;
         TimeAdvanceResult = timeAdvanceResult;
     }
 
@@ -47,6 +63,21 @@ public sealed record SimulationTickResult
     /// Gets the deterministic schedule selected for the tick.
     /// </summary>
     public SimulationTickSchedule Schedule { get; }
+
+    /// <summary>
+    /// Gets the deterministic event publication result produced during the tick.
+    /// </summary>
+    public SimulationEventPublicationResult EventPublicationResult { get; }
+
+    /// <summary>
+    /// Gets the deterministic event dispatch result produced during the tick, when available.
+    /// </summary>
+    public EventDispatchResult? EventDispatchResult { get; }
+
+    /// <summary>
+    /// Gets the next deterministic event sequence value to use.
+    /// </summary>
+    public ulong NextEventSequence { get; }
 
     /// <summary>
     /// Gets the time advancement produced during the tick, when available.
