@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>GaiaEngine.Simulation</AssemblyName>
+    <RootNamespace>GaiaEngine.Simulation</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GaiaEngine.Domain\GaiaEngine.Domain.csproj" />
+  </ItemGroup>
+</Project>
