@@ -1,0 +1,15 @@
+<Project Sdk="Godot.NET.Sdk/4.4.0">
+  <PropertyGroup>
+    <AssemblyName>GaiaEngine</AssemblyName>
+    <RootNamespace>GaiaEngine</RootNamespace>
+    <TargetFramework>net9.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="src\GaiaEngine.Godot\**\*.cs" />
+    <ProjectReference Include="src\GaiaEngine.App\GaiaEngine.App.csproj" />
+  </ItemGroup>
+</Project>

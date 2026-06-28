@@ -1,0 +1,7 @@
+{
+  "configurationVersion": "2026.06.28",
+  "engineVersion": "1.0.0",
+  "tickRate": 30,
+  "threadCount": 1,
+  "loggingLevel": "Info"
+}

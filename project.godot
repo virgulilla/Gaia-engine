@@ -1,0 +1,22 @@
+; Engine configuration file.
+; It is best edited using the editor and not directly.
+;
+; Format:
+;   [section]
+;   parameter=value
+
+config_version=5
+
+[application]
+config/name="Gaia Engine"
+run/main_scene="res://Scenes/Main.tscn"
+config/features=PackedStringArray("4.4", "C#", "Mobile")
+config/icon="res://icon.svg"
+
+[display]
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+
+[dotnet]
+project/assembly_name="GaiaEngine"

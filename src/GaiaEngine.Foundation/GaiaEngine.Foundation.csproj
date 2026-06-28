@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>GaiaEngine.Foundation</AssemblyName>
+    <RootNamespace>GaiaEngine.Foundation</RootNamespace>
+  </PropertyGroup>
+</Project>
