@@ -1,5 +1,6 @@
 using System;
 using GaiaEngine.Domain.World;
+using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
 
 namespace GaiaEngine.Simulation.Pipeline;
@@ -17,6 +18,7 @@ public sealed class SimulationTickContext
     public SimulationTickContext(WorldTimeState timeState)
     {
         CurrentTimeState = timeState ?? throw new ArgumentNullException(nameof(timeState));
+        Schedule = new SimulationTickSchedule(timeState.CurrentTick, Array.Empty<ScheduledSimulationSystem>());
     }
 
     /// <summary>
@@ -30,6 +32,11 @@ public sealed class SimulationTickContext
     public TimeAdvanceResult? TimeAdvanceResult { get; private set; }
 
     /// <summary>
+    /// Gets the deterministic schedule selected for the current tick, when available.
+    /// </summary>
+    public SimulationTickSchedule Schedule { get; private set; }
+
+    /// <summary>
     /// Applies the time advancement produced by the Time System to the current context.
     /// </summary>
     /// <param name="result">The time advancement result to apply.</param>
@@ -40,5 +47,15 @@ public sealed class SimulationTickContext
 
         TimeAdvanceResult = result;
         CurrentTimeState = result.TimeState;
+    }
+
+    /// <summary>
+    /// Applies the deterministic schedule created for the current tick.
+    /// </summary>
+    /// <param name="schedule">The schedule to apply.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="schedule"/> is <see langword="null"/>.</exception>
+    public void ApplySchedule(SimulationTickSchedule schedule)
+    {
+        Schedule = schedule ?? throw new ArgumentNullException(nameof(schedule));
     }
 }

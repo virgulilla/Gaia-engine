@@ -3,6 +3,7 @@ using GaiaEngine.App.Configuration;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Simulation.Pipeline;
 using GaiaEngine.Simulation.Runtime;
+using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
 
 namespace GaiaEngine.App.Bootstrap;
@@ -48,6 +49,7 @@ public sealed class GaiaEngineApplication
         SimulationConfiguration simulationConfiguration = simulationConfigurationProvider.Load();
         SimulationCalendar calendar = new(simulationConfiguration.TicksPerDay, simulationConfiguration.DaysPerSeason);
         DeterministicTimeSystem timeSystem = new(calendar);
+        DeterministicSimulationScheduler scheduler = new(Array.Empty<ScheduledSimulationSystemDefinition>());
         DeterministicSimulationTickPipeline tickPipeline = new(
             new ISimulationTickPhase[]
             {
@@ -59,7 +61,8 @@ public sealed class GaiaEngineApplication
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EventDispatch),
                 new NoOpSimulationTickPhase(SimulationTickPhase.PostUpdate),
-            });
+            },
+            scheduler);
         DeterministicSimulationSession simulationSession = new(
             tickPipeline,
             new WorldTimeState(

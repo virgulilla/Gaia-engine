@@ -1,6 +1,8 @@
+using System;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Simulation.Pipeline;
 using GaiaEngine.Simulation.Runtime;
+using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
 using Xunit;
 
@@ -12,6 +14,7 @@ public sealed class DeterministicSimulationSessionTests
     public void AdvanceTick_ShouldUpdateCurrentTimeState()
     {
         DeterministicTimeSystem timeSystem = new(new SimulationCalendar(4, 3));
+        DeterministicSimulationScheduler scheduler = new(Array.Empty<ScheduledSimulationSystemDefinition>());
         DeterministicSimulationTickPipeline pipeline = new(
             new ISimulationTickPhase[]
             {
@@ -23,7 +26,8 @@ public sealed class DeterministicSimulationSessionTests
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EventDispatch),
                 new NoOpSimulationTickPhase(SimulationTickPhase.PostUpdate),
-            });
+            },
+            scheduler);
         DeterministicSimulationSession session = new(pipeline, new WorldTimeState(0, 0, "Spring", 0));
 
         SimulationTickResult result = session.AdvanceTick();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using GaiaEngine.Domain.World;
+using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
 
 namespace GaiaEngine.Simulation.Pipeline;
@@ -15,6 +16,7 @@ public sealed record SimulationTickResult
     /// </summary>
     /// <param name="timeState">The resulting world time state.</param>
     /// <param name="executedPhases">The deterministic list of executed phases.</param>
+    /// <param name="schedule">The deterministic schedule selected for the tick.</param>
     /// <param name="timeAdvanceResult">The time advancement produced during the tick, when available.</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="timeState"/> or <paramref name="executedPhases"/> is <see langword="null"/>.
@@ -22,10 +24,12 @@ public sealed record SimulationTickResult
     public SimulationTickResult(
         WorldTimeState timeState,
         IReadOnlyList<SimulationTickPhase> executedPhases,
+        SimulationTickSchedule schedule,
         TimeAdvanceResult? timeAdvanceResult)
     {
         TimeState = timeState ?? throw new ArgumentNullException(nameof(timeState));
         ExecutedPhases = executedPhases ?? throw new ArgumentNullException(nameof(executedPhases));
+        Schedule = schedule ?? throw new ArgumentNullException(nameof(schedule));
         TimeAdvanceResult = timeAdvanceResult;
     }
 
@@ -38,6 +42,11 @@ public sealed record SimulationTickResult
     /// Gets the deterministic list of executed phases.
     /// </summary>
     public IReadOnlyList<SimulationTickPhase> ExecutedPhases { get; }
+
+    /// <summary>
+    /// Gets the deterministic schedule selected for the tick.
+    /// </summary>
+    public SimulationTickSchedule Schedule { get; }
 
     /// <summary>
     /// Gets the time advancement produced during the tick, when available.

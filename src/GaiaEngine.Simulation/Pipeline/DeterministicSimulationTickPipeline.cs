@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using GaiaEngine.Domain.World;
+using GaiaEngine.Simulation.Scheduling;
 
 namespace GaiaEngine.Simulation.Pipeline;
 
@@ -22,16 +23,19 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
     };
 
     private readonly IReadOnlyList<ISimulationTickPhase> phases;
+    private readonly ISimulationScheduler scheduler;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeterministicSimulationTickPipeline"/> class.
     /// </summary>
     /// <param name="phases">The ordered deterministic phases executed by every simulation tick.</param>
+    /// <param name="scheduler">The scheduler responsible for selecting systems for the current tick.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="phases"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">Thrown when the supplied phase order is incomplete or invalid.</exception>
-    public DeterministicSimulationTickPipeline(IReadOnlyList<ISimulationTickPhase> phases)
+    public DeterministicSimulationTickPipeline(IReadOnlyList<ISimulationTickPhase> phases, ISimulationScheduler scheduler)
     {
         ArgumentNullException.ThrowIfNull(phases);
+        this.scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
 
         if (phases.Count != RequiredPhaseOrder.Length)
         {
@@ -65,8 +69,13 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
         {
             phase.Execute(context);
             executedPhases.Add(phase.Phase);
+
+            if (phase.Phase == SimulationTickPhase.WorldUpdate)
+            {
+                context.ApplySchedule(scheduler.CreateSchedule(context.CurrentTimeState.CurrentTick));
+            }
         }
 
-        return new SimulationTickResult(context.CurrentTimeState, executedPhases.AsReadOnly(), context.TimeAdvanceResult);
+        return new SimulationTickResult(context.CurrentTimeState, executedPhases.AsReadOnly(), context.Schedule, context.TimeAdvanceResult);
     }
 }

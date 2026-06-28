@@ -1,6 +1,7 @@
 using System;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Simulation.Pipeline;
+using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
 using Xunit;
 
@@ -12,7 +13,7 @@ public sealed class DeterministicSimulationTickPipelineTests
     public void Execute_ShouldRunAllPhasesInApprovedOrder()
     {
         DeterministicTimeSystem timeSystem = new(new SimulationCalendar(4, 3));
-        DeterministicSimulationTickPipeline pipeline = CreatePipeline(timeSystem);
+        DeterministicSimulationTickPipeline pipeline = CreatePipeline(timeSystem, new DeterministicSimulationScheduler(Array.Empty<ScheduledSimulationSystemDefinition>()));
 
         SimulationTickResult result = pipeline.Execute(new WorldTimeState(0, 0, "Spring", 0));
 
@@ -26,19 +27,28 @@ public sealed class DeterministicSimulationTickPipelineTests
         Assert.Equal(SimulationTickPhase.EventDispatch, result.ExecutedPhases[6]);
         Assert.Equal(SimulationTickPhase.PostUpdate, result.ExecutedPhases[7]);
         Assert.Equal(1, result.TimeState.CurrentTick);
+        Assert.Empty(result.Schedule.Systems);
     }
 
     [Fact]
     public void Execute_ShouldExposeTimeAdvanceProducedByWorldUpdate()
     {
         DeterministicTimeSystem timeSystem = new(new SimulationCalendar(4, 3));
-        DeterministicSimulationTickPipeline pipeline = CreatePipeline(timeSystem);
+        DeterministicSimulationScheduler scheduler = new(
+            new[]
+            {
+                new ScheduledSimulationSystemDefinition("Climate", SimulationTickPhase.WorldUpdate, 4, 1),
+                new ScheduledSimulationSystemDefinition("Terrain", SimulationTickPhase.WorldUpdate, 2, 0),
+            });
+        DeterministicSimulationTickPipeline pipeline = CreatePipeline(timeSystem, scheduler);
 
         SimulationTickResult result = pipeline.Execute(new WorldTimeState(3, 0, "Spring", 0));
 
         Assert.NotNull(result.TimeAdvanceResult);
         Assert.Equal(4, result.TimeAdvanceResult!.TimeState.CurrentTick);
         Assert.Single(result.TimeAdvanceResult.Transitions);
+        Assert.Equal(2, result.Schedule.Systems.Count);
+        Assert.Equal(4, result.Schedule.ExecutingTick);
     }
 
     [Fact]
@@ -56,10 +66,11 @@ public sealed class DeterministicSimulationTickPipelineTests
                     new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
                     new NoOpSimulationTickPhase(SimulationTickPhase.EventDispatch),
                     new NoOpSimulationTickPhase(SimulationTickPhase.PostUpdate),
-                }));
+                },
+                new DeterministicSimulationScheduler(Array.Empty<ScheduledSimulationSystemDefinition>())));
     }
 
-    private static DeterministicSimulationTickPipeline CreatePipeline(ITimeSystem timeSystem)
+    private static DeterministicSimulationTickPipeline CreatePipeline(ITimeSystem timeSystem, ISimulationScheduler scheduler)
     {
         return new DeterministicSimulationTickPipeline(
             new ISimulationTickPhase[]
@@ -72,6 +83,7 @@ public sealed class DeterministicSimulationTickPipelineTests
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EventDispatch),
                 new NoOpSimulationTickPhase(SimulationTickPhase.PostUpdate),
-            });
+            },
+            scheduler);
     }
 }
