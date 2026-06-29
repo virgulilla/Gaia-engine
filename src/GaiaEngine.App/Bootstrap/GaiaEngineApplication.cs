@@ -145,7 +145,8 @@ public sealed class GaiaEngineApplication
             });
         DeterministicWorldBootstrapFactory worldBootstrapFactory = new(worldConfiguration, engineConfiguration, simulationConfiguration, eventIdGenerator);
         IGenomeBootstrapFactory genomeBootstrapFactory = new DeterministicGenomeBootstrapFactory(eventIdGenerator);
-        DeterministicOrganismBootstrapFactory organismBootstrapFactory = new(eventIdGenerator, genomeBootstrapFactory);
+        IMorphogenesisService morphogenesisService = new DeterministicMorphogenesisService();
+        DeterministicOrganismBootstrapFactory organismBootstrapFactory = new(eventIdGenerator, genomeBootstrapFactory, morphogenesisService);
         GaiaEngine.Domain.World.World bootstrapWorld = worldBootstrapFactory.CreateWorld();
         OrganismBootstrapState bootstrapOrganismState = organismBootstrapFactory.CreateInitialPopulation(bootstrapWorld);
         DeterministicSimulationTickPipeline tickPipeline = new(

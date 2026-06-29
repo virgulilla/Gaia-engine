@@ -15,19 +15,25 @@ public sealed class DeterministicOrganismBootstrapFactory
 {
     private readonly IEntityIdGenerator idGenerator;
     private readonly IGenomeBootstrapFactory genomeBootstrapFactory;
+    private readonly IMorphogenesisService morphogenesisService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeterministicOrganismBootstrapFactory"/> class.
     /// </summary>
     /// <param name="idGenerator">The deterministic identifier generator.</param>
     /// <param name="genomeBootstrapFactory">The deterministic genome bootstrap factory.</param>
+    /// <param name="morphogenesisService">The deterministic morphogenesis service.</param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="idGenerator"/> or <paramref name="genomeBootstrapFactory"/> is <see langword="null"/>.
+    /// Thrown when <paramref name="idGenerator"/>, <paramref name="genomeBootstrapFactory"/>, or <paramref name="morphogenesisService"/> is <see langword="null"/>.
     /// </exception>
-    public DeterministicOrganismBootstrapFactory(IEntityIdGenerator idGenerator, IGenomeBootstrapFactory genomeBootstrapFactory)
+    public DeterministicOrganismBootstrapFactory(
+        IEntityIdGenerator idGenerator,
+        IGenomeBootstrapFactory genomeBootstrapFactory,
+        IMorphogenesisService morphogenesisService)
     {
         this.idGenerator = idGenerator ?? throw new ArgumentNullException(nameof(idGenerator));
         this.genomeBootstrapFactory = genomeBootstrapFactory ?? throw new ArgumentNullException(nameof(genomeBootstrapFactory));
+        this.morphogenesisService = morphogenesisService ?? throw new ArgumentNullException(nameof(morphogenesisService));
     }
 
     /// <summary>
@@ -50,7 +56,9 @@ public sealed class DeterministicOrganismBootstrapFactory
         {
             index++;
             Genome genome = genomeBootstrapFactory.CreateGenome(world.Metadata.Seed, chunk, index);
-            Organism organism = CreateOrganism(world.Metadata.Seed, starterSpeciesId, genome.Id, chunk, index);
+            DevelopmentConditions developmentConditions = CreateDevelopmentConditions(world.TimeState.CurrentSeason, chunk);
+            MorphogenesisResult morphogenesis = morphogenesisService.Generate(genome, developmentConditions);
+            Organism organism = CreateOrganism(world.Metadata.Seed, starterSpeciesId, genome.Id, chunk, index, morphogenesis);
             organisms.Add(organism);
             genomes.Add(genome);
             updatedChunks.Add(
@@ -74,38 +82,40 @@ public sealed class DeterministicOrganismBootstrapFactory
         return new OrganismBootstrapState(updatedWorld, new OrganismCollection(organisms.AsReadOnly()), new GenomeCollection(genomes.AsReadOnly()));
     }
 
-    private Organism CreateOrganism(WorldSeed worldSeed, SpeciesId speciesId, GenomeId genomeId, Chunk chunk, int index)
+    private Organism CreateOrganism(
+        WorldSeed worldSeed,
+        SpeciesId speciesId,
+        GenomeId genomeId,
+        Chunk chunk,
+        int index,
+        MorphogenesisResult morphogenesis)
     {
         EntitySequence organismSequence = new((ulong)(1000 + index));
         OrganismId organismId = idGenerator.CreateOrganismId(new IdentifierGenerationContext(worldSeed, 0, organismSequence));
-
-        int biomeTemperature = chunk.Biome.ClimateProfile.AverageTemperature;
-        int waterEfficiency = Math.Clamp(45 + (chunk.Resources.GetAll()[1].Availability / 40), 0, 100);
-        int digestionEfficiency = Math.Clamp(40 + (chunk.Resources.GetAll()[0].Quality / 2), 0, 100);
-        int growthRate = Math.Max(1, 2 + (chunk.Biome.VegetationProfile.Density / 25));
-        int metabolismRate = Math.Max(1, 3 + (Math.Abs(chunk.Terrain.Elevation.RelativeHeight) / 20));
-        int lifespanTicks = 600 + (chunk.Biome.ResourceProfile.Biomass / 4);
-        int maturityAgeTicks = Math.Max(60, lifespanTicks / 4);
 
         return new Organism(
             organismId,
             speciesId,
             genomeId,
             chunk.Id,
-            new PhysiologyComponent(
-                metabolismRate,
-                growthRate,
-                lifespanTicks,
-                waterEfficiency,
-                digestionEfficiency,
-                biomeTemperature),
+            morphogenesis.Physiology,
             new NeedsComponent(120, 100, 80, 0),
             new LifecycleComponent(
                 birthTick: 0,
                 ageTicks: 0,
-                maturityAgeTicks,
+                morphogenesis.MaturityAgeTicks,
                 LifecycleStage.Juvenile,
                 isAlive: true),
             new HealthComponent(100, 100));
+    }
+
+    private static DevelopmentConditions CreateDevelopmentConditions(string season, Chunk chunk)
+    {
+        return new DevelopmentConditions(
+            chunk.Biome.ClimateProfile.AverageTemperature,
+            chunk.Biome.ResourceProfile.Food,
+            chunk.Climate.Humidity.RelativeHumidity * 10,
+            chunk.Terrain.Elevation.Height,
+            season);
     }
 }
