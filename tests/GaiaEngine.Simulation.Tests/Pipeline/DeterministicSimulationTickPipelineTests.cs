@@ -181,6 +181,7 @@ public sealed class DeterministicSimulationTickPipelineTests
                 new WorldSeed((long)sequence * 10),
                 16),
             ChunkState.Active,
+            CreateTerrain(sequence),
             new ClimateState(
                 zone,
                 WeatherState.Clear,
@@ -191,6 +192,17 @@ public sealed class DeterministicSimulationTickPipelineTests
                 new PressureState(1012)),
             CreateResources(sequence),
             Array.Empty<OrganismId>());
+    }
+
+    private static TerrainState CreateTerrain(ulong sequence)
+    {
+        return new TerrainState(
+            new ElevationState(52 + (int)sequence, (int)sequence - 2, (int)sequence - 2),
+            new SlopeState(11, (int)((sequence * 23) % 360), 122),
+            new SoilState(SoilType.Loam, 75, 60, 68, 64),
+            SurfaceType.Grass,
+            GeologyType.Granite,
+            Array.Empty<TerrainModifierState>());
     }
 
     private static ChunkResources CreateResources(ulong sequence)

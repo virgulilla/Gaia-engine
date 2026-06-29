@@ -72,6 +72,7 @@ public sealed class DeterministicResourceSystemTests
                         new WorldSeed(100),
                         16),
                     ChunkState.Active,
+                    CreateTerrain(),
                     new ClimateState(
                         ClimateZone.Temperate,
                         weatherState,
@@ -87,6 +88,17 @@ public sealed class DeterministicResourceSystemTests
                     CreateResources(10),
                     System.Array.Empty<OrganismId>()),
             });
+    }
+
+    private static TerrainState CreateTerrain()
+    {
+        return new TerrainState(
+            new ElevationState(64, 4, 4),
+            new SlopeState(8, 120, 116),
+            new SoilState(SoilType.Loam, 78, 62, 74, 68),
+            SurfaceType.Grass,
+            GeologyType.Limestone,
+            System.Array.Empty<TerrainModifierState>());
     }
 
     private static ChunkResources CreateResources(ulong sequence)

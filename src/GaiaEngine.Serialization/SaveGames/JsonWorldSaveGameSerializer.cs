@@ -69,6 +69,17 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                 organismIds.Add(organismId.ToString());
             }
 
+            List<TerrainModifierStateDocument> terrainModifierDocuments = new(chunk.Terrain.Modifiers.Count);
+            foreach (TerrainModifierState modifier in chunk.Terrain.Modifiers)
+            {
+                terrainModifierDocuments.Add(
+                    new TerrainModifierStateDocument
+                    {
+                        Type = modifier.Type.ToString(),
+                        Intensity = modifier.Intensity,
+                    });
+            }
+
             List<ResourceStateDocument> resourceDocuments = new(chunk.Resources.Count);
             foreach (ResourceState resource in chunk.Resources.GetAll())
             {
@@ -96,6 +107,23 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                     Seed = chunk.Metadata.Seed.Value,
                     Size = chunk.Metadata.Size,
                     State = chunk.State.ToString(),
+                    Terrain = new TerrainStateDocument
+                    {
+                        Height = chunk.Terrain.Elevation.Height,
+                        RelativeHeight = chunk.Terrain.Elevation.RelativeHeight,
+                        SeaLevelOffset = chunk.Terrain.Elevation.SeaLevelOffset,
+                        Gradient = chunk.Terrain.Slope.Gradient,
+                        Aspect = chunk.Terrain.Slope.Aspect,
+                        TraversalCost = chunk.Terrain.Slope.TraversalCost,
+                        SoilType = chunk.Terrain.Soil.SoilType.ToString(),
+                        Fertility = chunk.Terrain.Soil.Fertility,
+                        Drainage = chunk.Terrain.Soil.Drainage,
+                        MoistureCapacity = chunk.Terrain.Soil.MoistureCapacity,
+                        OrganicMatter = chunk.Terrain.Soil.OrganicMatter,
+                        Surface = chunk.Terrain.Surface.ToString(),
+                        Geology = chunk.Terrain.Geology.ToString(),
+                        Modifiers = terrainModifierDocuments,
+                    },
                     Climate = new ClimateStateDocument
                     {
                         Zone = chunk.Climate.Zone.ToString(),
@@ -188,6 +216,15 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                 organismIds.Add(OrganismId.Parse(organismId));
             }
 
+            List<TerrainModifierState> terrainModifiers = new(chunkDocument.Terrain.Modifiers.Count);
+            foreach (TerrainModifierStateDocument modifierDocument in chunkDocument.Terrain.Modifiers)
+            {
+                terrainModifiers.Add(
+                    new TerrainModifierState(
+                        Enum.Parse<TerrainModifierType>(modifierDocument.Type, ignoreCase: false),
+                        modifierDocument.Intensity));
+            }
+
             List<ResourceState> resourceStates = new(chunkDocument.Resources.Count);
             foreach (ResourceStateDocument resourceDocument in chunkDocument.Resources)
             {
@@ -213,6 +250,24 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                         new WorldSeed(chunkDocument.Seed),
                         chunkDocument.Size),
                     parsedState,
+                    new TerrainState(
+                        new ElevationState(
+                            chunkDocument.Terrain.Height,
+                            chunkDocument.Terrain.RelativeHeight,
+                            chunkDocument.Terrain.SeaLevelOffset),
+                        new SlopeState(
+                            chunkDocument.Terrain.Gradient,
+                            chunkDocument.Terrain.Aspect,
+                            chunkDocument.Terrain.TraversalCost),
+                        new SoilState(
+                            Enum.Parse<SoilType>(chunkDocument.Terrain.SoilType, ignoreCase: false),
+                            chunkDocument.Terrain.Fertility,
+                            chunkDocument.Terrain.Drainage,
+                            chunkDocument.Terrain.MoistureCapacity,
+                            chunkDocument.Terrain.OrganicMatter),
+                        Enum.Parse<SurfaceType>(chunkDocument.Terrain.Surface, ignoreCase: false),
+                        Enum.Parse<GeologyType>(chunkDocument.Terrain.Geology, ignoreCase: false),
+                        terrainModifiers.AsReadOnly()),
                     new ClimateState(
                         Enum.Parse<ClimateZone>(chunkDocument.Climate.Zone, ignoreCase: false),
                         Enum.Parse<WeatherState>(chunkDocument.Climate.WeatherState, ignoreCase: false),

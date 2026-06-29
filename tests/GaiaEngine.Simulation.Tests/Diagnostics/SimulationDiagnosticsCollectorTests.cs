@@ -71,6 +71,7 @@ public sealed class SimulationDiagnosticsCollectorTests
                         new GaiaEngine.Foundation.Determinism.WorldSeed(100),
                         16),
                     GaiaEngine.Domain.World.ChunkState.Active,
+                    CreateTerrain(),
                     new GaiaEngine.Domain.World.ClimateState(
                         GaiaEngine.Domain.World.ClimateZone.Temperate,
                         GaiaEngine.Domain.World.WeatherState.Clear,
@@ -82,6 +83,17 @@ public sealed class SimulationDiagnosticsCollectorTests
                     CreateResources(2),
                     System.Array.Empty<GaiaEngine.Domain.Identifiers.OrganismId>()),
             });
+    }
+
+    private static GaiaEngine.Domain.World.TerrainState CreateTerrain()
+    {
+        return new GaiaEngine.Domain.World.TerrainState(
+            new GaiaEngine.Domain.World.ElevationState(62, 2, 2),
+            new GaiaEngine.Domain.World.SlopeState(7, 90, 114),
+            new GaiaEngine.Domain.World.SoilState(GaiaEngine.Domain.World.SoilType.Loam, 76, 63, 71, 69),
+            GaiaEngine.Domain.World.SurfaceType.Grass,
+            GaiaEngine.Domain.World.GeologyType.Limestone,
+            System.Array.Empty<GaiaEngine.Domain.World.TerrainModifierState>());
     }
 
     private static GaiaEngine.Domain.World.ChunkResources CreateResources(ulong sequence)

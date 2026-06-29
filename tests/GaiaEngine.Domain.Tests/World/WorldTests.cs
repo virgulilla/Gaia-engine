@@ -93,6 +93,7 @@ public sealed class WorldTests
                 new WorldSeed((long)sequence),
                 16),
             ChunkState.Active,
+            CreateTerrain(sequence),
             new ClimateState(
                 ClimateZone.Temperate,
                 WeatherState.Clear,
@@ -103,6 +104,17 @@ public sealed class WorldTests
                 new PressureState(1012)),
             CreateResources(sequence),
             Array.Empty<OrganismId>());
+    }
+
+    private static TerrainState CreateTerrain(ulong sequence)
+    {
+        return new TerrainState(
+            new ElevationState(60 + (int)sequence, (int)sequence, (int)sequence),
+            new SlopeState(12, (int)((sequence * 37) % 360), 124),
+            new SoilState(SoilType.Loam, 80, 65, 70, 72),
+            SurfaceType.Grass,
+            GeologyType.Granite,
+            Array.Empty<TerrainModifierState>());
     }
 
     private static ChunkResources CreateResources(ulong sequence)

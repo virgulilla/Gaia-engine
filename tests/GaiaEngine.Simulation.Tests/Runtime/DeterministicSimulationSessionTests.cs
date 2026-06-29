@@ -138,6 +138,7 @@ public sealed class DeterministicSimulationSessionTests
                 new WorldSeed((long)sequence * 10),
                 16),
             ChunkState.Active,
+            CreateTerrain(sequence),
             new ClimateState(
                 ClimateZone.Temperate,
                 WeatherState.Clear,
@@ -148,6 +149,17 @@ public sealed class DeterministicSimulationSessionTests
                 new PressureState(1012)),
             CreateResources(sequence),
             Array.Empty<OrganismId>());
+    }
+
+    private static TerrainState CreateTerrain(ulong sequence)
+    {
+        return new TerrainState(
+            new ElevationState(50 + (int)sequence, (int)sequence, (int)sequence),
+            new SlopeState(9, (int)((sequence * 41) % 360), 118),
+            new SoilState(SoilType.Loam, 74, 61, 69, 66),
+            SurfaceType.Grass,
+            GeologyType.Granite,
+            Array.Empty<TerrainModifierState>());
     }
 
     private static ChunkResources CreateResources(ulong sequence)

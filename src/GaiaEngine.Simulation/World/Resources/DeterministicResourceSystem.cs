@@ -39,6 +39,7 @@ public sealed class DeterministicResourceSystem : IResourceSystem
                 new Chunk(
                     chunk.Metadata,
                     chunk.State,
+                    chunk.Terrain,
                     chunk.Climate,
                     UpdateResources(world, chunk),
                     chunk.OrganismIds));

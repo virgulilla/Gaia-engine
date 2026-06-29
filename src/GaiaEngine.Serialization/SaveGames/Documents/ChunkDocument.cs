@@ -21,6 +21,8 @@ internal sealed class ChunkDocument
 
     public string State { get; set; } = string.Empty;
 
+    public TerrainStateDocument Terrain { get; set; } = new();
+
     public ClimateStateDocument Climate { get; set; } = new();
 
     public List<ResourceStateDocument> Resources { get; set; } = new();
