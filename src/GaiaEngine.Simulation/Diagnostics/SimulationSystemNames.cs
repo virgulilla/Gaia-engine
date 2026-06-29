@@ -26,6 +26,11 @@ public static class SimulationSystemNames
     public const string Organisms = "Organisms";
 
     /// <summary>
+    /// Gets the logical name of the movement interaction system.
+    /// </summary>
+    public const string Movement = "Movement";
+
+    /// <summary>
     /// Gets the logical name of the statistics system.
     /// </summary>
     public const string Statistics = "Statistics";

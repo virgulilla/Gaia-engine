@@ -34,6 +34,7 @@ public sealed class GaiaEngineApplicationTests
         Assert.Equal(3, first.World.GetChunks()[0].Resources.Count);
         Assert.Equal(first.World.ChunkCount, first.Organisms.Count);
         Assert.Single(first.World.GetChunks()[0].OrganismIds);
+        Assert.Empty(first.SimulationSession.AdvanceTick().MovementRequests.GetAll());
     }
 
     private sealed class FakeEngineConfigurationProvider : IEngineConfigurationProvider
