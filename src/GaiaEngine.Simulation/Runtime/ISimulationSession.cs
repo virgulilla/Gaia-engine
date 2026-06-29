@@ -1,3 +1,4 @@
+using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Simulation.Pipeline;
 using GaiaEngine.Simulation.Time;
@@ -13,6 +14,11 @@ public interface ISimulationSession
     /// Gets the current simulation world state.
     /// </summary>
     public GaiaEngine.Domain.World.World CurrentWorld { get; }
+
+    /// <summary>
+    /// Gets the current simulation organism state.
+    /// </summary>
+    public OrganismCollection CurrentOrganisms { get; }
 
     /// <summary>
     /// Gets the current simulation world time state.

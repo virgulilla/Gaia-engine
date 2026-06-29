@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
 using GaiaEngine.Simulation.Diagnostics;
@@ -21,8 +22,23 @@ public sealed class SimulationTickContext
     /// <param name="nextEventSequence">The next deterministic event sequence value to use.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="world"/> is <see langword="null"/>.</exception>
     public SimulationTickContext(GaiaEngine.Domain.World.World world, ulong nextEventSequence)
+        : this(world, OrganismCollection.Empty, nextEventSequence)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SimulationTickContext"/> class.
+    /// </summary>
+    /// <param name="world">The initial world state for the tick.</param>
+    /// <param name="organisms">The initial organism state for the tick.</param>
+    /// <param name="nextEventSequence">The next deterministic event sequence value to use.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="world"/> or <paramref name="organisms"/> is <see langword="null"/>.
+    /// </exception>
+    public SimulationTickContext(GaiaEngine.Domain.World.World world, OrganismCollection organisms, ulong nextEventSequence)
     {
         CurrentWorld = world ?? throw new ArgumentNullException(nameof(world));
+        CurrentOrganisms = organisms ?? throw new ArgumentNullException(nameof(organisms));
         Schedule = new SimulationTickSchedule(world.TimeState.CurrentTick, Array.Empty<ScheduledSimulationSystem>());
         if (nextEventSequence == 0)
         {
@@ -37,6 +53,11 @@ public sealed class SimulationTickContext
     /// Gets the current world state being updated by the pipeline.
     /// </summary>
     public GaiaEngine.Domain.World.World CurrentWorld { get; private set; }
+
+    /// <summary>
+    /// Gets the current organism state being updated by the pipeline.
+    /// </summary>
+    public OrganismCollection CurrentOrganisms { get; private set; }
 
     /// <summary>
     /// Gets the current world time state being updated by the pipeline.
@@ -153,5 +174,15 @@ public sealed class SimulationTickContext
     public void ApplyWorld(GaiaEngine.Domain.World.World world)
     {
         CurrentWorld = world ?? throw new ArgumentNullException(nameof(world));
+    }
+
+    /// <summary>
+    /// Applies the updated organism state produced during the current tick.
+    /// </summary>
+    /// <param name="organisms">The updated organism state.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="organisms"/> is <see langword="null"/>.</exception>
+    public void ApplyOrganisms(OrganismCollection organisms)
+    {
+        CurrentOrganisms = organisms ?? throw new ArgumentNullException(nameof(organisms));
     }
 }

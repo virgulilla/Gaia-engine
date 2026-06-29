@@ -1,4 +1,5 @@
 using System;
+using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Foundation.Configuration;
 
@@ -14,6 +15,7 @@ public sealed record WorldSaveGame
     /// </summary>
     /// <param name="metadata">The save metadata.</param>
     /// <param name="world">The serialized world aggregate.</param>
+    /// <param name="organisms">The serialized organism aggregate.</param>
     /// <param name="configurationVersion">The serialized configuration version string.</param>
     /// <param name="version">The embedded version information.</param>
     /// <exception cref="ArgumentNullException">
@@ -23,13 +25,31 @@ public sealed record WorldSaveGame
     public WorldSaveGame(
         SaveMetadata metadata,
         World world,
+        OrganismCollection organisms,
         ConfigurationVersion configurationVersion,
         SaveVersionInfo version)
     {
         Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
         World = world ?? throw new ArgumentNullException(nameof(world));
+        Organisms = organisms ?? throw new ArgumentNullException(nameof(organisms));
         ConfigurationVersion = configurationVersion;
         Version = version ?? throw new ArgumentNullException(nameof(version));
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WorldSaveGame"/> class.
+    /// </summary>
+    /// <param name="metadata">The save metadata.</param>
+    /// <param name="world">The serialized world aggregate.</param>
+    /// <param name="configurationVersion">The serialized configuration version string.</param>
+    /// <param name="version">The embedded version information.</param>
+    public WorldSaveGame(
+        SaveMetadata metadata,
+        World world,
+        ConfigurationVersion configurationVersion,
+        SaveVersionInfo version)
+        : this(metadata, world, OrganismCollection.Empty, configurationVersion, version)
+    {
     }
 
     /// <summary>
@@ -41,6 +61,11 @@ public sealed record WorldSaveGame
     /// Gets the serialized world aggregate.
     /// </summary>
     public World World { get; }
+
+    /// <summary>
+    /// Gets the serialized organism aggregate.
+    /// </summary>
+    public OrganismCollection Organisms { get; }
 
     /// <summary>
     /// Gets the serialized configuration version.

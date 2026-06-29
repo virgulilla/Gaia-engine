@@ -1,5 +1,7 @@
 namespace GaiaEngine.Serialization.SaveGames.Documents;
 
+using System.Collections.Generic;
+
 /// <summary>
 /// Represents the serialized save game document.
 /// </summary>
@@ -19,6 +21,11 @@ internal sealed class WorldSaveGameDocument
     /// Gets or sets the serialized configuration version.
     /// </summary>
     public string ConfigurationVersion { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the serialized organism section.
+    /// </summary>
+    public List<OrganismDocument> Organisms { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the serialized version section.

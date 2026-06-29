@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using GaiaEngine.Domain.Identifiers;
+using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Foundation.Configuration;
 using GaiaEngine.Foundation.Determinism;
@@ -61,6 +62,7 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
     private static WorldSaveGameDocument CreateDocument(WorldSaveGame saveGame)
     {
         List<ChunkDocument> chunkDocuments = new();
+        List<OrganismDocument> organismDocuments = new();
         foreach (Chunk chunk in saveGame.World.GetChunks())
         {
             List<string> organismIds = new(chunk.OrganismIds.Count);
@@ -220,6 +222,35 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                 });
         }
 
+        foreach (Organism organism in saveGame.Organisms.GetAll())
+        {
+            organismDocuments.Add(
+                new OrganismDocument
+                {
+                    OrganismId = organism.Id.ToString(),
+                    SpeciesId = organism.SpeciesId.ToString(),
+                    GenomeId = organism.GenomeId.ToString(),
+                    CurrentChunkId = organism.CurrentChunkId.ToString(),
+                    MetabolismRate = organism.Physiology.MetabolismRate,
+                    GrowthRate = organism.Physiology.GrowthRate,
+                    LifespanTicks = organism.Physiology.LifespanTicks,
+                    WaterEfficiency = organism.Physiology.WaterEfficiency,
+                    DigestionEfficiency = organism.Physiology.DigestionEfficiency,
+                    BodyTemperature = organism.Physiology.BodyTemperature,
+                    Hunger = organism.Needs.Hunger,
+                    Hydration = organism.Needs.Hydration,
+                    Rest = organism.Needs.Rest,
+                    ReproductionUrge = organism.Needs.ReproductionUrge,
+                    BirthTick = organism.Lifecycle.BirthTick,
+                    AgeTicks = organism.Lifecycle.AgeTicks,
+                    MaturityAgeTicks = organism.Lifecycle.MaturityAgeTicks,
+                    Stage = organism.Lifecycle.Stage.ToString(),
+                    IsAlive = organism.Lifecycle.IsAlive,
+                    CurrentHealth = organism.Health.CurrentValue,
+                    MaximumHealth = organism.Health.MaximumValue,
+                });
+        }
+
         return new WorldSaveGameDocument
         {
             Metadata = new SaveMetadataDocument
@@ -251,6 +282,7 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                 Chunks = chunkDocuments,
             },
             ConfigurationVersion = saveGame.ConfigurationVersion.ToString(),
+            Organisms = organismDocuments,
             Version = new SaveVersionInfoDocument
             {
                 FormatVersion = saveGame.Version.FormatVersion,
@@ -448,6 +480,41 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                 document.World.CurrentYear),
             chunks.AsReadOnly());
 
+        List<Organism> organisms = new(document.Organisms.Count);
+        foreach (OrganismDocument organismDocument in document.Organisms)
+        {
+            organisms.Add(
+                new Organism(
+                    OrganismId.Parse(organismDocument.OrganismId),
+                    SpeciesId.Parse(organismDocument.SpeciesId),
+                    GenomeId.Parse(organismDocument.GenomeId),
+                    ChunkId.Parse(organismDocument.CurrentChunkId),
+                    new PhysiologyComponent(
+                        organismDocument.MetabolismRate,
+                        organismDocument.GrowthRate,
+                        organismDocument.LifespanTicks,
+                        organismDocument.WaterEfficiency,
+                        organismDocument.DigestionEfficiency,
+                        organismDocument.BodyTemperature),
+                    new NeedsComponent(
+                        organismDocument.Hunger,
+                        organismDocument.Hydration,
+                        organismDocument.Rest,
+                        organismDocument.ReproductionUrge),
+                    new LifecycleComponent(
+                        organismDocument.BirthTick,
+                        organismDocument.AgeTicks,
+                        organismDocument.MaturityAgeTicks,
+                        Enum.Parse<LifecycleStage>(organismDocument.Stage, ignoreCase: false),
+                        organismDocument.IsAlive),
+                    new HealthComponent(
+                        organismDocument.CurrentHealth,
+                        organismDocument.MaximumHealth)));
+        }
+
+        OrganismCollection organismCollection = new(organisms.AsReadOnly());
+        ValidateOrganismReferences(world, organismCollection);
+
         SaveMetadata metadata = new(
             document.Metadata.SaveName,
             document.Metadata.CreationDate,
@@ -464,7 +531,36 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
         return new WorldSaveGame(
             metadata,
             world,
+            organismCollection,
             new ConfigurationVersion(document.ConfigurationVersion),
             version);
+    }
+
+    private static void ValidateOrganismReferences(GaiaEngine.Domain.World.World world, OrganismCollection organisms)
+    {
+        Dictionary<ChunkId, HashSet<OrganismId>> chunkOrganismIds = new();
+        foreach (Chunk chunk in world.GetChunks())
+        {
+            HashSet<OrganismId> chunkIds = new();
+            foreach (OrganismId organismId in chunk.OrganismIds)
+            {
+                chunkIds.Add(organismId);
+            }
+
+            chunkOrganismIds.Add(chunk.Id, chunkIds);
+        }
+
+        foreach (Organism organism in organisms.GetAll())
+        {
+            if (!chunkOrganismIds.TryGetValue(organism.CurrentChunkId, out HashSet<OrganismId>? chunkIds))
+            {
+                throw new InvalidOperationException($"The organism '{organism.Id}' references a missing chunk.");
+            }
+
+            if (!chunkIds.Contains(organism.Id))
+            {
+                throw new InvalidOperationException($"The organism '{organism.Id}' is not referenced by its owning chunk.");
+            }
+        }
     }
 }

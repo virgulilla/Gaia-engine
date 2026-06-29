@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
 using GaiaEngine.Simulation.Diagnostics;
@@ -18,6 +19,7 @@ public sealed record SimulationTickResult
     /// Initializes a new instance of the <see cref="SimulationTickResult"/> class.
     /// </summary>
     /// <param name="world">The resulting world state.</param>
+    /// <param name="organisms">The resulting organism state.</param>
     /// <param name="timeState">The resulting world time state.</param>
     /// <param name="executedPhases">The deterministic list of executed phases.</param>
     /// <param name="schedule">The deterministic schedule selected for the tick.</param>
@@ -31,6 +33,7 @@ public sealed record SimulationTickResult
     /// </exception>
     public SimulationTickResult(
         GaiaEngine.Domain.World.World world,
+        OrganismCollection organisms,
         WorldTimeState timeState,
         IReadOnlyList<SimulationTickPhase> executedPhases,
         SimulationTickSchedule schedule,
@@ -41,6 +44,7 @@ public sealed record SimulationTickResult
         TimeAdvanceResult? timeAdvanceResult)
     {
         World = world ?? throw new ArgumentNullException(nameof(world));
+        Organisms = organisms ?? throw new ArgumentNullException(nameof(organisms));
         TimeState = timeState ?? throw new ArgumentNullException(nameof(timeState));
         ExecutedPhases = executedPhases ?? throw new ArgumentNullException(nameof(executedPhases));
         Schedule = schedule ?? throw new ArgumentNullException(nameof(schedule));
@@ -60,6 +64,11 @@ public sealed record SimulationTickResult
     /// Gets the resulting world state.
     /// </summary>
     public GaiaEngine.Domain.World.World World { get; }
+
+    /// <summary>
+    /// Gets the resulting organism state.
+    /// </summary>
+    public OrganismCollection Organisms { get; }
 
     /// <summary>
     /// Gets the resulting world time state.

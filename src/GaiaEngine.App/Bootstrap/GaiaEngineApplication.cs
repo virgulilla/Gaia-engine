@@ -2,9 +2,11 @@ using System;
 using GaiaEngine.App.Configuration;
 using GaiaEngine.Simulation.Diagnostics;
 using GaiaEngine.Domain.Identifiers;
+using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
 using GaiaEngine.Simulation.Events;
+using GaiaEngine.Simulation.Organisms;
 using GaiaEngine.Simulation.Pipeline;
 using GaiaEngine.Simulation.Runtime;
 using GaiaEngine.Simulation.Scheduling;
@@ -85,6 +87,7 @@ public sealed class GaiaEngineApplication
             precipitationDivider: 3,
             evaporationDivider: 4);
         DeterministicResourceSystem resourceSystem = new(resourceSettings);
+        DeterministicOrganismUpdateSystem organismUpdateSystem = new();
         DeterministicSimulationScheduler scheduler = new(
             new[]
             {
@@ -104,19 +107,27 @@ public sealed class GaiaEngineApplication
                     frequency: 20,
                     priority: 2),
                 new ScheduledSimulationSystemDefinition(
+                    SimulationSystemNames.Organisms,
+                    SimulationTickPhase.OrganismUpdate,
+                    frequency: 1,
+                    priority: 0),
+                new ScheduledSimulationSystemDefinition(
                     SimulationSystemNames.Statistics,
                     SimulationTickPhase.PostUpdate,
                     frequency: 100,
                     priority: 0),
             });
         DeterministicWorldBootstrapFactory worldBootstrapFactory = new(worldConfiguration, engineConfiguration, simulationConfiguration, eventIdGenerator);
+        DeterministicOrganismBootstrapFactory organismBootstrapFactory = new(eventIdGenerator);
+        GaiaEngine.Domain.World.World bootstrapWorld = worldBootstrapFactory.CreateWorld();
+        OrganismBootstrapState bootstrapOrganismState = organismBootstrapFactory.CreateInitialPopulation(bootstrapWorld);
         DeterministicSimulationTickPipeline tickPipeline = new(
             new ISimulationTickPhase[]
             {
                 new NoOpSimulationTickPhase(SimulationTickPhase.InputCollection),
                 new NoOpSimulationTickPhase(SimulationTickPhase.PreUpdate),
                 new WorldUpdateTimePhase(timeSystem, scheduler, climateSystem, waterSystem, resourceSystem, eventPublisher),
-                new NoOpSimulationTickPhase(SimulationTickPhase.OrganismUpdate),
+                new OrganismUpdatePhase(organismUpdateSystem),
                 new NoOpSimulationTickPhase(SimulationTickPhase.InteractionSystems),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
                 new EventDispatchPhase(eventBus),
@@ -125,7 +136,8 @@ public sealed class GaiaEngineApplication
             scheduler);
         DeterministicSimulationSession simulationSession = new(
             tickPipeline,
-            worldBootstrapFactory.CreateWorld());
+            bootstrapOrganismState.World,
+            bootstrapOrganismState.Organisms);
 
         return new GaiaEngineRuntime(engineConfiguration, simulationConfiguration, simulationSession);
     }

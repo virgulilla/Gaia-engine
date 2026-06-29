@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Simulation.Scheduling;
 
@@ -63,7 +64,25 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="world"/> is <see langword="null"/>.</exception>
     public SimulationTickResult Execute(GaiaEngine.Domain.World.World world, ulong nextEventSequence)
     {
-        SimulationTickContext context = new(world ?? throw new ArgumentNullException(nameof(world)), nextEventSequence);
+        return Execute(world, OrganismCollection.Empty, nextEventSequence);
+    }
+
+    /// <summary>
+    /// Executes one deterministic simulation tick starting from the supplied world and organism state.
+    /// </summary>
+    /// <param name="world">The current world state.</param>
+    /// <param name="organisms">The current organism state.</param>
+    /// <param name="nextEventSequence">The next deterministic event sequence value to use.</param>
+    /// <returns>The deterministic result of the tick pipeline execution.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="world"/> or <paramref name="organisms"/> is <see langword="null"/>.
+    /// </exception>
+    public SimulationTickResult Execute(GaiaEngine.Domain.World.World world, OrganismCollection organisms, ulong nextEventSequence)
+    {
+        SimulationTickContext context = new(
+            world ?? throw new ArgumentNullException(nameof(world)),
+            organisms ?? throw new ArgumentNullException(nameof(organisms)),
+            nextEventSequence);
         List<SimulationTickPhase> executedPhases = new(phases.Count);
 
         foreach (ISimulationTickPhase phase in phases)
@@ -81,6 +100,7 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
 
         return new SimulationTickResult(
             context.CurrentWorld,
+            context.CurrentOrganisms,
             context.CurrentTimeState,
             executedPhases.AsReadOnly(),
             context.Schedule,

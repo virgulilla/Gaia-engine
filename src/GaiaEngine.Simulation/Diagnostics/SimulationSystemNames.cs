@@ -21,6 +21,11 @@ public static class SimulationSystemNames
     public const string Water = "Water";
 
     /// <summary>
+    /// Gets the logical name of the organism update system.
+    /// </summary>
+    public const string Organisms = "Organisms";
+
+    /// <summary>
     /// Gets the logical name of the statistics system.
     /// </summary>
     public const string Statistics = "Statistics";

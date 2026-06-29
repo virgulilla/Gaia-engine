@@ -32,6 +32,8 @@ public sealed class GaiaEngineApplicationTests
         Assert.False(string.IsNullOrWhiteSpace(first.World.GetChunks()[0].Biome.Name));
         Assert.True(first.World.GetChunks()[0].Water.SurfaceWater.WaterLevel >= 0);
         Assert.Equal(3, first.World.GetChunks()[0].Resources.Count);
+        Assert.Equal(first.World.ChunkCount, first.Organisms.Count);
+        Assert.Single(first.World.GetChunks()[0].OrganismIds);
     }
 
     private sealed class FakeEngineConfigurationProvider : IEngineConfigurationProvider

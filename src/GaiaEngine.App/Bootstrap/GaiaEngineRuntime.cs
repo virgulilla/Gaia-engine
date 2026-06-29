@@ -1,4 +1,5 @@
 using System;
+using GaiaEngine.Domain.Organisms;
 using GaiaEngine.App.Configuration;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Simulation.Runtime;
@@ -48,4 +49,9 @@ public sealed class GaiaEngineRuntime
     /// Gets the initialized world bootstrap state.
     /// </summary>
     public GaiaEngine.Domain.World.World World => SimulationSession.CurrentWorld;
+
+    /// <summary>
+    /// Gets the initialized organism bootstrap state.
+    /// </summary>
+    public OrganismCollection Organisms => SimulationSession.CurrentOrganisms;
 }

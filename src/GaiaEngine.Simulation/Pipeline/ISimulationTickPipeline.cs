@@ -1,3 +1,5 @@
+using GaiaEngine.Domain.Organisms;
+
 namespace GaiaEngine.Simulation.Pipeline;
 
 /// <summary>
@@ -12,4 +14,13 @@ public interface ISimulationTickPipeline
     /// <param name="nextEventSequence">The next deterministic event sequence value to use.</param>
     /// <returns>The deterministic result of the tick pipeline execution.</returns>
     public SimulationTickResult Execute(GaiaEngine.Domain.World.World world, ulong nextEventSequence);
+
+    /// <summary>
+    /// Executes one deterministic simulation tick starting from the supplied world and organism state.
+    /// </summary>
+    /// <param name="world">The current world state.</param>
+    /// <param name="organisms">The current organism state.</param>
+    /// <param name="nextEventSequence">The next deterministic event sequence value to use.</param>
+    /// <returns>The deterministic result of the tick pipeline execution.</returns>
+    public SimulationTickResult Execute(GaiaEngine.Domain.World.World world, OrganismCollection organisms, ulong nextEventSequence);
 }
