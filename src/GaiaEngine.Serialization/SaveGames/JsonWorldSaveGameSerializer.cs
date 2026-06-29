@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using GaiaEngine.Domain.Genetics;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
@@ -64,6 +65,7 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
     {
         List<ChunkDocument> chunkDocuments = new();
         List<OrganismDocument> organismDocuments = new();
+        List<GenomeDocument> genomeDocuments = new();
         List<ActionRequestDocument> actionRequestDocuments = new();
         foreach (Chunk chunk in saveGame.World.GetChunks())
         {
@@ -253,6 +255,30 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                 });
         }
 
+        foreach (Genome genome in saveGame.Genomes.GetAll())
+        {
+            genomeDocuments.Add(
+                new GenomeDocument
+                {
+                    Identity = new GenomeIdentityDocument
+                    {
+                        GenomeId = genome.Identity.GenomeId.ToString(),
+                        Version = genome.Identity.Version,
+                        ParentGenomeA = genome.Identity.ParentGenomeA?.ToString(),
+                        ParentGenomeB = genome.Identity.ParentGenomeB?.ToString(),
+                        MutationCount = genome.Identity.MutationCount,
+                        Generation = genome.Identity.Generation,
+                    },
+                    Morphology = CreateGenomeGeneGroupDocument(genome.Morphology),
+                    Physiology = CreateGenomeGeneGroupDocument(genome.Physiology),
+                    Reproduction = CreateGenomeGeneGroupDocument(genome.Reproduction),
+                    Senses = CreateGenomeGeneGroupDocument(genome.Senses),
+                    Adaptation = CreateGenomeGeneGroupDocument(genome.Adaptation),
+                    Appearance = CreateGenomeGeneGroupDocument(genome.Appearance),
+                    BehaviourBias = CreateGenomeGeneGroupDocument(genome.BehaviourBias),
+                });
+        }
+
         foreach (SimulationActionRequest actionRequest in saveGame.ActionRequests.GetAll())
         {
             actionRequestDocuments.Add(
@@ -303,6 +329,7 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
             },
             ConfigurationVersion = saveGame.ConfigurationVersion.ToString(),
             Organisms = organismDocuments,
+            Genomes = genomeDocuments,
             ActionRequests = actionRequestDocuments,
             Version = new SaveVersionInfoDocument
             {
@@ -536,6 +563,35 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
         OrganismCollection organismCollection = new(organisms.AsReadOnly());
         ValidateOrganismReferences(world, organismCollection);
 
+        List<Genome> genomes = new(document.Genomes.Count);
+        foreach (GenomeDocument genomeDocument in document.Genomes)
+        {
+            if (genomeDocument.Identity is null)
+            {
+                throw new InvalidOperationException("Every genome requires an identity section.");
+            }
+
+            genomes.Add(
+                new Genome(
+                    new GenomeIdentity(
+                        GenomeId.Parse(genomeDocument.Identity.GenomeId),
+                        genomeDocument.Identity.Version,
+                        string.IsNullOrWhiteSpace(genomeDocument.Identity.ParentGenomeA) ? null : GenomeId.Parse(genomeDocument.Identity.ParentGenomeA),
+                        string.IsNullOrWhiteSpace(genomeDocument.Identity.ParentGenomeB) ? null : GenomeId.Parse(genomeDocument.Identity.ParentGenomeB),
+                        genomeDocument.Identity.MutationCount,
+                        genomeDocument.Identity.Generation),
+                    CreateGenomeGeneGroup(genomeDocument.Morphology, GenomeGroupType.Morphology),
+                    CreateGenomeGeneGroup(genomeDocument.Physiology, GenomeGroupType.Physiology),
+                    CreateGenomeGeneGroup(genomeDocument.Reproduction, GenomeGroupType.Reproduction),
+                    CreateGenomeGeneGroup(genomeDocument.Senses, GenomeGroupType.Senses),
+                    CreateGenomeGeneGroup(genomeDocument.Adaptation, GenomeGroupType.Adaptation),
+                    CreateGenomeGeneGroup(genomeDocument.Appearance, GenomeGroupType.Appearance),
+                    CreateGenomeGeneGroup(genomeDocument.BehaviourBias, GenomeGroupType.BehaviourBias)));
+        }
+
+        GenomeCollection genomeCollection = new(genomes.AsReadOnly());
+        ValidateGenomeReferences(organismCollection, genomeCollection);
+
         List<SimulationActionRequest> actionRequests = new(document.ActionRequests.Count);
         foreach (ActionRequestDocument actionRequestDocument in document.ActionRequests)
         {
@@ -571,6 +627,7 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
             metadata,
             world,
             organismCollection,
+            genomeCollection,
             new SimulationActionRequestCollection(actionRequests.AsReadOnly()),
             new ConfigurationVersion(document.ConfigurationVersion),
             version);
@@ -600,6 +657,65 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
             if (!chunkIds.Contains(organism.Id))
             {
                 throw new InvalidOperationException($"The organism '{organism.Id}' is not referenced by its owning chunk.");
+            }
+        }
+    }
+
+    private static GenomeGeneGroupDocument CreateGenomeGeneGroupDocument(GenomeGeneGroup group)
+    {
+        List<GenomeGeneDocument> genes = new(group.Count);
+        foreach (GenomeGene gene in group.GetGenes())
+        {
+            genes.Add(
+                new GenomeGeneDocument
+                {
+                    Key = gene.Key.ToString(),
+                    Value = gene.Value.ScaledValue,
+                    Dominance = gene.Dominance.ToString(),
+                    IsActive = gene.IsActive,
+                });
+        }
+
+        return new GenomeGeneGroupDocument
+        {
+            GroupType = group.GroupType.ToString(),
+            Genes = genes,
+        };
+    }
+
+    private static GenomeGeneGroup CreateGenomeGeneGroup(GenomeGeneGroupDocument? document, GenomeGroupType expectedGroupType)
+    {
+        if (document is null)
+        {
+            throw new InvalidOperationException($"The genome group '{expectedGroupType}' is required.");
+        }
+
+        if (!string.Equals(document.GroupType, expectedGroupType.ToString(), StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException($"The genome group '{expectedGroupType}' is invalid.");
+        }
+
+        List<GenomeGene> genes = new(document.Genes.Count);
+        foreach (GenomeGeneDocument geneDocument in document.Genes)
+        {
+            genes.Add(
+                new GenomeGene(
+                    Enum.Parse<GenomeGeneKey>(geneDocument.Key, ignoreCase: false),
+                    new NormalizedGeneValue(geneDocument.Value),
+                    Enum.Parse<GeneDominance>(geneDocument.Dominance, ignoreCase: false),
+                    geneDocument.IsActive));
+        }
+
+        return new GenomeGeneGroup(expectedGroupType, genes.AsReadOnly());
+    }
+
+    private static void ValidateGenomeReferences(OrganismCollection organisms, GenomeCollection genomes)
+    {
+        foreach (Organism organism in organisms.GetAll())
+        {
+            if (!genomes.TryGet(organism.GenomeId, out _))
+            {
+                throw new InvalidOperationException($"The organism '{organism.Id}' references a missing genome.");
             }
         }
     }

@@ -1,4 +1,5 @@
 using System;
+using GaiaEngine.Domain.Genetics;
 using GaiaEngine.Domain.Organisms;
 
 namespace GaiaEngine.App.Bootstrap;
@@ -13,11 +14,15 @@ public sealed record OrganismBootstrapState
     /// </summary>
     /// <param name="world">The world updated with organism references.</param>
     /// <param name="organisms">The initial organism collection.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="world"/> or <paramref name="organisms"/> is <see langword="null"/>.</exception>
-    public OrganismBootstrapState(GaiaEngine.Domain.World.World world, OrganismCollection organisms)
+    /// <param name="genomes">The initial genome collection.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="world"/>, <paramref name="organisms"/>, or <paramref name="genomes"/> is <see langword="null"/>.
+    /// </exception>
+    public OrganismBootstrapState(GaiaEngine.Domain.World.World world, OrganismCollection organisms, GenomeCollection genomes)
     {
         World = world ?? throw new ArgumentNullException(nameof(world));
         Organisms = organisms ?? throw new ArgumentNullException(nameof(organisms));
+        Genomes = genomes ?? throw new ArgumentNullException(nameof(genomes));
     }
 
     /// <summary>
@@ -29,4 +34,9 @@ public sealed record OrganismBootstrapState
     /// Gets the initial organism collection.
     /// </summary>
     public OrganismCollection Organisms { get; }
+
+    /// <summary>
+    /// Gets the initial genome collection.
+    /// </summary>
+    public GenomeCollection Genomes { get; }
 }

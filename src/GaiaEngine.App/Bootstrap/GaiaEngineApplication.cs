@@ -1,5 +1,6 @@
 using System;
 using GaiaEngine.App.Configuration;
+using GaiaEngine.Domain.Genetics;
 using GaiaEngine.Simulation.Diagnostics;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Domain.Organisms;
@@ -143,7 +144,8 @@ public sealed class GaiaEngineApplication
                     priority: 0),
             });
         DeterministicWorldBootstrapFactory worldBootstrapFactory = new(worldConfiguration, engineConfiguration, simulationConfiguration, eventIdGenerator);
-        DeterministicOrganismBootstrapFactory organismBootstrapFactory = new(eventIdGenerator);
+        IGenomeBootstrapFactory genomeBootstrapFactory = new DeterministicGenomeBootstrapFactory(eventIdGenerator);
+        DeterministicOrganismBootstrapFactory organismBootstrapFactory = new(eventIdGenerator, genomeBootstrapFactory);
         GaiaEngine.Domain.World.World bootstrapWorld = worldBootstrapFactory.CreateWorld();
         OrganismBootstrapState bootstrapOrganismState = organismBootstrapFactory.CreateInitialPopulation(bootstrapWorld);
         DeterministicSimulationTickPipeline tickPipeline = new(
@@ -162,7 +164,8 @@ public sealed class GaiaEngineApplication
         DeterministicSimulationSession simulationSession = new(
             tickPipeline,
             bootstrapOrganismState.World,
-            bootstrapOrganismState.Organisms);
+            bootstrapOrganismState.Organisms,
+            bootstrapOrganismState.Genomes);
 
         return new GaiaEngineRuntime(engineConfiguration, simulationConfiguration, simulationSession);
     }

@@ -1,3 +1,4 @@
+using GaiaEngine.Domain.Genetics;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Simulation.Actions;
@@ -23,6 +24,11 @@ public interface ISimulationSession
     /// Gets the current simulation organism state.
     /// </summary>
     public OrganismCollection CurrentOrganisms { get; }
+
+    /// <summary>
+    /// Gets the current simulation genome state.
+    /// </summary>
+    public GenomeCollection CurrentGenomes { get; }
 
     /// <summary>
     /// Gets the current movement request state.

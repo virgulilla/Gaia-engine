@@ -1,4 +1,5 @@
 using System;
+using GaiaEngine.Domain.Genetics;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Simulation.Actions;
@@ -26,7 +27,7 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// Thrown when <paramref name="tickPipeline"/> or <paramref name="initialWorld"/> is <see langword="null"/>.
     /// </exception>
     public DeterministicSimulationSession(ISimulationTickPipeline tickPipeline, GaiaEngine.Domain.World.World initialWorld)
-        : this(tickPipeline, initialWorld, OrganismCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty)
+        : this(tickPipeline, initialWorld, OrganismCollection.Empty, GenomeCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty)
     {
     }
 
@@ -36,11 +37,16 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// <param name="tickPipeline">The deterministic tick pipeline responsible for advancing simulation state.</param>
     /// <param name="initialWorld">The initial world state.</param>
     /// <param name="initialOrganisms">The initial organism state.</param>
+    /// <param name="initialGenomes">The initial genome state.</param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="tickPipeline"/>, <paramref name="initialWorld"/>, or <paramref name="initialOrganisms"/> is <see langword="null"/>.
+    /// Thrown when <paramref name="tickPipeline"/>, <paramref name="initialWorld"/>, <paramref name="initialOrganisms"/>, or <paramref name="initialGenomes"/> is <see langword="null"/>.
     /// </exception>
-    public DeterministicSimulationSession(ISimulationTickPipeline tickPipeline, GaiaEngine.Domain.World.World initialWorld, OrganismCollection initialOrganisms)
-        : this(tickPipeline, initialWorld, initialOrganisms, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty)
+    public DeterministicSimulationSession(
+        ISimulationTickPipeline tickPipeline,
+        GaiaEngine.Domain.World.World initialWorld,
+        OrganismCollection initialOrganisms,
+        GenomeCollection initialGenomes)
+        : this(tickPipeline, initialWorld, initialOrganisms, initialGenomes, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty)
     {
     }
 
@@ -50,18 +56,20 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// <param name="tickPipeline">The deterministic tick pipeline responsible for advancing simulation state.</param>
     /// <param name="initialWorld">The initial world state.</param>
     /// <param name="initialOrganisms">The initial organism state.</param>
+    /// <param name="initialGenomes">The initial genome state.</param>
     /// <param name="initialActionRequests">The initial common action request state.</param>
     /// <param name="initialMovementRequests">The initial movement request state.</param>
     /// <param name="initialFeedingRequests">The initial feeding request state.</param>
     /// <param name="initialHydrationRequests">The initial hydration request state.</param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="tickPipeline"/>, <paramref name="initialWorld"/>, <paramref name="initialOrganisms"/>,
+    /// Thrown when <paramref name="tickPipeline"/>, <paramref name="initialWorld"/>, <paramref name="initialOrganisms"/>, <paramref name="initialGenomes"/>,
     /// <paramref name="initialMovementRequests"/>, <paramref name="initialFeedingRequests"/>, or <paramref name="initialHydrationRequests"/> is <see langword="null"/>.
     /// </exception>
     public DeterministicSimulationSession(
         ISimulationTickPipeline tickPipeline,
         GaiaEngine.Domain.World.World initialWorld,
         OrganismCollection initialOrganisms,
+        GenomeCollection initialGenomes,
         SimulationActionRequestCollection initialActionRequests,
         MovementRequestCollection initialMovementRequests,
         FeedingRequestCollection initialFeedingRequests,
@@ -70,6 +78,7 @@ public sealed class DeterministicSimulationSession : ISimulationSession
         this.tickPipeline = tickPipeline ?? throw new ArgumentNullException(nameof(tickPipeline));
         CurrentWorld = initialWorld ?? throw new ArgumentNullException(nameof(initialWorld));
         CurrentOrganisms = initialOrganisms ?? throw new ArgumentNullException(nameof(initialOrganisms));
+        CurrentGenomes = initialGenomes ?? throw new ArgumentNullException(nameof(initialGenomes));
         CurrentActionRequests = initialActionRequests ?? throw new ArgumentNullException(nameof(initialActionRequests));
         CurrentMovementRequests = initialMovementRequests ?? throw new ArgumentNullException(nameof(initialMovementRequests));
         CurrentFeedingRequests = initialFeedingRequests ?? throw new ArgumentNullException(nameof(initialFeedingRequests));
@@ -85,6 +94,11 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// Gets the current simulation organism state.
     /// </summary>
     public OrganismCollection CurrentOrganisms { get; private set; }
+
+    /// <summary>
+    /// Gets the current simulation genome state.
+    /// </summary>
+    public GenomeCollection CurrentGenomes { get; }
 
     /// <summary>
     /// Gets the current common action request state.

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GaiaEngine.Domain.Genetics;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
@@ -13,15 +14,20 @@ namespace GaiaEngine.App.Bootstrap;
 public sealed class DeterministicOrganismBootstrapFactory
 {
     private readonly IEntityIdGenerator idGenerator;
+    private readonly IGenomeBootstrapFactory genomeBootstrapFactory;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeterministicOrganismBootstrapFactory"/> class.
     /// </summary>
     /// <param name="idGenerator">The deterministic identifier generator.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="idGenerator"/> is <see langword="null"/>.</exception>
-    public DeterministicOrganismBootstrapFactory(IEntityIdGenerator idGenerator)
+    /// <param name="genomeBootstrapFactory">The deterministic genome bootstrap factory.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="idGenerator"/> or <paramref name="genomeBootstrapFactory"/> is <see langword="null"/>.
+    /// </exception>
+    public DeterministicOrganismBootstrapFactory(IEntityIdGenerator idGenerator, IGenomeBootstrapFactory genomeBootstrapFactory)
     {
         this.idGenerator = idGenerator ?? throw new ArgumentNullException(nameof(idGenerator));
+        this.genomeBootstrapFactory = genomeBootstrapFactory ?? throw new ArgumentNullException(nameof(genomeBootstrapFactory));
     }
 
     /// <summary>
@@ -36,14 +42,17 @@ public sealed class DeterministicOrganismBootstrapFactory
 
         SpeciesId starterSpeciesId = idGenerator.CreateSpeciesId(new IdentifierGenerationContext(world.Metadata.Seed, 0, new EntitySequence(1)));
         List<Organism> organisms = new(world.ChunkCount);
+        List<Genome> genomes = new(world.ChunkCount);
         List<Chunk> updatedChunks = new(world.ChunkCount);
 
         int index = 0;
         foreach (Chunk chunk in world.GetChunks())
         {
             index++;
-            Organism organism = CreateOrganism(world.Metadata.Seed, starterSpeciesId, chunk, index);
+            Genome genome = genomeBootstrapFactory.CreateGenome(world.Metadata.Seed, chunk, index);
+            Organism organism = CreateOrganism(world.Metadata.Seed, starterSpeciesId, genome.Id, chunk, index);
             organisms.Add(organism);
+            genomes.Add(genome);
             updatedChunks.Add(
                 new Chunk(
                     chunk.Metadata,
@@ -62,15 +71,13 @@ public sealed class DeterministicOrganismBootstrapFactory
             world.TimeState,
             updatedChunks.AsReadOnly());
 
-        return new OrganismBootstrapState(updatedWorld, new OrganismCollection(organisms.AsReadOnly()));
+        return new OrganismBootstrapState(updatedWorld, new OrganismCollection(organisms.AsReadOnly()), new GenomeCollection(genomes.AsReadOnly()));
     }
 
-    private Organism CreateOrganism(WorldSeed worldSeed, SpeciesId speciesId, Chunk chunk, int index)
+    private Organism CreateOrganism(WorldSeed worldSeed, SpeciesId speciesId, GenomeId genomeId, Chunk chunk, int index)
     {
         EntitySequence organismSequence = new((ulong)(1000 + index));
-        EntitySequence genomeSequence = new((ulong)(2000 + index));
         OrganismId organismId = idGenerator.CreateOrganismId(new IdentifierGenerationContext(worldSeed, 0, organismSequence));
-        GenomeId genomeId = idGenerator.CreateGenomeId(new IdentifierGenerationContext(worldSeed, 0, genomeSequence));
 
         int biomeTemperature = chunk.Biome.ClimateProfile.AverageTemperature;
         int waterEfficiency = Math.Clamp(45 + (chunk.Resources.GetAll()[1].Availability / 40), 0, 100);
