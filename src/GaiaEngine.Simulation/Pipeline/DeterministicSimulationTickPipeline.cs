@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
+using GaiaEngine.Simulation.Interactions.Hydration;
 using GaiaEngine.Simulation.Interactions.Movement;
 using GaiaEngine.Simulation.Scheduling;
 
@@ -65,7 +66,7 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="world"/> is <see langword="null"/>.</exception>
     public SimulationTickResult Execute(GaiaEngine.Domain.World.World world, ulong nextEventSequence)
     {
-        return Execute(world, OrganismCollection.Empty, MovementRequestCollection.Empty, nextEventSequence);
+        return Execute(world, OrganismCollection.Empty, MovementRequestCollection.Empty, HydrationRequestCollection.Empty, nextEventSequence);
     }
 
     /// <summary>
@@ -80,7 +81,7 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
     /// </exception>
     public SimulationTickResult Execute(GaiaEngine.Domain.World.World world, OrganismCollection organisms, ulong nextEventSequence)
     {
-        return Execute(world, organisms, MovementRequestCollection.Empty, nextEventSequence);
+        return Execute(world, organisms, MovementRequestCollection.Empty, HydrationRequestCollection.Empty, nextEventSequence);
     }
 
     /// <summary>
@@ -89,6 +90,7 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
     /// <param name="world">The current world state.</param>
     /// <param name="organisms">The current organism state.</param>
     /// <param name="movementRequests">The current movement request state.</param>
+    /// <param name="hydrationRequests">The current hydration request state.</param>
     /// <param name="nextEventSequence">The next deterministic event sequence value to use.</param>
     /// <returns>The deterministic result of the tick pipeline execution.</returns>
     /// <exception cref="ArgumentNullException">
@@ -98,12 +100,14 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
         GaiaEngine.Domain.World.World world,
         OrganismCollection organisms,
         MovementRequestCollection movementRequests,
+        HydrationRequestCollection hydrationRequests,
         ulong nextEventSequence)
     {
         SimulationTickContext context = new(
             world ?? throw new ArgumentNullException(nameof(world)),
             organisms ?? throw new ArgumentNullException(nameof(organisms)),
             movementRequests ?? throw new ArgumentNullException(nameof(movementRequests)),
+            hydrationRequests ?? throw new ArgumentNullException(nameof(hydrationRequests)),
             nextEventSequence);
         List<SimulationTickPhase> executedPhases = new(phases.Count);
 
@@ -124,6 +128,7 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
             context.CurrentWorld,
             context.CurrentOrganisms,
             context.CurrentMovementRequests,
+            context.CurrentHydrationRequests,
             context.CurrentTimeState,
             executedPhases.AsReadOnly(),
             context.Schedule,

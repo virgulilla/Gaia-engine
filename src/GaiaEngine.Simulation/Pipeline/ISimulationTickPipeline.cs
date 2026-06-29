@@ -1,4 +1,5 @@
 using GaiaEngine.Domain.Organisms;
+using GaiaEngine.Simulation.Interactions.Hydration;
 using GaiaEngine.Simulation.Interactions.Movement;
 
 namespace GaiaEngine.Simulation.Pipeline;
@@ -31,11 +32,13 @@ public interface ISimulationTickPipeline
     /// <param name="world">The current world state.</param>
     /// <param name="organisms">The current organism state.</param>
     /// <param name="movementRequests">The current movement request state.</param>
+    /// <param name="hydrationRequests">The current hydration request state.</param>
     /// <param name="nextEventSequence">The next deterministic event sequence value to use.</param>
     /// <returns>The deterministic result of the tick pipeline execution.</returns>
     public SimulationTickResult Execute(
         GaiaEngine.Domain.World.World world,
         OrganismCollection organisms,
         MovementRequestCollection movementRequests,
+        HydrationRequestCollection hydrationRequests,
         ulong nextEventSequence);
 }

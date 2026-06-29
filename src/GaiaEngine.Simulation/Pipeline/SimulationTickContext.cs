@@ -5,6 +5,7 @@ using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
 using GaiaEngine.Simulation.Diagnostics;
 using GaiaEngine.Simulation.Events;
+using GaiaEngine.Simulation.Interactions.Hydration;
 using GaiaEngine.Simulation.Interactions.Movement;
 using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
@@ -23,7 +24,7 @@ public sealed class SimulationTickContext
     /// <param name="nextEventSequence">The next deterministic event sequence value to use.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="world"/> is <see langword="null"/>.</exception>
     public SimulationTickContext(GaiaEngine.Domain.World.World world, ulong nextEventSequence)
-        : this(world, OrganismCollection.Empty, MovementRequestCollection.Empty, nextEventSequence)
+        : this(world, OrganismCollection.Empty, MovementRequestCollection.Empty, HydrationRequestCollection.Empty, nextEventSequence)
     {
     }
 
@@ -37,7 +38,7 @@ public sealed class SimulationTickContext
     /// Thrown when <paramref name="world"/> or <paramref name="organisms"/> is <see langword="null"/>.
     /// </exception>
     public SimulationTickContext(GaiaEngine.Domain.World.World world, OrganismCollection organisms, ulong nextEventSequence)
-        : this(world, organisms, MovementRequestCollection.Empty, nextEventSequence)
+        : this(world, organisms, MovementRequestCollection.Empty, HydrationRequestCollection.Empty, nextEventSequence)
     {
     }
 
@@ -47,19 +48,23 @@ public sealed class SimulationTickContext
     /// <param name="world">The initial world state for the tick.</param>
     /// <param name="organisms">The initial organism state for the tick.</param>
     /// <param name="movementRequests">The initial movement request state for the tick.</param>
+    /// <param name="hydrationRequests">The initial hydration request state for the tick.</param>
     /// <param name="nextEventSequence">The next deterministic event sequence value to use.</param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="world"/>, <paramref name="organisms"/>, or <paramref name="movementRequests"/> is <see langword="null"/>.
+    /// Thrown when <paramref name="world"/>, <paramref name="organisms"/>, <paramref name="movementRequests"/>,
+    /// or <paramref name="hydrationRequests"/> is <see langword="null"/>.
     /// </exception>
     public SimulationTickContext(
         GaiaEngine.Domain.World.World world,
         OrganismCollection organisms,
         MovementRequestCollection movementRequests,
+        HydrationRequestCollection hydrationRequests,
         ulong nextEventSequence)
     {
         CurrentWorld = world ?? throw new ArgumentNullException(nameof(world));
         CurrentOrganisms = organisms ?? throw new ArgumentNullException(nameof(organisms));
         CurrentMovementRequests = movementRequests ?? throw new ArgumentNullException(nameof(movementRequests));
+        CurrentHydrationRequests = hydrationRequests ?? throw new ArgumentNullException(nameof(hydrationRequests));
         Schedule = new SimulationTickSchedule(world.TimeState.CurrentTick, Array.Empty<ScheduledSimulationSystem>());
         if (nextEventSequence == 0)
         {
@@ -84,6 +89,11 @@ public sealed class SimulationTickContext
     /// Gets the current movement request state being updated by the pipeline.
     /// </summary>
     public MovementRequestCollection CurrentMovementRequests { get; private set; }
+
+    /// <summary>
+    /// Gets the current hydration request state being updated by the pipeline.
+    /// </summary>
+    public HydrationRequestCollection CurrentHydrationRequests { get; private set; }
 
     /// <summary>
     /// Gets the current world time state being updated by the pipeline.
@@ -220,5 +230,15 @@ public sealed class SimulationTickContext
     public void ApplyMovementRequests(MovementRequestCollection movementRequests)
     {
         CurrentMovementRequests = movementRequests ?? throw new ArgumentNullException(nameof(movementRequests));
+    }
+
+    /// <summary>
+    /// Applies the updated hydration request state produced during the current tick.
+    /// </summary>
+    /// <param name="hydrationRequests">The updated hydration request state.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="hydrationRequests"/> is <see langword="null"/>.</exception>
+    public void ApplyHydrationRequests(HydrationRequestCollection hydrationRequests)
+    {
+        CurrentHydrationRequests = hydrationRequests ?? throw new ArgumentNullException(nameof(hydrationRequests));
     }
 }
