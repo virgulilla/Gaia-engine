@@ -31,6 +31,11 @@ public static class SimulationSystemNames
     public const string Movement = "Movement";
 
     /// <summary>
+    /// Gets the logical name of the feeding interaction system.
+    /// </summary>
+    public const string Feeding = "Feeding";
+
+    /// <summary>
     /// Gets the logical name of the hydration interaction system.
     /// </summary>
     public const string Hydration = "Hydration";

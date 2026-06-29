@@ -1,5 +1,6 @@
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
+using GaiaEngine.Simulation.Interactions.Feeding;
 using GaiaEngine.Simulation.Interactions.Hydration;
 using GaiaEngine.Simulation.Interactions.Movement;
 using GaiaEngine.Simulation.Pipeline;
@@ -26,6 +27,11 @@ public interface ISimulationSession
     /// Gets the current movement request state.
     /// </summary>
     public MovementRequestCollection CurrentMovementRequests { get; }
+
+    /// <summary>
+    /// Gets the current feeding request state.
+    /// </summary>
+    public FeedingRequestCollection CurrentFeedingRequests { get; }
 
     /// <summary>
     /// Gets the current hydration request state.

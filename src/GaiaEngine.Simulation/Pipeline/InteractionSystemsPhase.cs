@@ -1,5 +1,6 @@
 using System;
 using GaiaEngine.Simulation.Diagnostics;
+using GaiaEngine.Simulation.Interactions.Feeding;
 using GaiaEngine.Simulation.Interactions.Hydration;
 using GaiaEngine.Simulation.Interactions.Movement;
 
@@ -11,19 +12,22 @@ namespace GaiaEngine.Simulation.Pipeline;
 public sealed class InteractionSystemsPhase : ISimulationTickPhase
 {
     private readonly IMovementSystem movementSystem;
+    private readonly IFeedingSystem feedingSystem;
     private readonly IHydrationSystem hydrationSystem;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InteractionSystemsPhase"/> class.
     /// </summary>
     /// <param name="movementSystem">The movement system executed during this phase.</param>
+    /// <param name="feedingSystem">The feeding system executed during this phase.</param>
     /// <param name="hydrationSystem">The hydration system executed during this phase.</param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="movementSystem"/> or <paramref name="hydrationSystem"/> is <see langword="null"/>.
+    /// Thrown when <paramref name="movementSystem"/>, <paramref name="feedingSystem"/>, or <paramref name="hydrationSystem"/> is <see langword="null"/>.
     /// </exception>
-    public InteractionSystemsPhase(IMovementSystem movementSystem, IHydrationSystem hydrationSystem)
+    public InteractionSystemsPhase(IMovementSystem movementSystem, IFeedingSystem feedingSystem, IHydrationSystem hydrationSystem)
     {
         this.movementSystem = movementSystem ?? throw new ArgumentNullException(nameof(movementSystem));
+        this.feedingSystem = feedingSystem ?? throw new ArgumentNullException(nameof(feedingSystem));
         this.hydrationSystem = hydrationSystem ?? throw new ArgumentNullException(nameof(hydrationSystem));
     }
 
@@ -51,6 +55,18 @@ public sealed class InteractionSystemsPhase : ISimulationTickPhase
                 context.ApplyWorld(movementResult.World);
                 context.ApplyOrganisms(movementResult.Organisms);
                 context.ApplyMovementRequests(movementResult.RemainingRequests);
+                continue;
+            }
+
+            if (scheduledSystem.SystemName == SimulationSystemNames.Feeding)
+            {
+                FeedingSystemResult feedingResult = feedingSystem.Execute(
+                    context.CurrentWorld,
+                    context.CurrentOrganisms,
+                    context.CurrentFeedingRequests);
+                context.ApplyWorld(feedingResult.World);
+                context.ApplyOrganisms(feedingResult.Organisms);
+                context.ApplyFeedingRequests(feedingResult.RemainingRequests);
                 continue;
             }
 
