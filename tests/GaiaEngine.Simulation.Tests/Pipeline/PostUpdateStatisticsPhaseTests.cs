@@ -80,6 +80,7 @@ public sealed class PostUpdateStatisticsPhaseTests
                         16),
                     GaiaEngine.Domain.World.ChunkState.Active,
                     CreateTerrain(),
+                    CreateBiome(),
                     new GaiaEngine.Domain.World.ClimateState(
                         GaiaEngine.Domain.World.ClimateZone.Temperate,
                         GaiaEngine.Domain.World.WeatherState.Clear,
@@ -91,6 +92,20 @@ public sealed class PostUpdateStatisticsPhaseTests
                     CreateResources(2),
                     System.Array.Empty<GaiaEngine.Domain.Identifiers.OrganismId>()),
             });
+    }
+
+    private static GaiaEngine.Domain.World.BiomeState CreateBiome()
+    {
+        return new GaiaEngine.Domain.World.BiomeState(
+            GaiaEngine.Domain.Identifiers.BiomeId.FromSequence(new GaiaEngine.Domain.Identifiers.EntitySequence(24)),
+            "Grassland",
+            GaiaEngine.Domain.World.BiomeCategory.Plains,
+            "Open plains biome.",
+            new GaiaEngine.Domain.World.BiomeClimateProfile(18, 2, 55, 4, 8),
+            new GaiaEngine.Domain.World.BiomeTerrainProfile(0, 20, GaiaEngine.Domain.World.SoilType.Loam, GaiaEngine.Domain.World.SurfaceType.Grass, 60),
+            new GaiaEngine.Domain.World.BiomeResourceProfile(750, 800, 500, 800),
+            new GaiaEngine.Domain.World.BiomeVegetationProfile(GaiaEngine.Domain.World.VegetationType.Grassland, 62),
+            new GaiaEngine.Domain.World.BiomeSpeciesAffinityProfile(72, 46, 60, 20));
     }
 
     private static GaiaEngine.Domain.World.TerrainState CreateTerrain()

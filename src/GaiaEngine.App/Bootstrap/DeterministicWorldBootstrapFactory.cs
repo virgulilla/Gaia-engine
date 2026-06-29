@@ -87,6 +87,17 @@ public sealed class DeterministicWorldBootstrapFactory
     {
         ChunkId chunkId = idGenerator.CreateChunkId(new IdentifierGenerationContext(worldSeed, 0, new EntitySequence(sequence)));
         long chunkSeedValue = worldSeed.Value + (column * 101L) + (row * 211L) + (long)sequence;
+        TerrainState terrain = CreateTerrainState(column, row, chunkSeedValue);
+        ChunkResources resources = CreateDefaultResources(sequence);
+        ClimateState climate = new(
+            worldConfiguration.DefaultClimateZone,
+            WeatherState.Clear,
+            new TemperatureState(18, 18, 18, 0),
+            new HumidityState(55, 3, 2),
+            new WindState(90, 4, 6),
+            new PrecipitationState(PrecipitationType.None, 0, 0, 0),
+            new PressureState(1012));
+        BiomeState biome = CreateBiomeState(worldSeed, sequence, terrain, climate, resources);
 
         return new Chunk(
             new ChunkMetadata(
@@ -96,16 +107,10 @@ public sealed class DeterministicWorldBootstrapFactory
                 new WorldSeed(chunkSeedValue),
                 worldConfiguration.ChunkSize),
             ChunkState.Active,
-            CreateTerrainState(column, row, chunkSeedValue),
-            new ClimateState(
-                worldConfiguration.DefaultClimateZone,
-                WeatherState.Clear,
-                new TemperatureState(18, 18, 18, 0),
-                new HumidityState(55, 3, 2),
-                new WindState(90, 4, 6),
-                new PrecipitationState(PrecipitationType.None, 0, 0, 0),
-                new PressureState(1012)),
-            CreateDefaultResources(sequence),
+            terrain,
+            biome,
+            climate,
+            resources,
             Array.Empty<OrganismId>());
     }
 
@@ -280,4 +285,189 @@ public sealed class DeterministicWorldBootstrapFactory
             _ => SurfaceType.Grass,
         };
     }
+
+    private BiomeState CreateBiomeState(WorldSeed worldSeed, ulong chunkSequence, TerrainState terrain, ClimateState climate, ChunkResources resources)
+    {
+        BiomeDefinition definition = ResolveBiomeDefinition(terrain, climate, resources);
+        BiomeId biomeId = idGenerator.CreateBiomeId(new IdentifierGenerationContext(worldSeed, 0, new EntitySequence((chunkSequence * 10) + 4)));
+
+        return new BiomeState(
+            biomeId,
+            definition.Name,
+            definition.Category,
+            definition.Description,
+            definition.ClimateProfile,
+            definition.TerrainProfile,
+            definition.ResourceProfile,
+            definition.VegetationProfile,
+            definition.SpeciesAffinity);
+    }
+
+    private static BiomeDefinition ResolveBiomeDefinition(TerrainState terrain, ClimateState climate, ChunkResources resources)
+    {
+        int waterAvailability = GetAvailability(resources, ResourceType.FreshWater);
+        int vegetationAvailability = GetAvailability(resources, ResourceType.Vegetation);
+        int mineralAvailability = GetAvailability(resources, ResourceType.Minerals);
+
+        if (terrain.Geology == GeologyType.VolcanicRock)
+        {
+            return CreateVolcanicDefinition(terrain, climate, waterAvailability, vegetationAvailability, mineralAvailability);
+        }
+
+        if (terrain.Elevation.RelativeHeight > 35 || terrain.Slope.Gradient >= 24)
+        {
+            return CreateMountainDefinition(terrain, climate, waterAvailability, vegetationAvailability, mineralAvailability);
+        }
+
+        if (climate.Zone == ClimateZone.Arid || vegetationAvailability < 350)
+        {
+            return CreateDesertDefinition(terrain, climate, waterAvailability, vegetationAvailability, mineralAvailability);
+        }
+
+        if (terrain.Surface == SurfaceType.Snow || climate.Zone == ClimateZone.Polar)
+        {
+            return CreateTundraDefinition(terrain, climate, waterAvailability, vegetationAvailability, mineralAvailability);
+        }
+
+        if (terrain.Surface == SurfaceType.Mud && waterAvailability >= 700)
+        {
+            return CreateSwampDefinition(terrain, climate, waterAvailability, vegetationAvailability, mineralAvailability);
+        }
+
+        if (climate.Zone == ClimateZone.Tropical && vegetationAvailability >= 750)
+        {
+            return CreateRainforestDefinition(terrain, climate, waterAvailability, vegetationAvailability, mineralAvailability);
+        }
+
+        if (vegetationAvailability >= 720)
+        {
+            return CreateForestDefinition(terrain, climate, waterAvailability, vegetationAvailability, mineralAvailability);
+        }
+
+        return CreateGrasslandDefinition(terrain, climate, waterAvailability, vegetationAvailability, mineralAvailability);
+    }
+
+    private static int GetAvailability(ChunkResources resources, ResourceType resourceType)
+    {
+        if (!resources.TryGet(resourceType, out ResourceState? resource))
+        {
+            throw new InvalidOperationException($"The chunk resource '{resourceType}' is required to classify a biome.");
+        }
+
+        return resource!.Availability;
+    }
+
+    private static BiomeDefinition CreateGrasslandDefinition(TerrainState terrain, ClimateState climate, int water, int vegetation, int minerals)
+    {
+        return new BiomeDefinition(
+            "Grassland",
+            BiomeCategory.Plains,
+            "Open plains with moderate fertility and dominant grass vegetation.",
+            new BiomeClimateProfile(18, climate.Precipitation.Intensity, climate.Humidity.RelativeHumidity, climate.Wind.Speed, 8),
+            new BiomeTerrainProfile(terrain.Elevation.Height - 10, terrain.Elevation.Height + 10, terrain.Soil.SoilType, terrain.Surface, terrain.Soil.Drainage),
+            new BiomeResourceProfile(water, vegetation, minerals, vegetation),
+            new BiomeVegetationProfile(VegetationType.Grassland, 62),
+            new BiomeSpeciesAffinityProfile(72, 46, 60, 20));
+    }
+
+    private static BiomeDefinition CreateForestDefinition(TerrainState terrain, ClimateState climate, int water, int vegetation, int minerals)
+    {
+        return new BiomeDefinition(
+            "Forest",
+            BiomeCategory.Forest,
+            "Dense wooded biome with strong biomass and shelter availability.",
+            new BiomeClimateProfile(17, climate.Precipitation.Intensity + 2, Math.Max(climate.Humidity.RelativeHumidity, 60), climate.Wind.Speed, 10),
+            new BiomeTerrainProfile(terrain.Elevation.Height - 12, terrain.Elevation.Height + 12, terrain.Soil.SoilType, SurfaceType.Grass, terrain.Soil.Drainage),
+            new BiomeResourceProfile(water, vegetation, minerals, Math.Min(1000, vegetation + 120)),
+            new BiomeVegetationProfile(VegetationType.Forest, 84),
+            new BiomeSpeciesAffinityProfile(80, 58, 78, 24));
+    }
+
+    private static BiomeDefinition CreateRainforestDefinition(TerrainState terrain, ClimateState climate, int water, int vegetation, int minerals)
+    {
+        return new BiomeDefinition(
+            "Rainforest",
+            BiomeCategory.Forest,
+            "Humid tropical biome with abundant biomass and dense vegetation.",
+            new BiomeClimateProfile(26, Math.Max(8, climate.Precipitation.Intensity + 4), Math.Max(climate.Humidity.RelativeHumidity, 78), climate.Wind.Speed, 6),
+            new BiomeTerrainProfile(terrain.Elevation.Height - 8, terrain.Elevation.Height + 8, terrain.Soil.SoilType, SurfaceType.Grass, terrain.Soil.Drainage),
+            new BiomeResourceProfile(Math.Min(1000, water + 120), Math.Min(1000, vegetation + 120), minerals, Math.Min(1000, vegetation + 180)),
+            new BiomeVegetationProfile(VegetationType.Forest, 94),
+            new BiomeSpeciesAffinityProfile(86, 62, 92, 38));
+    }
+
+    private static BiomeDefinition CreateSwampDefinition(TerrainState terrain, ClimateState climate, int water, int vegetation, int minerals)
+    {
+        return new BiomeDefinition(
+            "Swamp",
+            BiomeCategory.Wetland,
+            "Waterlogged biome with rich organic matter and high aquatic suitability.",
+            new BiomeClimateProfile(20, Math.Max(6, climate.Precipitation.Intensity), Math.Max(climate.Humidity.RelativeHumidity, 72), climate.Wind.Speed, 7),
+            new BiomeTerrainProfile(terrain.Elevation.Height - 6, terrain.Elevation.Height + 4, terrain.Soil.SoilType, SurfaceType.Mud, terrain.Soil.Drainage),
+            new BiomeResourceProfile(Math.Min(1000, water + 140), vegetation, minerals, Math.Min(1000, vegetation + 80)),
+            new BiomeVegetationProfile(VegetationType.Shrubs, 70),
+            new BiomeSpeciesAffinityProfile(68, 40, 74, 88));
+    }
+
+    private static BiomeDefinition CreateDesertDefinition(TerrainState terrain, ClimateState climate, int water, int vegetation, int minerals)
+    {
+        return new BiomeDefinition(
+            "Desert",
+            BiomeCategory.Arid,
+            "Dry biome with scarce vegetation and exposed mineral surfaces.",
+            new BiomeClimateProfile(28, climate.Precipitation.Intensity, Math.Min(climate.Humidity.RelativeHumidity, 30), climate.Wind.Speed + 2, 14),
+            new BiomeTerrainProfile(terrain.Elevation.Height - 14, terrain.Elevation.Height + 14, SoilType.Sand, SurfaceType.Sand, Math.Max(terrain.Soil.Drainage, 70)),
+            new BiomeResourceProfile(Math.Min(water, 320), Math.Min(vegetation, 260), Math.Max(minerals, 550), Math.Min(vegetation, 180)),
+            new BiomeVegetationProfile(VegetationType.None, 12),
+            new BiomeSpeciesAffinityProfile(26, 24, 10, 4));
+    }
+
+    private static BiomeDefinition CreateTundraDefinition(TerrainState terrain, ClimateState climate, int water, int vegetation, int minerals)
+    {
+        return new BiomeDefinition(
+            "Tundra",
+            BiomeCategory.Cold,
+            "Cold open biome with low vegetation density and short growing seasons.",
+            new BiomeClimateProfile(-4, climate.Precipitation.Intensity, Math.Max(climate.Humidity.RelativeHumidity, 42), climate.Wind.Speed, 16),
+            new BiomeTerrainProfile(terrain.Elevation.Height - 10, terrain.Elevation.Height + 10, terrain.Soil.SoilType, terrain.Surface, terrain.Soil.Drainage),
+            new BiomeResourceProfile(water, Math.Min(vegetation, 300), minerals, Math.Min(vegetation, 220)),
+            new BiomeVegetationProfile(VegetationType.Moss, 28),
+            new BiomeSpeciesAffinityProfile(34, 30, 22, 18));
+    }
+
+    private static BiomeDefinition CreateMountainDefinition(TerrainState terrain, ClimateState climate, int water, int vegetation, int minerals)
+    {
+        return new BiomeDefinition(
+            "Mountain",
+            BiomeCategory.Mountain,
+            "High-relief biome with steep slopes and strong mineral exposure.",
+            new BiomeClimateProfile(8, climate.Precipitation.Intensity, climate.Humidity.RelativeHumidity, climate.Wind.Speed + 3, 18),
+            new BiomeTerrainProfile(terrain.Elevation.Height - 6, terrain.Elevation.Height + 20, terrain.Soil.SoilType, terrain.Surface, terrain.Soil.Drainage),
+            new BiomeResourceProfile(water, Math.Min(vegetation, 420), Math.Max(minerals, 650), Math.Min(vegetation, 260)),
+            new BiomeVegetationProfile(VegetationType.Shrubs, 24),
+            new BiomeSpeciesAffinityProfile(30, 42, 18, 12));
+    }
+
+    private static BiomeDefinition CreateVolcanicDefinition(TerrainState terrain, ClimateState climate, int water, int vegetation, int minerals)
+    {
+        return new BiomeDefinition(
+            "Volcanic",
+            BiomeCategory.Volcanic,
+            "Geologically active biome with exposed volcanic rock and high mineral availability.",
+            new BiomeClimateProfile(22, climate.Precipitation.Intensity, climate.Humidity.RelativeHumidity, climate.Wind.Speed + 1, 12),
+            new BiomeTerrainProfile(terrain.Elevation.Height - 8, terrain.Elevation.Height + 16, terrain.Soil.SoilType, SurfaceType.Rock, terrain.Soil.Drainage),
+            new BiomeResourceProfile(water, Math.Min(vegetation, 320), Math.Max(minerals, 820), Math.Min(vegetation, 220)),
+            new BiomeVegetationProfile(VegetationType.None, 8),
+            new BiomeSpeciesAffinityProfile(14, 18, 6, 2));
+    }
+
+    private sealed record BiomeDefinition(
+        string Name,
+        BiomeCategory Category,
+        string Description,
+        BiomeClimateProfile ClimateProfile,
+        BiomeTerrainProfile TerrainProfile,
+        BiomeResourceProfile ResourceProfile,
+        BiomeVegetationProfile VegetationProfile,
+        BiomeSpeciesAffinityProfile SpeciesAffinity);
 }

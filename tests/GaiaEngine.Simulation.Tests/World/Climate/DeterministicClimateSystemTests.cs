@@ -81,6 +81,7 @@ public sealed class DeterministicClimateSystemTests
                 16),
             ChunkState.Active,
             CreateTerrain(sequence),
+            CreateBiome(sequence),
             new ClimateState(
                 zone,
                 WeatherState.Clear,
@@ -91,6 +92,20 @@ public sealed class DeterministicClimateSystemTests
                 new PressureState(1012)),
             CreateResources(sequence),
             Array.Empty<OrganismId>());
+    }
+
+    private static BiomeState CreateBiome(ulong sequence)
+    {
+        return new BiomeState(
+            BiomeId.FromSequence(new EntitySequence((sequence * 10) + 4)),
+            "Grassland",
+            BiomeCategory.Plains,
+            "Open plains with moderate fertility and dominant grass vegetation.",
+            new BiomeClimateProfile(18, 2, 55, 4, 8),
+            new BiomeTerrainProfile(40, 80, SoilType.Loam, SurfaceType.Grass, 60),
+            new BiomeResourceProfile(750, 800, 500, 800),
+            new BiomeVegetationProfile(VegetationType.Grassland, 62),
+            new BiomeSpeciesAffinityProfile(72, 46, 60, 20));
     }
 
     private static TerrainState CreateTerrain(ulong sequence)

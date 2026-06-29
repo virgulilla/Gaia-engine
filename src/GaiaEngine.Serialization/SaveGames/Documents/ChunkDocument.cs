@@ -23,6 +23,8 @@ internal sealed class ChunkDocument
 
     public TerrainStateDocument Terrain { get; set; } = new();
 
+    public BiomeStateDocument Biome { get; set; } = new();
+
     public ClimateStateDocument Climate { get; set; } = new();
 
     public List<ResourceStateDocument> Resources { get; set; } = new();

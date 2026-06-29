@@ -29,6 +29,7 @@ public sealed class GaiaEngineApplicationTests
         Assert.Equal("Gaia", first.World.Metadata.WorldName);
         Assert.Equal(4, first.World.ChunkCount);
         Assert.True(first.World.GetChunks()[0].Terrain.Elevation.Height >= 0);
+        Assert.False(string.IsNullOrWhiteSpace(first.World.GetChunks()[0].Biome.Name));
         Assert.Equal(3, first.World.GetChunks()[0].Resources.Count);
     }
 
