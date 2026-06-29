@@ -31,6 +31,11 @@ public interface ISimulationSession
     public GenomeCollection CurrentGenomes { get; }
 
     /// <summary>
+    /// Gets the current simulation species state.
+    /// </summary>
+    public SpeciesCollection CurrentSpecies { get; }
+
+    /// <summary>
     /// Gets the current movement request state.
     /// </summary>
     public MovementRequestCollection CurrentMovementRequests { get; }

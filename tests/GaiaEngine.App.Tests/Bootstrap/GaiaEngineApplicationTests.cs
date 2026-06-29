@@ -34,6 +34,8 @@ public sealed class GaiaEngineApplicationTests
         Assert.Equal(3, first.World.GetChunks()[0].Resources.Count);
         Assert.Equal(first.World.ChunkCount, first.Organisms.Count);
         Assert.Equal(first.Organisms.Count, first.Genomes.Count);
+        Assert.Single(first.Species.GetAll());
+        Assert.Equal(first.Organisms.Count, first.Species.GetAll()[0].GetFounderPopulation().Count);
         Assert.True(first.Genomes.TryGet(first.Organisms.GetAll()[0].GenomeId, out _));
         Assert.Empty(first.ActionRequests.GetAll());
         Assert.Single(first.World.GetChunks()[0].OrganismIds);

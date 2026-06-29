@@ -63,6 +63,11 @@ public sealed class GaiaEngineRuntime
     public GenomeCollection Genomes => SimulationSession.CurrentGenomes;
 
     /// <summary>
+    /// Gets the initialized species bootstrap state.
+    /// </summary>
+    public SpeciesCollection Species => SimulationSession.CurrentSpecies;
+
+    /// <summary>
     /// Gets the initialized common action request state.
     /// </summary>
     public SimulationActionRequestCollection ActionRequests => SimulationSession.CurrentActionRequests;

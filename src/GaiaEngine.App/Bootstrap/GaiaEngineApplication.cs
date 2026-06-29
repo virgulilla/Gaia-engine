@@ -167,7 +167,8 @@ public sealed class GaiaEngineApplication
             tickPipeline,
             bootstrapOrganismState.World,
             bootstrapOrganismState.Organisms,
-            bootstrapOrganismState.Genomes);
+            bootstrapOrganismState.Genomes,
+            bootstrapOrganismState.Species);
 
         return new GaiaEngineRuntime(engineConfiguration, simulationConfiguration, simulationSession);
     }

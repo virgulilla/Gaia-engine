@@ -84,7 +84,18 @@ public sealed class DeterministicOrganismBootstrapFactory
             world.TimeState,
             updatedChunks.AsReadOnly());
 
-        return new OrganismBootstrapState(updatedWorld, new OrganismCollection(organisms.AsReadOnly()), new GenomeCollection(genomes.AsReadOnly()));
+        Species starterSpecies = new(
+            starterSpeciesId,
+            parentSpeciesId: null,
+            world.TimeState.CurrentTick,
+            extinctionTick: null,
+            organisms.ConvertAll(static organism => organism.Id).AsReadOnly());
+
+        return new OrganismBootstrapState(
+            updatedWorld,
+            new OrganismCollection(organisms.AsReadOnly()),
+            new GenomeCollection(genomes.AsReadOnly()),
+            new SpeciesCollection(new[] { starterSpecies }));
     }
 
     private Organism CreateOrganism(

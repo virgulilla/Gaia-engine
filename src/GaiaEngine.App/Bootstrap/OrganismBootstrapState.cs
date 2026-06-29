@@ -15,14 +15,16 @@ public sealed record OrganismBootstrapState
     /// <param name="world">The world updated with organism references.</param>
     /// <param name="organisms">The initial organism collection.</param>
     /// <param name="genomes">The initial genome collection.</param>
+    /// <param name="species">The initial species collection.</param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="world"/>, <paramref name="organisms"/>, or <paramref name="genomes"/> is <see langword="null"/>.
+    /// Thrown when <paramref name="world"/>, <paramref name="organisms"/>, <paramref name="genomes"/>, or <paramref name="species"/> is <see langword="null"/>.
     /// </exception>
-    public OrganismBootstrapState(GaiaEngine.Domain.World.World world, OrganismCollection organisms, GenomeCollection genomes)
+    public OrganismBootstrapState(GaiaEngine.Domain.World.World world, OrganismCollection organisms, GenomeCollection genomes, SpeciesCollection species)
     {
         World = world ?? throw new ArgumentNullException(nameof(world));
         Organisms = organisms ?? throw new ArgumentNullException(nameof(organisms));
         Genomes = genomes ?? throw new ArgumentNullException(nameof(genomes));
+        Species = species ?? throw new ArgumentNullException(nameof(species));
     }
 
     /// <summary>
@@ -39,4 +41,9 @@ public sealed record OrganismBootstrapState
     /// Gets the initial genome collection.
     /// </summary>
     public GenomeCollection Genomes { get; }
+
+    /// <summary>
+    /// Gets the initial species collection.
+    /// </summary>
+    public SpeciesCollection Species { get; }
 }

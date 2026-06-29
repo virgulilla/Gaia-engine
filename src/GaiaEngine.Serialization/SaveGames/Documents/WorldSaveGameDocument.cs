@@ -33,6 +33,11 @@ internal sealed class WorldSaveGameDocument
     public List<GenomeDocument> Genomes { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets the serialized species section.
+    /// </summary>
+    public List<SpeciesDocument> Species { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets the serialized action request section.
     /// </summary>
     public List<ActionRequestDocument> ActionRequests { get; set; } = new();

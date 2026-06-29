@@ -49,6 +49,9 @@ public sealed class JsonWorldSaveGameSerializerTests
         Assert.Equal(saveGame.Genomes.GetAll()[0].Physiology.GetGenes()[0].Key, restored.Genomes.GetAll()[0].Physiology.GetGenes()[0].Key);
         Assert.Equal(saveGame.Genomes.GetAll()[0].MutationVersion, restored.Genomes.GetAll()[0].MutationVersion);
         Assert.Single(restored.Genomes.GetAll()[0].MutationHistory.GetAll());
+        Assert.Single(restored.Species.GetAll());
+        Assert.Equal(saveGame.Species.GetAll()[0].Id, restored.Species.GetAll()[0].Id);
+        Assert.Equal(saveGame.Species.GetAll()[0].GetFounderPopulation()[0], restored.Species.GetAll()[0].GetFounderPopulation()[0]);
         Assert.Single(restored.ActionRequests.GetAll());
         Assert.Equal(saveGame.ActionRequests.GetAll()[0].ActionId, restored.ActionRequests.GetAll()[0].ActionId);
         Assert.Equal(saveGame.ActionRequests.GetAll()[0].ActionType, restored.ActionRequests.GetAll()[0].ActionType);
@@ -181,11 +184,18 @@ public sealed class JsonWorldSaveGameSerializerTests
             "1.0.0");
 
         SaveVersionInfo version = new("1.0.0", new EngineVersion(1, 0, 0), "1.0.0");
+        Species species = new(
+            organism.SpeciesId,
+            parentSpeciesId: null,
+            originTick: 0,
+            extinctionTick: null,
+            new[] { organism.Id });
         return new WorldSaveGame(
             metadata,
             world,
             new OrganismCollection(new[] { organism }),
             new GenomeCollection(new[] { genome }),
+            new SpeciesCollection(new[] { species }),
             new SimulationActionRequestCollection(new[] { actionRequest }),
             new ConfigurationVersion("2026.06.28"),
             version);

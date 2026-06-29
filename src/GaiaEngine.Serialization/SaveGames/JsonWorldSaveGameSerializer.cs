@@ -66,6 +66,7 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
         List<ChunkDocument> chunkDocuments = new();
         List<OrganismDocument> organismDocuments = new();
         List<GenomeDocument> genomeDocuments = new();
+        List<SpeciesDocument> speciesDocuments = new();
         List<ActionRequestDocument> actionRequestDocuments = new();
         foreach (Chunk chunk in saveGame.World.GetChunks())
         {
@@ -281,6 +282,11 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                 });
         }
 
+        foreach (Species species in saveGame.Species.GetAll())
+        {
+            speciesDocuments.Add(CreateSpeciesDocument(species));
+        }
+
         foreach (SimulationActionRequest actionRequest in saveGame.ActionRequests.GetAll())
         {
             actionRequestDocuments.Add(
@@ -332,6 +338,7 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
             ConfigurationVersion = saveGame.ConfigurationVersion.ToString(),
             Organisms = organismDocuments,
             Genomes = genomeDocuments,
+            Species = speciesDocuments,
             ActionRequests = actionRequestDocuments,
             Version = new SaveVersionInfoDocument
             {
@@ -596,6 +603,15 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
         GenomeCollection genomeCollection = new(genomes.AsReadOnly());
         ValidateGenomeReferences(organismCollection, genomeCollection);
 
+        List<Species> species = new(document.Species.Count);
+        foreach (SpeciesDocument speciesDocument in document.Species)
+        {
+            species.Add(CreateSpecies(speciesDocument));
+        }
+
+        SpeciesCollection speciesCollection = new(species.AsReadOnly());
+        ValidateSpeciesReferences(organismCollection, speciesCollection);
+
         List<SimulationActionRequest> actionRequests = new(document.ActionRequests.Count);
         foreach (ActionRequestDocument actionRequestDocument in document.ActionRequests)
         {
@@ -632,6 +648,7 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
             world,
             organismCollection,
             genomeCollection,
+            speciesCollection,
             new SimulationActionRequestCollection(actionRequests.AsReadOnly()),
             new ConfigurationVersion(document.ConfigurationVersion),
             version);
@@ -711,6 +728,24 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
         return documents;
     }
 
+    private static SpeciesDocument CreateSpeciesDocument(Species species)
+    {
+        List<string> founderPopulation = new(species.GetFounderPopulation().Count);
+        foreach (OrganismId founderId in species.GetFounderPopulation())
+        {
+            founderPopulation.Add(founderId.ToString());
+        }
+
+        return new SpeciesDocument
+        {
+            SpeciesId = species.Id.ToString(),
+            ParentSpeciesId = species.ParentSpeciesId?.ToString(),
+            OriginTick = species.OriginTick,
+            ExtinctionTick = species.ExtinctionTick,
+            FounderPopulation = founderPopulation,
+        };
+    }
+
     private static GenomeGeneGroup CreateGenomeGeneGroup(GenomeGeneGroupDocument? document, GenomeGroupType expectedGroupType)
     {
         if (document is null)
@@ -759,6 +794,22 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
         return new GenomeMutationHistory(records.AsReadOnly());
     }
 
+    private static Species CreateSpecies(SpeciesDocument document)
+    {
+        List<OrganismId> founderPopulation = new(document.FounderPopulation.Count);
+        foreach (string founderId in document.FounderPopulation)
+        {
+            founderPopulation.Add(OrganismId.Parse(founderId));
+        }
+
+        return new Species(
+            SpeciesId.Parse(document.SpeciesId),
+            string.IsNullOrWhiteSpace(document.ParentSpeciesId) ? null : SpeciesId.Parse(document.ParentSpeciesId),
+            document.OriginTick,
+            document.ExtinctionTick,
+            founderPopulation.AsReadOnly());
+    }
+
     private static void ValidateGenomeReferences(OrganismCollection organisms, GenomeCollection genomes)
     {
         foreach (Organism organism in organisms.GetAll())
@@ -766,6 +817,17 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
             if (!genomes.TryGet(organism.GenomeId, out _))
             {
                 throw new InvalidOperationException($"The organism '{organism.Id}' references a missing genome.");
+            }
+        }
+    }
+
+    private static void ValidateSpeciesReferences(OrganismCollection organisms, SpeciesCollection species)
+    {
+        foreach (Organism organism in organisms.GetAll())
+        {
+            if (!species.TryGet(organism.SpeciesId, out _))
+            {
+                throw new InvalidOperationException($"The organism '{organism.Id}' references a missing species.");
             }
         }
     }
