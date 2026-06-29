@@ -1,5 +1,6 @@
 using System;
 using GaiaEngine.Simulation.Diagnostics;
+using GaiaEngine.Simulation.Genetics;
 using GaiaEngine.Simulation.Organisms;
 
 namespace GaiaEngine.Simulation.Pipeline;
@@ -10,15 +11,18 @@ namespace GaiaEngine.Simulation.Pipeline;
 public sealed class OrganismUpdatePhase : ISimulationTickPhase
 {
     private readonly IOrganismUpdateSystem organismUpdateSystem;
+    private readonly ISpeciesLifecycleSystem speciesLifecycleSystem;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OrganismUpdatePhase"/> class.
     /// </summary>
     /// <param name="organismUpdateSystem">The organism system executed during this phase.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="organismUpdateSystem"/> is <see langword="null"/>.</exception>
-    public OrganismUpdatePhase(IOrganismUpdateSystem organismUpdateSystem)
+    /// <param name="speciesLifecycleSystem">The species lifecycle system executed during this phase.</param>
+    /// <exception cref="ArgumentNullException">Thrown when any dependency is <see langword="null"/>.</exception>
+    public OrganismUpdatePhase(IOrganismUpdateSystem organismUpdateSystem, ISpeciesLifecycleSystem speciesLifecycleSystem)
     {
         this.organismUpdateSystem = organismUpdateSystem ?? throw new ArgumentNullException(nameof(organismUpdateSystem));
+        this.speciesLifecycleSystem = speciesLifecycleSystem ?? throw new ArgumentNullException(nameof(speciesLifecycleSystem));
     }
 
     /// <summary>
@@ -40,6 +44,11 @@ public sealed class OrganismUpdatePhase : ISimulationTickPhase
             if (scheduledSystem.SystemName == SimulationSystemNames.Organisms)
             {
                 context.ApplyOrganisms(organismUpdateSystem.Update(context.CurrentWorld, context.CurrentOrganisms));
+            }
+
+            if (scheduledSystem.SystemName == SimulationSystemNames.Species)
+            {
+                context.ApplySpecies(speciesLifecycleSystem.Update(context.CurrentOrganisms, context.CurrentSpecies, context.CurrentTimeState.CurrentTick));
             }
         }
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GaiaEngine.Domain.Genetics;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
@@ -24,6 +25,7 @@ public sealed record SimulationTickResult
     /// </summary>
     /// <param name="world">The resulting world state.</param>
     /// <param name="organisms">The resulting organism state.</param>
+    /// <param name="species">The resulting species state.</param>
     /// <param name="actionRequests">The resulting common action request state.</param>
     /// <param name="movementRequests">The resulting movement request state.</param>
     /// <param name="feedingRequests">The resulting feeding request state.</param>
@@ -42,6 +44,7 @@ public sealed record SimulationTickResult
     public SimulationTickResult(
         GaiaEngine.Domain.World.World world,
         OrganismCollection organisms,
+        SpeciesCollection species,
         SimulationActionRequestCollection actionRequests,
         MovementRequestCollection movementRequests,
         FeedingRequestCollection feedingRequests,
@@ -57,6 +60,7 @@ public sealed record SimulationTickResult
     {
         World = world ?? throw new ArgumentNullException(nameof(world));
         Organisms = organisms ?? throw new ArgumentNullException(nameof(organisms));
+        Species = species ?? throw new ArgumentNullException(nameof(species));
         ActionRequests = actionRequests ?? throw new ArgumentNullException(nameof(actionRequests));
         MovementRequests = movementRequests ?? throw new ArgumentNullException(nameof(movementRequests));
         FeedingRequests = feedingRequests ?? throw new ArgumentNullException(nameof(feedingRequests));
@@ -85,6 +89,11 @@ public sealed record SimulationTickResult
     /// Gets the resulting organism state.
     /// </summary>
     public OrganismCollection Organisms { get; }
+
+    /// <summary>
+    /// Gets the resulting species state.
+    /// </summary>
+    public SpeciesCollection Species { get; }
 
     /// <summary>
     /// Gets the resulting common action request state.

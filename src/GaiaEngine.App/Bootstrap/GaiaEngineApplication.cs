@@ -8,6 +8,7 @@ using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
 using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.Events;
+using GaiaEngine.Simulation.Genetics;
 using GaiaEngine.Simulation.Interactions.Feeding;
 using GaiaEngine.Simulation.Interactions.Hydration;
 using GaiaEngine.Simulation.Interactions.Movement;
@@ -94,6 +95,7 @@ public sealed class GaiaEngineApplication
             evaporationDivider: 4);
         DeterministicResourceSystem resourceSystem = new(resourceSettings);
         DeterministicOrganismUpdateSystem organismUpdateSystem = new();
+        DeterministicSpeciesLifecycleSystem speciesLifecycleSystem = new();
         DeterministicSpatialQueryService spatialQueryService = new();
         DeterministicMovementSystem movementSystem = new(spatialQueryService);
         DeterministicFeedingSystem feedingSystem = new();
@@ -122,6 +124,11 @@ public sealed class GaiaEngineApplication
                     SimulationTickPhase.OrganismUpdate,
                     frequency: 1,
                     priority: 0),
+                new ScheduledSimulationSystemDefinition(
+                    SimulationSystemNames.Species,
+                    SimulationTickPhase.OrganismUpdate,
+                    frequency: 1,
+                    priority: 1),
                 new ScheduledSimulationSystemDefinition(
                     SimulationSystemNames.Movement,
                     SimulationTickPhase.InteractionSystems,
@@ -156,7 +163,7 @@ public sealed class GaiaEngineApplication
                 new NoOpSimulationTickPhase(SimulationTickPhase.InputCollection),
                 new NoOpSimulationTickPhase(SimulationTickPhase.PreUpdate),
                 new WorldUpdateTimePhase(timeSystem, scheduler, climateSystem, waterSystem, resourceSystem, eventPublisher),
-                new OrganismUpdatePhase(organismUpdateSystem),
+                new OrganismUpdatePhase(organismUpdateSystem, speciesLifecycleSystem),
                 new InteractionSystemsPhase(movementSystem, feedingSystem, hydrationSystem, actionRequestDispatcher),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
                 new EventDispatchPhase(eventBus),
