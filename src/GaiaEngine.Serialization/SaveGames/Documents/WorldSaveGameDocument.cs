@@ -28,6 +28,11 @@ internal sealed class WorldSaveGameDocument
     public List<OrganismDocument> Organisms { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets the serialized action request section.
+    /// </summary>
+    public List<ActionRequestDocument> ActionRequests { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets the serialized version section.
     /// </summary>
     public SaveVersionInfoDocument? Version { get; set; }

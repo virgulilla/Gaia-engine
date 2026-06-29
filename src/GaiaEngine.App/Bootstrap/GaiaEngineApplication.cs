@@ -5,6 +5,7 @@ using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
+using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.Events;
 using GaiaEngine.Simulation.Interactions.Feeding;
 using GaiaEngine.Simulation.Interactions.Hydration;
@@ -96,6 +97,7 @@ public sealed class GaiaEngineApplication
         DeterministicMovementSystem movementSystem = new(spatialQueryService);
         DeterministicFeedingSystem feedingSystem = new();
         DeterministicHydrationSystem hydrationSystem = new();
+        DeterministicActionRequestDispatcher actionRequestDispatcher = new();
         DeterministicSimulationScheduler scheduler = new(
             new[]
             {
@@ -151,7 +153,7 @@ public sealed class GaiaEngineApplication
                 new NoOpSimulationTickPhase(SimulationTickPhase.PreUpdate),
                 new WorldUpdateTimePhase(timeSystem, scheduler, climateSystem, waterSystem, resourceSystem, eventPublisher),
                 new OrganismUpdatePhase(organismUpdateSystem),
-                new InteractionSystemsPhase(movementSystem, feedingSystem, hydrationSystem),
+                new InteractionSystemsPhase(movementSystem, feedingSystem, hydrationSystem, actionRequestDispatcher),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
                 new EventDispatchPhase(eventBus),
                 new PostUpdateStatisticsPhase(diagnosticsCollector),

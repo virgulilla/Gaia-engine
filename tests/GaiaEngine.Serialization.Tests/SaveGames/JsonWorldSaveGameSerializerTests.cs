@@ -6,6 +6,7 @@ using GaiaEngine.Domain.World;
 using GaiaEngine.Foundation.Configuration;
 using GaiaEngine.Foundation.Determinism;
 using GaiaEngine.Foundation.Versioning;
+using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Serialization.SaveGames;
 using Xunit;
 
@@ -42,6 +43,9 @@ public sealed class JsonWorldSaveGameSerializerTests
         Assert.Equal(saveGame.Organisms.GetAll()[0].Id, restored.Organisms.GetAll()[0].Id);
         Assert.Equal(saveGame.Organisms.GetAll()[0].CurrentChunkId, restored.Organisms.GetAll()[0].CurrentChunkId);
         Assert.Equal(saveGame.Organisms.GetAll()[0].Needs.Hunger, restored.Organisms.GetAll()[0].Needs.Hunger);
+        Assert.Single(restored.ActionRequests.GetAll());
+        Assert.Equal(saveGame.ActionRequests.GetAll()[0].ActionId, restored.ActionRequests.GetAll()[0].ActionId);
+        Assert.Equal(saveGame.ActionRequests.GetAll()[0].ActionType, restored.ActionRequests.GetAll()[0].ActionType);
     }
 
     [Fact]
@@ -50,7 +54,7 @@ public sealed class JsonWorldSaveGameSerializerTests
         JsonWorldSaveGameSerializer serializer = new();
         string payload =
             """
-            {"world":{"worldId":"72057594037927937","worldName":"Gaia","seed":42,"creationDate":"2026-06-28","engineVersion":"1.0.0","configurationVersion":"2026.06.28","width":10,"height":10,"chunkSize":16,"chunkCount":0,"maximumElevation":1,"currentTick":0,"currentDay":0,"currentSeason":"Spring","currentYear":0,"chunks":[]},"configurationVersion":"2026.06.28","organisms":[],"version":{"formatVersion":"1.0.0","engineVersion":"1.0.0","contentVersion":"1.0.0"}}
+            {"world":{"worldId":"72057594037927937","worldName":"Gaia","seed":42,"creationDate":"2026-06-28","engineVersion":"1.0.0","configurationVersion":"2026.06.28","width":10,"height":10,"chunkSize":16,"chunkCount":0,"maximumElevation":1,"currentTick":0,"currentDay":0,"currentSeason":"Spring","currentYear":0,"chunks":[]},"configurationVersion":"2026.06.28","organisms":[],"actionRequests":[],"version":{"formatVersion":"1.0.0","engineVersion":"1.0.0","contentVersion":"1.0.0"}}
             """;
 
         Assert.Throws<InvalidOperationException>(() => serializer.Deserialize(payload));
@@ -62,7 +66,7 @@ public sealed class JsonWorldSaveGameSerializerTests
         JsonWorldSaveGameSerializer serializer = new();
         string payload =
             """
-            {"metadata":{"saveName":"Gaia","creationDate":"2026-06-28","lastModified":"2026-06-28","worldSeed":42,"engineVersion":"1.0.0","saveVersion":"1.0.0"},"world":{"worldId":"72057594037927937","worldName":"Gaia","seed":42,"creationDate":"2026-06-28","engineVersion":"1.0.0","configurationVersion":"2026.06.28","width":10,"height":10,"chunkSize":16,"chunkCount":1,"maximumElevation":1,"currentTick":0,"currentDay":0,"currentSeason":"Spring","currentYear":0,"chunks":[{"chunkId":"144115188075855873","worldId":"72057594037927938","x":0,"y":0,"seed":1,"size":16,"state":"Active","terrain":{"height":10,"relativeHeight":0,"seaLevelOffset":0,"gradient":4,"aspect":90,"traversalCost":120,"soilType":"Loam","fertility":70,"drainage":60,"moistureCapacity":70,"organicMatter":65,"surface":"Grass","geology":"Granite","modifiers":[]},"biome":{"biomeId":"504403158265495658","name":"Grassland","category":"Plains","description":"Open plains biome.","averageTemperature":18,"averageRainfall":2,"humidity":55,"windIntensity":4,"seasonalVariation":8,"minimumElevation":0,"maximumElevation":20,"dominantSoil":"Loam","surface":"Grass","drainage":60,"water":750,"food":800,"minerals":500,"biomass":800,"dominantVegetation":"Grassland","vegetationDensity":62,"herbivoreAffinity":72,"carnivoreAffinity":46,"plantDiversity":60,"aquaticSuitability":20},"climate":{"zone":"Temperate","weatherState":"Clear","currentTemperature":18,"dailyAverageTemperature":18,"seasonalAverageTemperature":18,"dailyTemperatureVariation":0,"relativeHumidity":55,"evaporationRate":3,"condensationRate":2,"windDirection":90,"windSpeed":4,"windGustStrength":6,"precipitationType":"None","precipitationIntensity":0,"precipitationDuration":0,"precipitationCoverage":0,"pressure":1012},"water":{"surfaceWater":{"waterLevel":220,"flowSpeed":3,"flowDirection":90,"waterVolume":400},"groundWater":{"waterTable":42,"saturation":58,"rechargeRate":6,"extractionRate":0},"river":null,"lake":null,"ocean":null},"resources":[],"organismIds":[]}]},"configurationVersion":"2026.06.28","organisms":[],"version":{"formatVersion":"1.0.0","engineVersion":"1.0.0","contentVersion":"1.0.0"}}
+            {"metadata":{"saveName":"Gaia","creationDate":"2026-06-28","lastModified":"2026-06-28","worldSeed":42,"engineVersion":"1.0.0","saveVersion":"1.0.0"},"world":{"worldId":"72057594037927937","worldName":"Gaia","seed":42,"creationDate":"2026-06-28","engineVersion":"1.0.0","configurationVersion":"2026.06.28","width":10,"height":10,"chunkSize":16,"chunkCount":1,"maximumElevation":1,"currentTick":0,"currentDay":0,"currentSeason":"Spring","currentYear":0,"chunks":[{"chunkId":"144115188075855873","worldId":"72057594037927938","x":0,"y":0,"seed":1,"size":16,"state":"Active","terrain":{"height":10,"relativeHeight":0,"seaLevelOffset":0,"gradient":4,"aspect":90,"traversalCost":120,"soilType":"Loam","fertility":70,"drainage":60,"moistureCapacity":70,"organicMatter":65,"surface":"Grass","geology":"Granite","modifiers":[]},"biome":{"biomeId":"504403158265495658","name":"Grassland","category":"Plains","description":"Open plains biome.","averageTemperature":18,"averageRainfall":2,"humidity":55,"windIntensity":4,"seasonalVariation":8,"minimumElevation":0,"maximumElevation":20,"dominantSoil":"Loam","surface":"Grass","drainage":60,"water":750,"food":800,"minerals":500,"biomass":800,"dominantVegetation":"Grassland","vegetationDensity":62,"herbivoreAffinity":72,"carnivoreAffinity":46,"plantDiversity":60,"aquaticSuitability":20},"climate":{"zone":"Temperate","weatherState":"Clear","currentTemperature":18,"dailyAverageTemperature":18,"seasonalAverageTemperature":18,"dailyTemperatureVariation":0,"relativeHumidity":55,"evaporationRate":3,"condensationRate":2,"windDirection":90,"windSpeed":4,"windGustStrength":6,"precipitationType":"None","precipitationIntensity":0,"precipitationDuration":0,"precipitationCoverage":0,"pressure":1012},"water":{"surfaceWater":{"waterLevel":220,"flowSpeed":3,"flowDirection":90,"waterVolume":400},"groundWater":{"waterTable":42,"saturation":58,"rechargeRate":6,"extractionRate":0},"river":null,"lake":null,"ocean":null},"resources":[],"organismIds":[]}]},"configurationVersion":"2026.06.28","organisms":[],"actionRequests":[],"version":{"formatVersion":"1.0.0","engineVersion":"1.0.0","contentVersion":"1.0.0"}}
             """;
 
         Assert.Throws<ArgumentException>(() => serializer.Deserialize(payload));
@@ -74,7 +78,7 @@ public sealed class JsonWorldSaveGameSerializerTests
         JsonWorldSaveGameSerializer serializer = new();
         string payload =
             """
-            {"metadata":{"saveName":"Gaia","creationDate":"2026-06-28","lastModified":"2026-06-28","worldSeed":42,"engineVersion":"1.0.0","saveVersion":"1.0.0"},"world":{"worldId":"72057594037927937","worldName":"Gaia","seed":42,"creationDate":"2026-06-28","engineVersion":"1.0.0","configurationVersion":"2026.06.28","width":10,"height":10,"chunkSize":16,"chunkCount":1,"maximumElevation":1,"currentTick":0,"currentDay":0,"currentSeason":"Spring","currentYear":0,"chunks":[{"chunkId":"144115188075855874","worldId":"72057594037927937","x":0,"y":0,"seed":1,"size":16,"state":"Active","terrain":{"height":10,"relativeHeight":0,"seaLevelOffset":0,"gradient":4,"aspect":90,"traversalCost":120,"soilType":"Loam","fertility":70,"drainage":60,"moistureCapacity":70,"organicMatter":65,"surface":"Grass","geology":"Granite","modifiers":[]},"biome":{"biomeId":"504403158265495658","name":"Grassland","category":"Plains","description":"Open plains biome.","averageTemperature":18,"averageRainfall":2,"humidity":55,"windIntensity":4,"seasonalVariation":8,"minimumElevation":0,"maximumElevation":20,"dominantSoil":"Loam","surface":"Grass","drainage":60,"water":750,"food":800,"minerals":500,"biomass":800,"dominantVegetation":"Grassland","vegetationDensity":62,"herbivoreAffinity":72,"carnivoreAffinity":46,"plantDiversity":60,"aquaticSuitability":20},"climate":{"zone":"Temperate","weatherState":"Clear","currentTemperature":18,"dailyAverageTemperature":18,"seasonalAverageTemperature":18,"dailyTemperatureVariation":0,"relativeHumidity":55,"evaporationRate":3,"condensationRate":2,"windDirection":90,"windSpeed":4,"windGustStrength":6,"precipitationType":"None","precipitationIntensity":0,"precipitationDuration":0,"precipitationCoverage":0,"pressure":1012},"water":{"surfaceWater":{"waterLevel":220,"flowSpeed":3,"flowDirection":90,"waterVolume":400},"groundWater":{"waterTable":42,"saturation":58,"rechargeRate":6,"extractionRate":0},"river":null,"lake":null,"ocean":null},"resources":[],"organismIds":[]}]},"configurationVersion":"2026.06.28","organisms":[{"organismId":"216172782113783908","speciesId":"288230376151711745","genomeId":"360287970189639880","currentChunkId":"144115188075855874","metabolismRate":3,"growthRate":2,"lifespanTicks":500,"waterEfficiency":60,"digestionEfficiency":55,"bodyTemperature":18,"hunger":100,"hydration":100,"rest":100,"reproductionUrge":0,"birthTick":0,"ageTicks":0,"maturityAgeTicks":100,"stage":"Juvenile","isAlive":true,"currentHealth":100,"maximumHealth":100}],"version":{"formatVersion":"1.0.0","engineVersion":"1.0.0","contentVersion":"1.0.0"}}
+            {"metadata":{"saveName":"Gaia","creationDate":"2026-06-28","lastModified":"2026-06-28","worldSeed":42,"engineVersion":"1.0.0","saveVersion":"1.0.0"},"world":{"worldId":"72057594037927937","worldName":"Gaia","seed":42,"creationDate":"2026-06-28","engineVersion":"1.0.0","configurationVersion":"2026.06.28","width":10,"height":10,"chunkSize":16,"chunkCount":1,"maximumElevation":1,"currentTick":0,"currentDay":0,"currentSeason":"Spring","currentYear":0,"chunks":[{"chunkId":"144115188075855874","worldId":"72057594037927937","x":0,"y":0,"seed":1,"size":16,"state":"Active","terrain":{"height":10,"relativeHeight":0,"seaLevelOffset":0,"gradient":4,"aspect":90,"traversalCost":120,"soilType":"Loam","fertility":70,"drainage":60,"moistureCapacity":70,"organicMatter":65,"surface":"Grass","geology":"Granite","modifiers":[]},"biome":{"biomeId":"504403158265495658","name":"Grassland","category":"Plains","description":"Open plains biome.","averageTemperature":18,"averageRainfall":2,"humidity":55,"windIntensity":4,"seasonalVariation":8,"minimumElevation":0,"maximumElevation":20,"dominantSoil":"Loam","surface":"Grass","drainage":60,"water":750,"food":800,"minerals":500,"biomass":800,"dominantVegetation":"Grassland","vegetationDensity":62,"herbivoreAffinity":72,"carnivoreAffinity":46,"plantDiversity":60,"aquaticSuitability":20},"climate":{"zone":"Temperate","weatherState":"Clear","currentTemperature":18,"dailyAverageTemperature":18,"seasonalAverageTemperature":18,"dailyTemperatureVariation":0,"relativeHumidity":55,"evaporationRate":3,"condensationRate":2,"windDirection":90,"windSpeed":4,"windGustStrength":6,"precipitationType":"None","precipitationIntensity":0,"precipitationDuration":0,"precipitationCoverage":0,"pressure":1012},"water":{"surfaceWater":{"waterLevel":220,"flowSpeed":3,"flowDirection":90,"waterVolume":400},"groundWater":{"waterTable":42,"saturation":58,"rechargeRate":6,"extractionRate":0},"river":null,"lake":null,"ocean":null},"resources":[],"organismIds":[]}]},"configurationVersion":"2026.06.28","organisms":[{"organismId":"216172782113783908","speciesId":"288230376151711745","genomeId":"360287970189639880","currentChunkId":"144115188075855874","metabolismRate":3,"growthRate":2,"lifespanTicks":500,"waterEfficiency":60,"digestionEfficiency":55,"bodyTemperature":18,"hunger":100,"hydration":100,"rest":100,"reproductionUrge":0,"birthTick":0,"ageTicks":0,"maturityAgeTicks":100,"stage":"Juvenile","isAlive":true,"currentHealth":100,"maximumHealth":100}],"actionRequests":[],"version":{"formatVersion":"1.0.0","engineVersion":"1.0.0","contentVersion":"1.0.0"}}
             """;
 
         Assert.Throws<InvalidOperationException>(() => serializer.Deserialize(payload));
@@ -92,6 +96,16 @@ public sealed class JsonWorldSaveGameSerializerTests
             new NeedsComponent(120, 110, 90, 0),
             new LifecycleComponent(0, 12, 100, LifecycleStage.Juvenile, true),
             new HealthComponent(95, 100));
+        SimulationActionRequest actionRequest = new(
+            ActionId.FromSequence(new EntitySequence(500)),
+            organism.Id,
+            SimulationActionType.Drink,
+            new SimulationActionTarget(ActionTargetKind.Chunk, ChunkId.FromSequence(new EntitySequence(10)).ToString()),
+            20,
+            1,
+            0,
+            ActionExecutionState.Waiting,
+            true);
         World world = new(
             new WorldMetadata(
                 worldId,
@@ -136,7 +150,13 @@ public sealed class JsonWorldSaveGameSerializerTests
             "1.0.0");
 
         SaveVersionInfo version = new("1.0.0", new EngineVersion(1, 0, 0), "1.0.0");
-        return new WorldSaveGame(metadata, world, new OrganismCollection(new[] { organism }), new ConfigurationVersion("2026.06.28"), version);
+        return new WorldSaveGame(
+            metadata,
+            world,
+            new OrganismCollection(new[] { organism }),
+            new SimulationActionRequestCollection(new[] { actionRequest }),
+            new ConfigurationVersion("2026.06.28"),
+            version);
     }
 
     private static TerrainState CreateTerrain(ulong sequence)

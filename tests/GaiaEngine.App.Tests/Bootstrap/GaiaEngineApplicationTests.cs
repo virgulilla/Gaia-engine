@@ -33,7 +33,9 @@ public sealed class GaiaEngineApplicationTests
         Assert.True(first.World.GetChunks()[0].Water.SurfaceWater.WaterLevel >= 0);
         Assert.Equal(3, first.World.GetChunks()[0].Resources.Count);
         Assert.Equal(first.World.ChunkCount, first.Organisms.Count);
+        Assert.Empty(first.ActionRequests.GetAll());
         Assert.Single(first.World.GetChunks()[0].OrganismIds);
+        Assert.Empty(first.SimulationSession.CurrentActionRequests.GetAll());
         Assert.Empty(first.SimulationSession.AdvanceTick().MovementRequests.GetAll());
         Assert.Empty(first.SimulationSession.CurrentFeedingRequests.GetAll());
         Assert.Empty(first.SimulationSession.CurrentHydrationRequests.GetAll());

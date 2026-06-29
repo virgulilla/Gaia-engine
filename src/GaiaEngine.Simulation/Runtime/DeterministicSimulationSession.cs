@@ -1,6 +1,7 @@
 using System;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
+using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.Interactions.Feeding;
 using GaiaEngine.Simulation.Interactions.Hydration;
 using GaiaEngine.Simulation.Interactions.Movement;
@@ -25,7 +26,7 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// Thrown when <paramref name="tickPipeline"/> or <paramref name="initialWorld"/> is <see langword="null"/>.
     /// </exception>
     public DeterministicSimulationSession(ISimulationTickPipeline tickPipeline, GaiaEngine.Domain.World.World initialWorld)
-        : this(tickPipeline, initialWorld, OrganismCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty)
+        : this(tickPipeline, initialWorld, OrganismCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty)
     {
     }
 
@@ -39,7 +40,7 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// Thrown when <paramref name="tickPipeline"/>, <paramref name="initialWorld"/>, or <paramref name="initialOrganisms"/> is <see langword="null"/>.
     /// </exception>
     public DeterministicSimulationSession(ISimulationTickPipeline tickPipeline, GaiaEngine.Domain.World.World initialWorld, OrganismCollection initialOrganisms)
-        : this(tickPipeline, initialWorld, initialOrganisms, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty)
+        : this(tickPipeline, initialWorld, initialOrganisms, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty)
     {
     }
 
@@ -49,6 +50,7 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// <param name="tickPipeline">The deterministic tick pipeline responsible for advancing simulation state.</param>
     /// <param name="initialWorld">The initial world state.</param>
     /// <param name="initialOrganisms">The initial organism state.</param>
+    /// <param name="initialActionRequests">The initial common action request state.</param>
     /// <param name="initialMovementRequests">The initial movement request state.</param>
     /// <param name="initialFeedingRequests">The initial feeding request state.</param>
     /// <param name="initialHydrationRequests">The initial hydration request state.</param>
@@ -60,6 +62,7 @@ public sealed class DeterministicSimulationSession : ISimulationSession
         ISimulationTickPipeline tickPipeline,
         GaiaEngine.Domain.World.World initialWorld,
         OrganismCollection initialOrganisms,
+        SimulationActionRequestCollection initialActionRequests,
         MovementRequestCollection initialMovementRequests,
         FeedingRequestCollection initialFeedingRequests,
         HydrationRequestCollection initialHydrationRequests)
@@ -67,6 +70,7 @@ public sealed class DeterministicSimulationSession : ISimulationSession
         this.tickPipeline = tickPipeline ?? throw new ArgumentNullException(nameof(tickPipeline));
         CurrentWorld = initialWorld ?? throw new ArgumentNullException(nameof(initialWorld));
         CurrentOrganisms = initialOrganisms ?? throw new ArgumentNullException(nameof(initialOrganisms));
+        CurrentActionRequests = initialActionRequests ?? throw new ArgumentNullException(nameof(initialActionRequests));
         CurrentMovementRequests = initialMovementRequests ?? throw new ArgumentNullException(nameof(initialMovementRequests));
         CurrentFeedingRequests = initialFeedingRequests ?? throw new ArgumentNullException(nameof(initialFeedingRequests));
         CurrentHydrationRequests = initialHydrationRequests ?? throw new ArgumentNullException(nameof(initialHydrationRequests));
@@ -81,6 +85,11 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// Gets the current simulation organism state.
     /// </summary>
     public OrganismCollection CurrentOrganisms { get; private set; }
+
+    /// <summary>
+    /// Gets the current common action request state.
+    /// </summary>
+    public SimulationActionRequestCollection CurrentActionRequests { get; private set; }
 
     /// <summary>
     /// Gets the current movement request state.
@@ -108,9 +117,10 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// <returns>The deterministic tick pipeline result.</returns>
     public SimulationTickResult AdvanceTick()
     {
-        SimulationTickResult result = tickPipeline.Execute(CurrentWorld, CurrentOrganisms, CurrentMovementRequests, CurrentFeedingRequests, CurrentHydrationRequests, nextEventSequence);
+        SimulationTickResult result = tickPipeline.Execute(CurrentWorld, CurrentOrganisms, CurrentActionRequests, CurrentMovementRequests, CurrentFeedingRequests, CurrentHydrationRequests, nextEventSequence);
         CurrentWorld = result.World;
         CurrentOrganisms = result.Organisms;
+        CurrentActionRequests = result.ActionRequests;
         CurrentMovementRequests = result.MovementRequests;
         CurrentFeedingRequests = result.FeedingRequests;
         CurrentHydrationRequests = result.HydrationRequests;

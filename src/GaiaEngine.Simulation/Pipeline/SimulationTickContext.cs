@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
+using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.Diagnostics;
 using GaiaEngine.Simulation.Events;
 using GaiaEngine.Simulation.Interactions.Feeding;
@@ -25,7 +26,7 @@ public sealed class SimulationTickContext
     /// <param name="nextEventSequence">The next deterministic event sequence value to use.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="world"/> is <see langword="null"/>.</exception>
     public SimulationTickContext(GaiaEngine.Domain.World.World world, ulong nextEventSequence)
-        : this(world, OrganismCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty, nextEventSequence)
+        : this(world, OrganismCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty, nextEventSequence)
     {
     }
 
@@ -39,7 +40,7 @@ public sealed class SimulationTickContext
     /// Thrown when <paramref name="world"/> or <paramref name="organisms"/> is <see langword="null"/>.
     /// </exception>
     public SimulationTickContext(GaiaEngine.Domain.World.World world, OrganismCollection organisms, ulong nextEventSequence)
-        : this(world, organisms, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty, nextEventSequence)
+        : this(world, organisms, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty, nextEventSequence)
     {
     }
 
@@ -48,6 +49,7 @@ public sealed class SimulationTickContext
     /// </summary>
     /// <param name="world">The initial world state for the tick.</param>
     /// <param name="organisms">The initial organism state for the tick.</param>
+    /// <param name="actionRequests">The initial common action request state for the tick.</param>
     /// <param name="movementRequests">The initial movement request state for the tick.</param>
     /// <param name="feedingRequests">The initial feeding request state for the tick.</param>
     /// <param name="hydrationRequests">The initial hydration request state for the tick.</param>
@@ -59,6 +61,7 @@ public sealed class SimulationTickContext
     public SimulationTickContext(
         GaiaEngine.Domain.World.World world,
         OrganismCollection organisms,
+        SimulationActionRequestCollection actionRequests,
         MovementRequestCollection movementRequests,
         FeedingRequestCollection feedingRequests,
         HydrationRequestCollection hydrationRequests,
@@ -66,6 +69,7 @@ public sealed class SimulationTickContext
     {
         CurrentWorld = world ?? throw new ArgumentNullException(nameof(world));
         CurrentOrganisms = organisms ?? throw new ArgumentNullException(nameof(organisms));
+        CurrentActionRequests = actionRequests ?? throw new ArgumentNullException(nameof(actionRequests));
         CurrentMovementRequests = movementRequests ?? throw new ArgumentNullException(nameof(movementRequests));
         CurrentFeedingRequests = feedingRequests ?? throw new ArgumentNullException(nameof(feedingRequests));
         CurrentHydrationRequests = hydrationRequests ?? throw new ArgumentNullException(nameof(hydrationRequests));
@@ -88,6 +92,11 @@ public sealed class SimulationTickContext
     /// Gets the current organism state being updated by the pipeline.
     /// </summary>
     public OrganismCollection CurrentOrganisms { get; private set; }
+
+    /// <summary>
+    /// Gets the current common action request state being updated by the pipeline.
+    /// </summary>
+    public SimulationActionRequestCollection CurrentActionRequests { get; private set; }
 
     /// <summary>
     /// Gets the current movement request state being updated by the pipeline.
@@ -229,6 +238,16 @@ public sealed class SimulationTickContext
     public void ApplyOrganisms(OrganismCollection organisms)
     {
         CurrentOrganisms = organisms ?? throw new ArgumentNullException(nameof(organisms));
+    }
+
+    /// <summary>
+    /// Applies the updated common action request state produced during the current tick.
+    /// </summary>
+    /// <param name="actionRequests">The updated common action request state.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="actionRequests"/> is <see langword="null"/>.</exception>
+    public void ApplyActionRequests(SimulationActionRequestCollection actionRequests)
+    {
+        CurrentActionRequests = actionRequests ?? throw new ArgumentNullException(nameof(actionRequests));
     }
 
     /// <summary>

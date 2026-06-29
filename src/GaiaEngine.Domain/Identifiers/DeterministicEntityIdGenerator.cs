@@ -68,4 +68,12 @@ public sealed class DeterministicEntityIdGenerator : IEntityIdGenerator
     {
         return EventId.FromSequence(context.Sequence);
     }
+
+    /// <summary>
+    /// Creates an action identifier.
+    /// </summary>
+    public ActionId CreateActionId(IdentifierGenerationContext context)
+    {
+        return ActionId.FromSequence(context.Sequence);
+    }
 }

@@ -1,4 +1,5 @@
 using GaiaEngine.Domain.Organisms;
+using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.Interactions.Feeding;
 using GaiaEngine.Simulation.Interactions.Hydration;
 using GaiaEngine.Simulation.Interactions.Movement;
@@ -32,6 +33,7 @@ public interface ISimulationTickPipeline
     /// </summary>
     /// <param name="world">The current world state.</param>
     /// <param name="organisms">The current organism state.</param>
+    /// <param name="actionRequests">The current common action request state.</param>
     /// <param name="movementRequests">The current movement request state.</param>
     /// <param name="feedingRequests">The current feeding request state.</param>
     /// <param name="hydrationRequests">The current hydration request state.</param>
@@ -40,6 +42,7 @@ public interface ISimulationTickPipeline
     public SimulationTickResult Execute(
         GaiaEngine.Domain.World.World world,
         OrganismCollection organisms,
+        SimulationActionRequestCollection actionRequests,
         MovementRequestCollection movementRequests,
         FeedingRequestCollection feedingRequests,
         HydrationRequestCollection hydrationRequests,

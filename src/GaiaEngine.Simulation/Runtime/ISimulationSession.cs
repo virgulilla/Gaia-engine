@@ -1,5 +1,6 @@
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
+using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.Interactions.Feeding;
 using GaiaEngine.Simulation.Interactions.Hydration;
 using GaiaEngine.Simulation.Interactions.Movement;
@@ -27,6 +28,11 @@ public interface ISimulationSession
     /// Gets the current movement request state.
     /// </summary>
     public MovementRequestCollection CurrentMovementRequests { get; }
+
+    /// <summary>
+    /// Gets the current common action request state.
+    /// </summary>
+    public SimulationActionRequestCollection CurrentActionRequests { get; }
 
     /// <summary>
     /// Gets the current feeding request state.

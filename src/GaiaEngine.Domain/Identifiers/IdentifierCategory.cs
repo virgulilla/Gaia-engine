@@ -13,4 +13,5 @@ internal enum IdentifierCategory : byte
     Resource = 6,
     Biome = 7,
     Event = 8,
+    Action = 9,
 }

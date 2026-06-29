@@ -7,6 +7,7 @@ using GaiaEngine.Domain.World;
 using GaiaEngine.Foundation.Configuration;
 using GaiaEngine.Foundation.Determinism;
 using GaiaEngine.Foundation.Versioning;
+using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Serialization.SaveGames.Documents;
 
 namespace GaiaEngine.Serialization.SaveGames;
@@ -63,6 +64,7 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
     {
         List<ChunkDocument> chunkDocuments = new();
         List<OrganismDocument> organismDocuments = new();
+        List<ActionRequestDocument> actionRequestDocuments = new();
         foreach (Chunk chunk in saveGame.World.GetChunks())
         {
             List<string> organismIds = new(chunk.OrganismIds.Count);
@@ -251,6 +253,24 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                 });
         }
 
+        foreach (SimulationActionRequest actionRequest in saveGame.ActionRequests.GetAll())
+        {
+            actionRequestDocuments.Add(
+                new ActionRequestDocument
+                {
+                    ActionId = actionRequest.ActionId.ToString(),
+                    OrganismId = actionRequest.OrganismId.ToString(),
+                    ActionType = actionRequest.ActionType.ToString(),
+                    TargetKind = actionRequest.Target.Kind.ToString(),
+                    TargetId = actionRequest.Target.TargetId,
+                    StartTick = actionRequest.StartTick,
+                    ExpectedDuration = actionRequest.ExpectedDuration,
+                    Priority = actionRequest.Priority,
+                    Status = actionRequest.Status.ToString(),
+                    Interruptible = actionRequest.Interruptible,
+                });
+        }
+
         return new WorldSaveGameDocument
         {
             Metadata = new SaveMetadataDocument
@@ -283,6 +303,7 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
             },
             ConfigurationVersion = saveGame.ConfigurationVersion.ToString(),
             Organisms = organismDocuments,
+            ActionRequests = actionRequestDocuments,
             Version = new SaveVersionInfoDocument
             {
                 FormatVersion = saveGame.Version.FormatVersion,
@@ -515,6 +536,24 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
         OrganismCollection organismCollection = new(organisms.AsReadOnly());
         ValidateOrganismReferences(world, organismCollection);
 
+        List<SimulationActionRequest> actionRequests = new(document.ActionRequests.Count);
+        foreach (ActionRequestDocument actionRequestDocument in document.ActionRequests)
+        {
+            actionRequests.Add(
+                new SimulationActionRequest(
+                    ActionId.Parse(actionRequestDocument.ActionId),
+                    OrganismId.Parse(actionRequestDocument.OrganismId),
+                    Enum.Parse<SimulationActionType>(actionRequestDocument.ActionType, ignoreCase: false),
+                    new SimulationActionTarget(
+                        Enum.Parse<ActionTargetKind>(actionRequestDocument.TargetKind, ignoreCase: false),
+                        actionRequestDocument.TargetId),
+                    actionRequestDocument.StartTick,
+                    actionRequestDocument.ExpectedDuration,
+                    actionRequestDocument.Priority,
+                    Enum.Parse<ActionExecutionState>(actionRequestDocument.Status, ignoreCase: false),
+                    actionRequestDocument.Interruptible));
+        }
+
         SaveMetadata metadata = new(
             document.Metadata.SaveName,
             document.Metadata.CreationDate,
@@ -532,6 +571,7 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
             metadata,
             world,
             organismCollection,
+            new SimulationActionRequestCollection(actionRequests.AsReadOnly()),
             new ConfigurationVersion(document.ConfigurationVersion),
             version);
     }

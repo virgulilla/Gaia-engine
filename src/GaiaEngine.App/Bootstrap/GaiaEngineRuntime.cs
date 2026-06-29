@@ -2,6 +2,7 @@ using System;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.App.Configuration;
 using GaiaEngine.Domain.World;
+using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.Runtime;
 
 namespace GaiaEngine.App.Bootstrap;
@@ -54,4 +55,9 @@ public sealed class GaiaEngineRuntime
     /// Gets the initialized organism bootstrap state.
     /// </summary>
     public OrganismCollection Organisms => SimulationSession.CurrentOrganisms;
+
+    /// <summary>
+    /// Gets the initialized common action request state.
+    /// </summary>
+    public SimulationActionRequestCollection ActionRequests => SimulationSession.CurrentActionRequests;
 }

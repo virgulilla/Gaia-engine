@@ -44,4 +44,9 @@ public interface IEntityIdGenerator
     /// Creates an event identifier.
     /// </summary>
     public EventId CreateEventId(IdentifierGenerationContext context);
+
+    /// <summary>
+    /// Creates an action identifier.
+    /// </summary>
+    public ActionId CreateActionId(IdentifierGenerationContext context);
 }

@@ -1,4 +1,5 @@
 using System;
+using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.Diagnostics;
 using GaiaEngine.Simulation.Interactions.Feeding;
 using GaiaEngine.Simulation.Interactions.Hydration;
@@ -14,6 +15,7 @@ public sealed class InteractionSystemsPhase : ISimulationTickPhase
     private readonly IMovementSystem movementSystem;
     private readonly IFeedingSystem feedingSystem;
     private readonly IHydrationSystem hydrationSystem;
+    private readonly IActionRequestDispatcher actionRequestDispatcher;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InteractionSystemsPhase"/> class.
@@ -21,14 +23,20 @@ public sealed class InteractionSystemsPhase : ISimulationTickPhase
     /// <param name="movementSystem">The movement system executed during this phase.</param>
     /// <param name="feedingSystem">The feeding system executed during this phase.</param>
     /// <param name="hydrationSystem">The hydration system executed during this phase.</param>
+    /// <param name="actionRequestDispatcher">The dispatcher that routes common action requests to specialized systems.</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="movementSystem"/>, <paramref name="feedingSystem"/>, or <paramref name="hydrationSystem"/> is <see langword="null"/>.
     /// </exception>
-    public InteractionSystemsPhase(IMovementSystem movementSystem, IFeedingSystem feedingSystem, IHydrationSystem hydrationSystem)
+    public InteractionSystemsPhase(
+        IMovementSystem movementSystem,
+        IFeedingSystem feedingSystem,
+        IHydrationSystem hydrationSystem,
+        IActionRequestDispatcher actionRequestDispatcher)
     {
         this.movementSystem = movementSystem ?? throw new ArgumentNullException(nameof(movementSystem));
         this.feedingSystem = feedingSystem ?? throw new ArgumentNullException(nameof(feedingSystem));
         this.hydrationSystem = hydrationSystem ?? throw new ArgumentNullException(nameof(hydrationSystem));
+        this.actionRequestDispatcher = actionRequestDispatcher ?? throw new ArgumentNullException(nameof(actionRequestDispatcher));
     }
 
     /// <summary>
@@ -43,6 +51,11 @@ public sealed class InteractionSystemsPhase : ISimulationTickPhase
     public void Execute(SimulationTickContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
+
+        ActionRequestDispatchResult dispatchResult = actionRequestDispatcher.Dispatch(context.CurrentActionRequests);
+        context.ApplyMovementRequests(dispatchResult.MovementRequests);
+        context.ApplyFeedingRequests(dispatchResult.FeedingRequests);
+        context.ApplyHydrationRequests(dispatchResult.HydrationRequests);
 
         foreach (Scheduling.ScheduledSimulationSystem scheduledSystem in context.Schedule.GetSystemsForPhase(SimulationTickPhase.InteractionSystems))
         {
@@ -81,5 +94,12 @@ public sealed class InteractionSystemsPhase : ISimulationTickPhase
                 context.ApplyHydrationRequests(hydrationResult.RemainingRequests);
             }
         }
+
+        context.ApplyActionRequests(
+            actionRequestDispatcher.Rebuild(
+                dispatchResult.DeferredRequests,
+                context.CurrentMovementRequests,
+                context.CurrentFeedingRequests,
+                context.CurrentHydrationRequests));
     }
 }
