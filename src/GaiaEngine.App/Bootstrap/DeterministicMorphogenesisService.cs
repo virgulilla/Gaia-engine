@@ -12,28 +12,25 @@ public sealed class DeterministicMorphogenesisService : IMorphogenesisService
     /// <summary>
     /// Executes one deterministic morphogenesis pass.
     /// </summary>
-    /// <param name="genome">The immutable genome to interpret.</param>
+    /// <param name="traits">The expressed trait profile to interpret.</param>
     /// <param name="developmentConditions">The environmental development conditions.</param>
     /// <returns>The generated phenotype and initialized physiology.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="genome"/> or <paramref name="developmentConditions"/> is <see langword="null"/>.</exception>
-    public MorphogenesisResult Generate(Genome genome, DevelopmentConditions developmentConditions)
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="traits"/> or <paramref name="developmentConditions"/> is <see langword="null"/>.</exception>
+    public MorphogenesisResult Generate(TraitProfile traits, DevelopmentConditions developmentConditions)
     {
-        ArgumentNullException.ThrowIfNull(genome);
+        ArgumentNullException.ThrowIfNull(traits);
         ArgumentNullException.ThrowIfNull(developmentConditions);
 
-        int bodySize = GetGeneValue(genome.Morphology, GenomeGeneKey.BodySize);
-        int skeletalDensity = GetGeneValue(genome.Morphology, GenomeGeneKey.SkeletalDensity);
-        int limbCount = GetGeneValue(genome.Morphology, GenomeGeneKey.LimbCount);
-        int muscleDistribution = GetGeneValue(genome.Morphology, GenomeGeneKey.MuscleDistribution);
-        int furDensity = GetGeneValue(genome.Appearance, GenomeGeneKey.FurDensity);
-        int primaryColor = GetGeneValue(genome.Appearance, GenomeGeneKey.PrimaryColor);
-        int secondaryColor = GetGeneValue(genome.Appearance, GenomeGeneKey.SecondaryColor);
-        int visionRange = GetGeneValue(genome.Senses, GenomeGeneKey.VisionRange);
-        int hearingRange = GetGeneValue(genome.Senses, GenomeGeneKey.HearingRange);
-        int smellSensitivity = GetGeneValue(genome.Senses, GenomeGeneKey.SmellSensitivity);
-        int aquaticAffinity = GetGeneValue(genome.Adaptation, GenomeGeneKey.AquaticAffinity);
-        int coldAdaptation = GetGeneValue(genome.Adaptation, GenomeGeneKey.ColdAdaptation);
-        int desertAdaptation = GetGeneValue(genome.Adaptation, GenomeGeneKey.DesertAdaptation);
+        int bodySize = traits.GetValue(TraitKey.BodySize);
+        int skeletalDensity = traits.GetValue(TraitKey.SkeletalStrength);
+        int limbReach = traits.GetValue(TraitKey.LimbReach);
+        int locomotionStrength = traits.GetValue(TraitKey.LocomotionStrength);
+        int thermalCovering = traits.GetValue(TraitKey.ThermalCovering);
+        int pigmentation = traits.GetValue(TraitKey.Pigmentation);
+        int sensoryAcuity = traits.GetValue(TraitKey.SensoryAcuity);
+        int aquaticAffinity = traits.GetValue(TraitKey.AquaticLocomotion);
+        int coldAdaptation = traits.GetValue(TraitKey.ColdTolerance);
+        int desertAdaptation = traits.GetValue(TraitKey.HeatTolerance);
 
         int foodModifier = (developmentConditions.FoodAvailability - 500) / 4;
         int humidityModifier = (developmentConditions.Humidity - 500) / 5;
@@ -43,23 +40,23 @@ public sealed class DeterministicMorphogenesisService : IMorphogenesisService
         int developmentModifier = Math.Clamp(foodModifier + humidityModifier - altitudeModifier + seasonModifier + thermalModifier, -1000, 1000);
 
         BodyPlan bodyPlan = new(
-            proportions: ClampNormalized((bodySize + GetGeneValue(genome.Morphology, GenomeGeneKey.BodyShape) + foodModifier) / 2),
+            proportions: ClampNormalized((bodySize + limbReach + foodModifier) / 2),
             mass: ClampNormalized((bodySize + skeletalDensity + developmentConditions.FoodAvailability + (developmentModifier / 2)) / 3),
-            limbConfiguration: ClampNormalized((limbCount + muscleDistribution + aquaticAffinity) / 3),
-            bodyCovering: ClampNormalized((furDensity + coldAdaptation + (1000 - desertAdaptation) + Math.Max(0, thermalModifier)) / 4),
-            coloration: ClampNormalized((primaryColor + secondaryColor + developmentConditions.Humidity) / 3),
-            sensoryStructures: ClampNormalized((visionRange + hearingRange + smellSensitivity) / 3),
-            locomotionProfile: ClampNormalized((muscleDistribution + limbCount + GetGeneValue(genome.Adaptation, GenomeGeneKey.MountainAdaptation)) / 3),
+            limbConfiguration: ClampNormalized((limbReach + locomotionStrength + aquaticAffinity) / 3),
+            bodyCovering: ClampNormalized((thermalCovering + coldAdaptation + (1000 - desertAdaptation) + Math.Max(0, thermalModifier)) / 4),
+            coloration: ClampNormalized((pigmentation + developmentConditions.Humidity) / 2),
+            sensoryStructures: ClampNormalized(sensoryAcuity),
+            locomotionProfile: ClampNormalized((locomotionStrength + limbReach + aquaticAffinity) / 3),
             developmentModifier: developmentModifier);
 
-        int metabolismGene = GetGeneValue(genome.Physiology, GenomeGeneKey.Metabolism);
-        int growthGene = GetGeneValue(genome.Physiology, GenomeGeneKey.GrowthRate);
-        int lifespanGene = GetGeneValue(genome.Physiology, GenomeGeneKey.Lifespan);
-        int waterGene = GetGeneValue(genome.Physiology, GenomeGeneKey.WaterEfficiency);
-        int digestionGene = GetGeneValue(genome.Physiology, GenomeGeneKey.DigestionEfficiency);
-        int heatResistance = GetGeneValue(genome.Physiology, GenomeGeneKey.HeatResistance);
-        int fertility = GetGeneValue(genome.Reproduction, GenomeGeneKey.Fertility);
-        int maturityAge = GetGeneValue(genome.Reproduction, GenomeGeneKey.MaturityAge);
+        int metabolismGene = traits.GetValue(TraitKey.Metabolism);
+        int growthGene = traits.GetValue(TraitKey.Growth);
+        int lifespanGene = traits.GetValue(TraitKey.Lifespan);
+        int waterGene = traits.GetValue(TraitKey.HydrationEfficiency);
+        int digestionGene = traits.GetValue(TraitKey.DigestiveEfficiency);
+        int heatResistance = traits.GetValue(TraitKey.HeatTolerance);
+        int fertility = traits.GetValue(TraitKey.Fertility);
+        int maturityAge = traits.GetValue(TraitKey.Maturity);
 
         PhysiologyComponent physiology = new(
             metabolismRate: Math.Max(1, 1 + ((metabolismGene + (bodyPlan.Mass / 2) + Math.Max(0, thermalModifier)) / 250)),
@@ -71,19 +68,6 @@ public sealed class DeterministicMorphogenesisService : IMorphogenesisService
 
         int maturityAgeTicks = Math.Max(60, 40 + ((maturityAge + fertility + bodyPlan.Mass) / 10));
         return new MorphogenesisResult(bodyPlan, physiology, maturityAgeTicks);
-    }
-
-    private static int GetGeneValue(GenomeGeneGroup group, GenomeGeneKey key)
-    {
-        foreach (GenomeGene gene in group.GetGenes())
-        {
-            if (gene.Key == key)
-            {
-                return gene.IsActive ? gene.Value.ScaledValue : 0;
-            }
-        }
-
-        throw new InvalidOperationException($"The gene '{key}' is required for morphogenesis.");
     }
 
     private static int ResolveSeasonModifier(string season)

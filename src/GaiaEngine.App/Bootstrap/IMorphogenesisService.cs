@@ -10,8 +10,8 @@ public interface IMorphogenesisService
     /// <summary>
     /// Executes one deterministic morphogenesis pass.
     /// </summary>
-    /// <param name="genome">The immutable genome to interpret.</param>
+    /// <param name="traits">The expressed trait profile to interpret.</param>
     /// <param name="developmentConditions">The environmental development conditions.</param>
     /// <returns>The generated phenotype and initialized physiology.</returns>
-    public MorphogenesisResult Generate(Genome genome, DevelopmentConditions developmentConditions);
+    public MorphogenesisResult Generate(TraitProfile traits, DevelopmentConditions developmentConditions);
 }

@@ -15,6 +15,7 @@ public sealed class DeterministicOrganismBootstrapFactory
 {
     private readonly IEntityIdGenerator idGenerator;
     private readonly IGenomeBootstrapFactory genomeBootstrapFactory;
+    private readonly ITraitExpressionService traitExpressionService;
     private readonly IMorphogenesisService morphogenesisService;
 
     /// <summary>
@@ -22,17 +23,20 @@ public sealed class DeterministicOrganismBootstrapFactory
     /// </summary>
     /// <param name="idGenerator">The deterministic identifier generator.</param>
     /// <param name="genomeBootstrapFactory">The deterministic genome bootstrap factory.</param>
+    /// <param name="traitExpressionService">The deterministic trait expression service.</param>
     /// <param name="morphogenesisService">The deterministic morphogenesis service.</param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="idGenerator"/>, <paramref name="genomeBootstrapFactory"/>, or <paramref name="morphogenesisService"/> is <see langword="null"/>.
+    /// Thrown when <paramref name="idGenerator"/>, <paramref name="genomeBootstrapFactory"/>, <paramref name="traitExpressionService"/>, or <paramref name="morphogenesisService"/> is <see langword="null"/>.
     /// </exception>
     public DeterministicOrganismBootstrapFactory(
         IEntityIdGenerator idGenerator,
         IGenomeBootstrapFactory genomeBootstrapFactory,
+        ITraitExpressionService traitExpressionService,
         IMorphogenesisService morphogenesisService)
     {
         this.idGenerator = idGenerator ?? throw new ArgumentNullException(nameof(idGenerator));
         this.genomeBootstrapFactory = genomeBootstrapFactory ?? throw new ArgumentNullException(nameof(genomeBootstrapFactory));
+        this.traitExpressionService = traitExpressionService ?? throw new ArgumentNullException(nameof(traitExpressionService));
         this.morphogenesisService = morphogenesisService ?? throw new ArgumentNullException(nameof(morphogenesisService));
     }
 
@@ -56,8 +60,9 @@ public sealed class DeterministicOrganismBootstrapFactory
         {
             index++;
             Genome genome = genomeBootstrapFactory.CreateGenome(world.Metadata.Seed, chunk, index);
+            TraitProfile traits = traitExpressionService.Evaluate(genome);
             DevelopmentConditions developmentConditions = CreateDevelopmentConditions(world.TimeState.CurrentSeason, chunk);
-            MorphogenesisResult morphogenesis = morphogenesisService.Generate(genome, developmentConditions);
+            MorphogenesisResult morphogenesis = morphogenesisService.Generate(traits, developmentConditions);
             Organism organism = CreateOrganism(world.Metadata.Seed, starterSpeciesId, genome.Id, chunk, index, morphogenesis);
             organisms.Add(organism);
             genomes.Add(genome);
