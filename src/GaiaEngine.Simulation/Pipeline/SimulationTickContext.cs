@@ -27,7 +27,7 @@ public sealed class SimulationTickContext
     /// <param name="nextEventSequence">The next deterministic event sequence value to use.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="world"/> is <see langword="null"/>.</exception>
     public SimulationTickContext(GaiaEngine.Domain.World.World world, ulong nextEventSequence)
-        : this(world, OrganismCollection.Empty, SpeciesCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty, nextEventSequence)
+        : this(world, OrganismCollection.Empty, GenomeCollection.Empty, SpeciesCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty, nextEventSequence)
     {
     }
 
@@ -41,7 +41,7 @@ public sealed class SimulationTickContext
     /// Thrown when <paramref name="world"/> or <paramref name="organisms"/> is <see langword="null"/>.
     /// </exception>
     public SimulationTickContext(GaiaEngine.Domain.World.World world, OrganismCollection organisms, ulong nextEventSequence)
-        : this(world, organisms, SpeciesCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty, nextEventSequence)
+        : this(world, organisms, GenomeCollection.Empty, SpeciesCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty, nextEventSequence)
     {
     }
 
@@ -50,6 +50,7 @@ public sealed class SimulationTickContext
     /// </summary>
     /// <param name="world">The initial world state for the tick.</param>
     /// <param name="organisms">The initial organism state for the tick.</param>
+    /// <param name="genomes">The initial genome state for the tick.</param>
     /// <param name="species">The initial species state for the tick.</param>
     /// <param name="actionRequests">The initial common action request state for the tick.</param>
     /// <param name="movementRequests">The initial movement request state for the tick.</param>
@@ -63,6 +64,7 @@ public sealed class SimulationTickContext
     public SimulationTickContext(
         GaiaEngine.Domain.World.World world,
         OrganismCollection organisms,
+        GenomeCollection genomes,
         SpeciesCollection species,
         SimulationActionRequestCollection actionRequests,
         MovementRequestCollection movementRequests,
@@ -72,6 +74,7 @@ public sealed class SimulationTickContext
     {
         CurrentWorld = world ?? throw new ArgumentNullException(nameof(world));
         CurrentOrganisms = organisms ?? throw new ArgumentNullException(nameof(organisms));
+        CurrentGenomes = genomes ?? throw new ArgumentNullException(nameof(genomes));
         CurrentSpecies = species ?? throw new ArgumentNullException(nameof(species));
         CurrentActionRequests = actionRequests ?? throw new ArgumentNullException(nameof(actionRequests));
         CurrentMovementRequests = movementRequests ?? throw new ArgumentNullException(nameof(movementRequests));
@@ -96,6 +99,11 @@ public sealed class SimulationTickContext
     /// Gets the current organism state being updated by the pipeline.
     /// </summary>
     public OrganismCollection CurrentOrganisms { get; private set; }
+
+    /// <summary>
+    /// Gets the current genome state being updated by the pipeline.
+    /// </summary>
+    public GenomeCollection CurrentGenomes { get; private set; }
 
     /// <summary>
     /// Gets the current species state being updated by the pipeline.
@@ -247,6 +255,16 @@ public sealed class SimulationTickContext
     public void ApplyOrganisms(OrganismCollection organisms)
     {
         CurrentOrganisms = organisms ?? throw new ArgumentNullException(nameof(organisms));
+    }
+
+    /// <summary>
+    /// Applies the updated genome state produced during the current tick.
+    /// </summary>
+    /// <param name="genomes">The updated genome state.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="genomes"/> is <see langword="null"/>.</exception>
+    public void ApplyGenomes(GenomeCollection genomes)
+    {
+        CurrentGenomes = genomes ?? throw new ArgumentNullException(nameof(genomes));
     }
 
     /// <summary>

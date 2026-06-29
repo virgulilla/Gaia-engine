@@ -34,4 +34,9 @@ internal sealed class SimulationConfigurationDocument
     /// Gets or sets the mutation configuration section.
     /// </summary>
     public MutationConfigurationDocument Mutation { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the species recognition configuration section.
+    /// </summary>
+    public SpeciesRecognitionConfigurationDocument SpeciesRecognition { get; set; } = new();
 }

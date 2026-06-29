@@ -25,6 +25,7 @@ public sealed record SimulationTickResult
     /// </summary>
     /// <param name="world">The resulting world state.</param>
     /// <param name="organisms">The resulting organism state.</param>
+    /// <param name="genomes">The resulting genome state.</param>
     /// <param name="species">The resulting species state.</param>
     /// <param name="actionRequests">The resulting common action request state.</param>
     /// <param name="movementRequests">The resulting movement request state.</param>
@@ -44,6 +45,7 @@ public sealed record SimulationTickResult
     public SimulationTickResult(
         GaiaEngine.Domain.World.World world,
         OrganismCollection organisms,
+        GenomeCollection genomes,
         SpeciesCollection species,
         SimulationActionRequestCollection actionRequests,
         MovementRequestCollection movementRequests,
@@ -60,6 +62,7 @@ public sealed record SimulationTickResult
     {
         World = world ?? throw new ArgumentNullException(nameof(world));
         Organisms = organisms ?? throw new ArgumentNullException(nameof(organisms));
+        Genomes = genomes ?? throw new ArgumentNullException(nameof(genomes));
         Species = species ?? throw new ArgumentNullException(nameof(species));
         ActionRequests = actionRequests ?? throw new ArgumentNullException(nameof(actionRequests));
         MovementRequests = movementRequests ?? throw new ArgumentNullException(nameof(movementRequests));
@@ -89,6 +92,11 @@ public sealed record SimulationTickResult
     /// Gets the resulting organism state.
     /// </summary>
     public OrganismCollection Organisms { get; }
+
+    /// <summary>
+    /// Gets the resulting genome state.
+    /// </summary>
+    public GenomeCollection Genomes { get; }
 
     /// <summary>
     /// Gets the resulting species state.

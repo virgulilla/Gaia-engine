@@ -72,6 +72,13 @@ public sealed class JsonSimulationConfigurationProvider : ISimulationConfigurati
                 document.Mutation.AdaptationGroupWeight,
                 document.Mutation.AppearanceGroupWeight,
                 document.Mutation.BehaviourBiasGroupWeight,
-                document.Mutation.MutationVersion));
+                document.Mutation.MutationVersion),
+            new SpeciesRecognitionConfiguration(
+                document.SpeciesRecognition.EvaluationFrequency,
+                document.SpeciesRecognition.MinimumGenomeSimilarity,
+                document.SpeciesRecognition.MinimumTraitSimilarity,
+                document.SpeciesRecognition.MinimumMorphologySimilarity,
+                document.SpeciesRecognition.MinimumReproductiveCompatibility,
+                document.SpeciesRecognition.RequiredFailedMetricCount));
     }
 }

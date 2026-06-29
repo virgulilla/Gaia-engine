@@ -95,6 +95,14 @@ public sealed class GaiaEngineApplication
             evaporationDivider: 4);
         DeterministicResourceSystem resourceSystem = new(resourceSettings);
         DeterministicOrganismUpdateSystem organismUpdateSystem = new();
+        SpeciesRecognitionSettings speciesRecognitionSettings = new(
+            simulationConfiguration.SpeciesRecognition.EvaluationFrequency,
+            simulationConfiguration.SpeciesRecognition.MinimumGenomeSimilarity,
+            simulationConfiguration.SpeciesRecognition.MinimumTraitSimilarity,
+            simulationConfiguration.SpeciesRecognition.MinimumMorphologySimilarity,
+            simulationConfiguration.SpeciesRecognition.MinimumReproductiveCompatibility,
+            simulationConfiguration.SpeciesRecognition.RequiredFailedMetricCount);
+        DeterministicSpeciesRecognitionSystem speciesRecognitionSystem = new(speciesRecognitionSettings, eventIdGenerator);
         DeterministicSpeciesLifecycleSystem speciesLifecycleSystem = new();
         DeterministicSpatialQueryService spatialQueryService = new();
         DeterministicMovementSystem movementSystem = new(spatialQueryService);
@@ -127,7 +135,7 @@ public sealed class GaiaEngineApplication
                 new ScheduledSimulationSystemDefinition(
                     SimulationSystemNames.Species,
                     SimulationTickPhase.OrganismUpdate,
-                    frequency: 1,
+                    frequency: speciesRecognitionSettings.EvaluationFrequency,
                     priority: 1),
                 new ScheduledSimulationSystemDefinition(
                     SimulationSystemNames.Movement,
@@ -163,7 +171,7 @@ public sealed class GaiaEngineApplication
                 new NoOpSimulationTickPhase(SimulationTickPhase.InputCollection),
                 new NoOpSimulationTickPhase(SimulationTickPhase.PreUpdate),
                 new WorldUpdateTimePhase(timeSystem, scheduler, climateSystem, waterSystem, resourceSystem, eventPublisher),
-                new OrganismUpdatePhase(organismUpdateSystem, speciesLifecycleSystem),
+                new OrganismUpdatePhase(organismUpdateSystem, speciesRecognitionSystem, speciesLifecycleSystem),
                 new InteractionSystemsPhase(movementSystem, feedingSystem, hydrationSystem, actionRequestDispatcher),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
                 new EventDispatchPhase(eventBus),

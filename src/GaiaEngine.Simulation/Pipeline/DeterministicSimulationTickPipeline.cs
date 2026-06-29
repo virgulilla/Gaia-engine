@@ -69,7 +69,7 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="world"/> is <see langword="null"/>.</exception>
     public SimulationTickResult Execute(GaiaEngine.Domain.World.World world, ulong nextEventSequence)
     {
-        return Execute(world, OrganismCollection.Empty, SpeciesCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty, nextEventSequence);
+        return Execute(world, OrganismCollection.Empty, SpeciesCollection.Empty, GenomeCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty, nextEventSequence);
     }
 
     /// <summary>
@@ -84,7 +84,7 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
     /// </exception>
     public SimulationTickResult Execute(GaiaEngine.Domain.World.World world, OrganismCollection organisms, ulong nextEventSequence)
     {
-        return Execute(world, organisms, SpeciesCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty, nextEventSequence);
+        return Execute(world, organisms, SpeciesCollection.Empty, GenomeCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty, nextEventSequence);
     }
 
     /// <summary>
@@ -110,7 +110,7 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
         HydrationRequestCollection hydrationRequests,
         ulong nextEventSequence)
     {
-        return Execute(world, organisms, SpeciesCollection.Empty, actionRequests, movementRequests, feedingRequests, hydrationRequests, nextEventSequence);
+        return Execute(world, organisms, SpeciesCollection.Empty, GenomeCollection.Empty, actionRequests, movementRequests, feedingRequests, hydrationRequests, nextEventSequence);
     }
 
     /// <inheritdoc />
@@ -118,6 +118,7 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
         GaiaEngine.Domain.World.World world,
         OrganismCollection organisms,
         SpeciesCollection species,
+        GenomeCollection genomes,
         SimulationActionRequestCollection actionRequests,
         MovementRequestCollection movementRequests,
         FeedingRequestCollection feedingRequests,
@@ -127,6 +128,7 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
         SimulationTickContext context = new(
             world ?? throw new ArgumentNullException(nameof(world)),
             organisms ?? throw new ArgumentNullException(nameof(organisms)),
+            genomes ?? throw new ArgumentNullException(nameof(genomes)),
             species ?? throw new ArgumentNullException(nameof(species)),
             actionRequests ?? throw new ArgumentNullException(nameof(actionRequests)),
             movementRequests ?? throw new ArgumentNullException(nameof(movementRequests)),
@@ -151,6 +153,7 @@ public sealed class DeterministicSimulationTickPipeline : ISimulationTickPipelin
         return new SimulationTickResult(
             context.CurrentWorld,
             context.CurrentOrganisms,
+            context.CurrentGenomes,
             context.CurrentSpecies,
             context.CurrentActionRequests,
             context.CurrentMovementRequests,

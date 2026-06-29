@@ -55,6 +55,7 @@ public interface ISimulationTickPipeline
     /// <param name="world">The current world state.</param>
     /// <param name="organisms">The current organism state.</param>
     /// <param name="species">The current species state.</param>
+    /// <param name="genomes">The current genome state.</param>
     /// <param name="actionRequests">The current common action request state.</param>
     /// <param name="movementRequests">The current movement request state.</param>
     /// <param name="feedingRequests">The current feeding request state.</param>
@@ -65,6 +66,7 @@ public interface ISimulationTickPipeline
         GaiaEngine.Domain.World.World world,
         OrganismCollection organisms,
         SpeciesCollection species,
+        GenomeCollection genomes,
         SimulationActionRequestCollection actionRequests,
         MovementRequestCollection movementRequests,
         FeedingRequestCollection feedingRequests,

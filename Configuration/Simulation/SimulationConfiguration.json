@@ -20,5 +20,13 @@
     "appearanceGroupWeight": 300,
     "behaviourBiasGroupWeight": 250,
     "mutationVersion": 1
+  },
+  "speciesRecognition": {
+    "evaluationFrequency": 100,
+    "minimumGenomeSimilarity": 780,
+    "minimumTraitSimilarity": 760,
+    "minimumMorphologySimilarity": 740,
+    "minimumReproductiveCompatibility": 700,
+    "requiredFailedMetricCount": 3
   }
 }

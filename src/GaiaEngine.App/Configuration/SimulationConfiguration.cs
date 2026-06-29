@@ -16,6 +16,7 @@ public sealed record SimulationConfiguration
     /// <param name="startingSeason">The initial season name.</param>
     /// <param name="startingYear">The initial world year.</param>
     /// <param name="mutation">The immutable mutation configuration.</param>
+    /// <param name="speciesRecognition">The immutable species recognition configuration.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when numeric values are outside their valid ranges.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="startingSeason"/> is empty.</exception>
     public SimulationConfiguration(
@@ -24,7 +25,8 @@ public sealed record SimulationConfiguration
         int startingDay,
         string startingSeason,
         int startingYear,
-        MutationConfiguration mutation)
+        MutationConfiguration mutation,
+        SpeciesRecognitionConfiguration speciesRecognition)
     {
         if (ticksPerDay <= 0)
         {
@@ -57,6 +59,7 @@ public sealed record SimulationConfiguration
         StartingSeason = startingSeason;
         StartingYear = startingYear;
         Mutation = mutation ?? throw new ArgumentNullException(nameof(mutation));
+        SpeciesRecognition = speciesRecognition ?? throw new ArgumentNullException(nameof(speciesRecognition));
     }
 
     /// <summary>
@@ -73,7 +76,27 @@ public sealed record SimulationConfiguration
         int startingDay,
         string startingSeason,
         int startingYear)
-        : this(ticksPerDay, daysPerSeason, startingDay, startingSeason, startingYear, MutationConfiguration.Default)
+        : this(ticksPerDay, daysPerSeason, startingDay, startingSeason, startingYear, MutationConfiguration.Default, SpeciesRecognitionConfiguration.Default)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SimulationConfiguration"/> class.
+    /// </summary>
+    /// <param name="ticksPerDay">The number of deterministic simulation ticks contained in one world day.</param>
+    /// <param name="daysPerSeason">The number of world days contained in one season.</param>
+    /// <param name="startingDay">The initial world day.</param>
+    /// <param name="startingSeason">The initial season name.</param>
+    /// <param name="startingYear">The initial world year.</param>
+    /// <param name="mutation">The immutable mutation configuration.</param>
+    public SimulationConfiguration(
+        int ticksPerDay,
+        int daysPerSeason,
+        int startingDay,
+        string startingSeason,
+        int startingYear,
+        MutationConfiguration mutation)
+        : this(ticksPerDay, daysPerSeason, startingDay, startingSeason, startingYear, mutation, SpeciesRecognitionConfiguration.Default)
     {
     }
 
@@ -106,4 +129,9 @@ public sealed record SimulationConfiguration
     /// Gets the immutable mutation configuration.
     /// </summary>
     public MutationConfiguration Mutation { get; }
+
+    /// <summary>
+    /// Gets the immutable species recognition configuration.
+    /// </summary>
+    public SpeciesRecognitionConfiguration SpeciesRecognition { get; }
 }

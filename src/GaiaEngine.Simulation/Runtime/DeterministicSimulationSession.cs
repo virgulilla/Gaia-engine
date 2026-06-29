@@ -122,7 +122,7 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// <summary>
     /// Gets the current simulation genome state.
     /// </summary>
-    public GenomeCollection CurrentGenomes { get; }
+    public GenomeCollection CurrentGenomes { get; private set; }
 
     /// <summary>
     /// Gets the current simulation species state.
@@ -160,9 +160,10 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// <returns>The deterministic tick pipeline result.</returns>
     public SimulationTickResult AdvanceTick()
     {
-        SimulationTickResult result = tickPipeline.Execute(CurrentWorld, CurrentOrganisms, CurrentSpecies, CurrentActionRequests, CurrentMovementRequests, CurrentFeedingRequests, CurrentHydrationRequests, nextEventSequence);
+        SimulationTickResult result = tickPipeline.Execute(CurrentWorld, CurrentOrganisms, CurrentSpecies, CurrentGenomes, CurrentActionRequests, CurrentMovementRequests, CurrentFeedingRequests, CurrentHydrationRequests, nextEventSequence);
         CurrentWorld = result.World;
         CurrentOrganisms = result.Organisms;
+        CurrentGenomes = result.Genomes;
         CurrentSpecies = result.Species;
         CurrentActionRequests = result.ActionRequests;
         CurrentMovementRequests = result.MovementRequests;

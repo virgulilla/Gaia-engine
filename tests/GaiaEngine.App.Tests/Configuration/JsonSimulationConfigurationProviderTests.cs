@@ -39,6 +39,14 @@ public sealed class JsonSimulationConfigurationProviderTests
                     "appearanceGroupWeight": 350,
                     "behaviourBiasGroupWeight": 200,
                     "mutationVersion": 2
+                  },
+                  "speciesRecognition": {
+                    "evaluationFrequency": 120,
+                    "minimumGenomeSimilarity": 790,
+                    "minimumTraitSimilarity": 770,
+                    "minimumMorphologySimilarity": 730,
+                    "minimumReproductiveCompatibility": 710,
+                    "requiredFailedMetricCount": 3
                   }
                 }
                 """);
@@ -56,6 +64,9 @@ public sealed class JsonSimulationConfigurationProviderTests
             Assert.Equal(240, configuration.Mutation.MutationStrength);
             Assert.Equal(3, configuration.Mutation.MaxMutationsPerGenome);
             Assert.Equal(2, configuration.Mutation.MutationVersion);
+            Assert.Equal(120, configuration.SpeciesRecognition.EvaluationFrequency);
+            Assert.Equal(790, configuration.SpeciesRecognition.MinimumGenomeSimilarity);
+            Assert.Equal(710, configuration.SpeciesRecognition.MinimumReproductiveCompatibility);
         }
         finally
         {

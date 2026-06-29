@@ -11,17 +11,20 @@ namespace GaiaEngine.Simulation.Pipeline;
 public sealed class OrganismUpdatePhase : ISimulationTickPhase
 {
     private readonly IOrganismUpdateSystem organismUpdateSystem;
+    private readonly ISpeciesRecognitionSystem speciesRecognitionSystem;
     private readonly ISpeciesLifecycleSystem speciesLifecycleSystem;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OrganismUpdatePhase"/> class.
     /// </summary>
     /// <param name="organismUpdateSystem">The organism system executed during this phase.</param>
+    /// <param name="speciesRecognitionSystem">The species recognition system executed during this phase.</param>
     /// <param name="speciesLifecycleSystem">The species lifecycle system executed during this phase.</param>
     /// <exception cref="ArgumentNullException">Thrown when any dependency is <see langword="null"/>.</exception>
-    public OrganismUpdatePhase(IOrganismUpdateSystem organismUpdateSystem, ISpeciesLifecycleSystem speciesLifecycleSystem)
+    public OrganismUpdatePhase(IOrganismUpdateSystem organismUpdateSystem, ISpeciesRecognitionSystem speciesRecognitionSystem, ISpeciesLifecycleSystem speciesLifecycleSystem)
     {
         this.organismUpdateSystem = organismUpdateSystem ?? throw new ArgumentNullException(nameof(organismUpdateSystem));
+        this.speciesRecognitionSystem = speciesRecognitionSystem ?? throw new ArgumentNullException(nameof(speciesRecognitionSystem));
         this.speciesLifecycleSystem = speciesLifecycleSystem ?? throw new ArgumentNullException(nameof(speciesLifecycleSystem));
     }
 
@@ -48,6 +51,13 @@ public sealed class OrganismUpdatePhase : ISimulationTickPhase
 
             if (scheduledSystem.SystemName == SimulationSystemNames.Species)
             {
+                SpeciesRecognitionResult recognitionResult = speciesRecognitionSystem.Update(
+                    context.CurrentWorld,
+                    context.CurrentOrganisms,
+                    context.CurrentGenomes,
+                    context.CurrentSpecies);
+                context.ApplyOrganisms(recognitionResult.Organisms);
+                context.ApplySpecies(recognitionResult.Species);
                 context.ApplySpecies(speciesLifecycleSystem.Update(context.CurrentOrganisms, context.CurrentSpecies, context.CurrentTimeState.CurrentTick));
             }
         }
