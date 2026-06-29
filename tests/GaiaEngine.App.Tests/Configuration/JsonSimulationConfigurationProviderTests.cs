@@ -22,7 +22,24 @@ public sealed class JsonSimulationConfigurationProviderTests
                   "daysPerSeason": 12,
                   "startingDay": 0,
                   "startingSeason": "Spring",
-                  "startingYear": 3
+                  "startingYear": 3,
+                  "mutation": {
+                    "globalMutationChance": 120,
+                    "mutationStrength": 240,
+                    "maxMutationsPerGenome": 3,
+                    "parameterMutationWeight": 600,
+                    "dominanceMutationWeight": 150,
+                    "activationMutationWeight": 80,
+                    "structuralMutationWeight": 40,
+                    "morphologyGroupWeight": 700,
+                    "physiologyGroupWeight": 650,
+                    "reproductionGroupWeight": 300,
+                    "sensesGroupWeight": 450,
+                    "adaptationGroupWeight": 500,
+                    "appearanceGroupWeight": 350,
+                    "behaviourBiasGroupWeight": 200,
+                    "mutationVersion": 2
+                  }
                 }
                 """);
 
@@ -35,6 +52,10 @@ public sealed class JsonSimulationConfigurationProviderTests
             Assert.Equal(0, configuration.StartingDay);
             Assert.Equal("Spring", configuration.StartingSeason);
             Assert.Equal(3, configuration.StartingYear);
+            Assert.Equal(120, configuration.Mutation.GlobalMutationChance);
+            Assert.Equal(240, configuration.Mutation.MutationStrength);
+            Assert.Equal(3, configuration.Mutation.MaxMutationsPerGenome);
+            Assert.Equal(2, configuration.Mutation.MutationVersion);
         }
         finally
         {

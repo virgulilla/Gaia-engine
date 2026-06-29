@@ -3,5 +3,22 @@
   "daysPerSeason": 12,
   "startingDay": 0,
   "startingSeason": "Spring",
-  "startingYear": 0
+  "startingYear": 0,
+  "mutation": {
+    "globalMutationChance": 90,
+    "mutationStrength": 120,
+    "maxMutationsPerGenome": 2,
+    "parameterMutationWeight": 700,
+    "dominanceMutationWeight": 180,
+    "activationMutationWeight": 80,
+    "structuralMutationWeight": 40,
+    "morphologyGroupWeight": 550,
+    "physiologyGroupWeight": 500,
+    "reproductionGroupWeight": 350,
+    "sensesGroupWeight": 400,
+    "adaptationGroupWeight": 450,
+    "appearanceGroupWeight": 300,
+    "behaviourBiasGroupWeight": 250,
+    "mutationVersion": 1
+  }
 }

@@ -19,6 +19,8 @@ public sealed class Genome
     /// <param name="adaptation">The adaptation group.</param>
     /// <param name="appearance">The appearance group.</param>
     /// <param name="behaviourBias">The behaviour bias group.</param>
+    /// <param name="mutationVersion">The mutation schema version used to produce this genome.</param>
+    /// <param name="mutationHistory">The deterministic mutation history.</param>
     /// <exception cref="ArgumentNullException">Thrown when any supplied group is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">Thrown when a supplied group has the wrong group type.</exception>
     public Genome(
@@ -29,7 +31,9 @@ public sealed class Genome
         GenomeGeneGroup senses,
         GenomeGeneGroup adaptation,
         GenomeGeneGroup appearance,
-        GenomeGeneGroup behaviourBias)
+        GenomeGeneGroup behaviourBias,
+        int mutationVersion,
+        GenomeMutationHistory mutationHistory)
     {
         Identity = identity ?? throw new ArgumentNullException(nameof(identity));
         Morphology = ValidateGroup(morphology, GenomeGroupType.Morphology, nameof(morphology));
@@ -39,6 +43,37 @@ public sealed class Genome
         Adaptation = ValidateGroup(adaptation, GenomeGroupType.Adaptation, nameof(adaptation));
         Appearance = ValidateGroup(appearance, GenomeGroupType.Appearance, nameof(appearance));
         BehaviourBias = ValidateGroup(behaviourBias, GenomeGroupType.BehaviourBias, nameof(behaviourBias));
+        if (mutationVersion < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(mutationVersion), "The mutation version must be zero or greater.");
+        }
+
+        MutationVersion = mutationVersion;
+        MutationHistory = mutationHistory ?? throw new ArgumentNullException(nameof(mutationHistory));
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Genome"/> class.
+    /// </summary>
+    /// <param name="identity">The genome identity metadata.</param>
+    /// <param name="morphology">The morphology group.</param>
+    /// <param name="physiology">The physiology group.</param>
+    /// <param name="reproduction">The reproduction group.</param>
+    /// <param name="senses">The senses group.</param>
+    /// <param name="adaptation">The adaptation group.</param>
+    /// <param name="appearance">The appearance group.</param>
+    /// <param name="behaviourBias">The behaviour bias group.</param>
+    public Genome(
+        GenomeIdentity identity,
+        GenomeGeneGroup morphology,
+        GenomeGeneGroup physiology,
+        GenomeGeneGroup reproduction,
+        GenomeGeneGroup senses,
+        GenomeGeneGroup adaptation,
+        GenomeGeneGroup appearance,
+        GenomeGeneGroup behaviourBias)
+        : this(identity, morphology, physiology, reproduction, senses, adaptation, appearance, behaviourBias, mutationVersion: 0, GenomeMutationHistory.Empty)
+    {
     }
 
     /// <summary>
@@ -85,6 +120,16 @@ public sealed class Genome
     /// Gets the behaviour bias group.
     /// </summary>
     public GenomeGeneGroup BehaviourBias { get; }
+
+    /// <summary>
+    /// Gets the mutation schema version used to produce this genome.
+    /// </summary>
+    public int MutationVersion { get; }
+
+    /// <summary>
+    /// Gets the deterministic mutation history.
+    /// </summary>
+    public GenomeMutationHistory MutationHistory { get; }
 
     private static GenomeGeneGroup ValidateGroup(GenomeGeneGroup group, GenomeGroupType expectedType, string parameterName)
     {

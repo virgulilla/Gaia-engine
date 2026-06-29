@@ -56,6 +56,22 @@ public sealed class JsonSimulationConfigurationProvider : ISimulationConfigurati
             document.DaysPerSeason,
             document.StartingDay,
             document.StartingSeason,
-            document.StartingYear);
+            document.StartingYear,
+            new MutationConfiguration(
+                document.Mutation.GlobalMutationChance,
+                document.Mutation.MutationStrength,
+                document.Mutation.MaxMutationsPerGenome,
+                document.Mutation.ParameterMutationWeight,
+                document.Mutation.DominanceMutationWeight,
+                document.Mutation.ActivationMutationWeight,
+                document.Mutation.StructuralMutationWeight,
+                document.Mutation.MorphologyGroupWeight,
+                document.Mutation.PhysiologyGroupWeight,
+                document.Mutation.ReproductionGroupWeight,
+                document.Mutation.SensesGroupWeight,
+                document.Mutation.AdaptationGroupWeight,
+                document.Mutation.AppearanceGroupWeight,
+                document.Mutation.BehaviourBiasGroupWeight,
+                document.Mutation.MutationVersion));
     }
 }

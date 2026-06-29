@@ -15,6 +15,7 @@ public sealed record SimulationConfiguration
     /// <param name="startingDay">The initial world day.</param>
     /// <param name="startingSeason">The initial season name.</param>
     /// <param name="startingYear">The initial world year.</param>
+    /// <param name="mutation">The immutable mutation configuration.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when numeric values are outside their valid ranges.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="startingSeason"/> is empty.</exception>
     public SimulationConfiguration(
@@ -22,7 +23,8 @@ public sealed record SimulationConfiguration
         int daysPerSeason,
         int startingDay,
         string startingSeason,
-        int startingYear)
+        int startingYear,
+        MutationConfiguration mutation)
     {
         if (ticksPerDay <= 0)
         {
@@ -54,6 +56,25 @@ public sealed record SimulationConfiguration
         StartingDay = startingDay;
         StartingSeason = startingSeason;
         StartingYear = startingYear;
+        Mutation = mutation ?? throw new ArgumentNullException(nameof(mutation));
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SimulationConfiguration"/> class.
+    /// </summary>
+    /// <param name="ticksPerDay">The number of deterministic simulation ticks contained in one world day.</param>
+    /// <param name="daysPerSeason">The number of world days contained in one season.</param>
+    /// <param name="startingDay">The initial world day.</param>
+    /// <param name="startingSeason">The initial season name.</param>
+    /// <param name="startingYear">The initial world year.</param>
+    public SimulationConfiguration(
+        int ticksPerDay,
+        int daysPerSeason,
+        int startingDay,
+        string startingSeason,
+        int startingYear)
+        : this(ticksPerDay, daysPerSeason, startingDay, startingSeason, startingYear, MutationConfiguration.Default)
+    {
     }
 
     /// <summary>
@@ -80,4 +101,9 @@ public sealed record SimulationConfiguration
     /// Gets the initial world year.
     /// </summary>
     public int StartingYear { get; }
+
+    /// <summary>
+    /// Gets the immutable mutation configuration.
+    /// </summary>
+    public MutationConfiguration Mutation { get; }
 }

@@ -29,4 +29,9 @@ internal sealed class SimulationConfigurationDocument
     /// Gets or sets the initial world year.
     /// </summary>
     public int StartingYear { get; set; }
+
+    /// <summary>
+    /// Gets or sets the mutation configuration section.
+    /// </summary>
+    public MutationConfigurationDocument Mutation { get; set; } = new();
 }

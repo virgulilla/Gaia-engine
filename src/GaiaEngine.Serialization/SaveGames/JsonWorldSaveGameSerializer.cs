@@ -260,6 +260,8 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
             genomeDocuments.Add(
                 new GenomeDocument
                 {
+                    MutationVersion = genome.MutationVersion,
+                    MutationHistory = CreateMutationHistoryDocuments(genome.MutationHistory),
                     Identity = new GenomeIdentityDocument
                     {
                         GenomeId = genome.Identity.GenomeId.ToString(),
@@ -586,7 +588,9 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                     CreateGenomeGeneGroup(genomeDocument.Senses, GenomeGroupType.Senses),
                     CreateGenomeGeneGroup(genomeDocument.Adaptation, GenomeGroupType.Adaptation),
                     CreateGenomeGeneGroup(genomeDocument.Appearance, GenomeGroupType.Appearance),
-                    CreateGenomeGeneGroup(genomeDocument.BehaviourBias, GenomeGroupType.BehaviourBias)));
+                    CreateGenomeGeneGroup(genomeDocument.BehaviourBias, GenomeGroupType.BehaviourBias),
+                    genomeDocument.MutationVersion,
+                    CreateMutationHistory(genomeDocument.MutationHistory)));
         }
 
         GenomeCollection genomeCollection = new(genomes.AsReadOnly());
@@ -683,6 +687,30 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
         };
     }
 
+    private static List<GenomeMutationRecordDocument> CreateMutationHistoryDocuments(GenomeMutationHistory history)
+    {
+        List<GenomeMutationRecordDocument> documents = new(history.Count);
+        foreach (GenomeMutationRecord record in history.GetAll())
+        {
+            documents.Add(
+                new GenomeMutationRecordDocument
+                {
+                    Sequence = record.Sequence,
+                    GroupType = record.GroupType.ToString(),
+                    GeneKey = record.GeneKey.ToString(),
+                    Category = record.Category.ToString(),
+                    PreviousValue = record.PreviousValue,
+                    NewValue = record.NewValue,
+                    PreviousDominance = record.PreviousDominance.ToString(),
+                    NewDominance = record.NewDominance.ToString(),
+                    PreviousIsActive = record.PreviousIsActive,
+                    NewIsActive = record.NewIsActive,
+                });
+        }
+
+        return documents;
+    }
+
     private static GenomeGeneGroup CreateGenomeGeneGroup(GenomeGeneGroupDocument? document, GenomeGroupType expectedGroupType)
     {
         if (document is null)
@@ -707,6 +735,28 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
         }
 
         return new GenomeGeneGroup(expectedGroupType, genes.AsReadOnly());
+    }
+
+    private static GenomeMutationHistory CreateMutationHistory(IReadOnlyList<GenomeMutationRecordDocument> documents)
+    {
+        List<GenomeMutationRecord> records = new(documents.Count);
+        foreach (GenomeMutationRecordDocument document in documents)
+        {
+            records.Add(
+                new GenomeMutationRecord(
+                    document.Sequence,
+                    Enum.Parse<GenomeGroupType>(document.GroupType, ignoreCase: false),
+                    Enum.Parse<GenomeGeneKey>(document.GeneKey, ignoreCase: false),
+                    Enum.Parse<MutationCategory>(document.Category, ignoreCase: false),
+                    document.PreviousValue,
+                    document.NewValue,
+                    Enum.Parse<GeneDominance>(document.PreviousDominance, ignoreCase: false),
+                    Enum.Parse<GeneDominance>(document.NewDominance, ignoreCase: false),
+                    document.PreviousIsActive,
+                    document.NewIsActive));
+        }
+
+        return new GenomeMutationHistory(records.AsReadOnly());
     }
 
     private static void ValidateGenomeReferences(OrganismCollection organisms, GenomeCollection genomes)

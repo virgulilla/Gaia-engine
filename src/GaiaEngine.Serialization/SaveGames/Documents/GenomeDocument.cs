@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace GaiaEngine.Serialization.SaveGames.Documents;
 
 /// <summary>
@@ -5,6 +7,16 @@ namespace GaiaEngine.Serialization.SaveGames.Documents;
 /// </summary>
 internal sealed class GenomeDocument
 {
+    /// <summary>
+    /// Gets or sets the mutation schema version.
+    /// </summary>
+    public int MutationVersion { get; set; }
+
+    /// <summary>
+    /// Gets or sets the serialized mutation history.
+    /// </summary>
+    public List<GenomeMutationRecordDocument> MutationHistory { get; set; } = new();
+
     /// <summary>
     /// Gets or sets the serialized genome identity.
     /// </summary>

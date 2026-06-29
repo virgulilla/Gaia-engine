@@ -47,6 +47,8 @@ public sealed class JsonWorldSaveGameSerializerTests
         Assert.Single(restored.Genomes.GetAll());
         Assert.Equal(saveGame.Genomes.GetAll()[0].Id, restored.Genomes.GetAll()[0].Id);
         Assert.Equal(saveGame.Genomes.GetAll()[0].Physiology.GetGenes()[0].Key, restored.Genomes.GetAll()[0].Physiology.GetGenes()[0].Key);
+        Assert.Equal(saveGame.Genomes.GetAll()[0].MutationVersion, restored.Genomes.GetAll()[0].MutationVersion);
+        Assert.Single(restored.Genomes.GetAll()[0].MutationHistory.GetAll());
         Assert.Single(restored.ActionRequests.GetAll());
         Assert.Equal(saveGame.ActionRequests.GetAll()[0].ActionId, restored.ActionRequests.GetAll()[0].ActionId);
         Assert.Equal(saveGame.ActionRequests.GetAll()[0].ActionType, restored.ActionRequests.GetAll()[0].ActionType);
@@ -118,7 +120,23 @@ public sealed class JsonWorldSaveGameSerializerTests
             new GenomeGeneGroup(GenomeGroupType.Senses, new[] { new GenomeGene(GenomeGeneKey.VisionRange, new NormalizedGeneValue(470), GeneDominance.CoDominant, true) }),
             new GenomeGeneGroup(GenomeGroupType.Adaptation, new[] { new GenomeGene(GenomeGeneKey.DesertAdaptation, new NormalizedGeneValue(180), GeneDominance.Dominant, true) }),
             new GenomeGeneGroup(GenomeGroupType.Appearance, new[] { new GenomeGene(GenomeGeneKey.PrimaryColor, new NormalizedGeneValue(650), GeneDominance.Dominant, true) }),
-            new GenomeGeneGroup(GenomeGroupType.BehaviourBias, new[] { new GenomeGene(GenomeGeneKey.Curiosity, new NormalizedGeneValue(510), GeneDominance.Blended, true) }));
+            new GenomeGeneGroup(GenomeGroupType.BehaviourBias, new[] { new GenomeGene(GenomeGeneKey.Curiosity, new NormalizedGeneValue(510), GeneDominance.Blended, true) }),
+            mutationVersion: 1,
+            new GenomeMutationHistory(
+                new[]
+                {
+                    new GenomeMutationRecord(
+                        sequence: 0,
+                        GenomeGroupType.Morphology,
+                        GenomeGeneKey.BodySize,
+                        MutationCategory.Parameter,
+                        previousValue: 500,
+                        newValue: 520,
+                        previousDominance: GeneDominance.Dominant,
+                        newDominance: GeneDominance.Dominant,
+                        previousIsActive: true,
+                        newIsActive: true),
+                }));
         World world = new(
             new WorldMetadata(
                 worldId,
