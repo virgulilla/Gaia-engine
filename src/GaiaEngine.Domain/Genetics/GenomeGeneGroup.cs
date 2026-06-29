@@ -65,6 +65,27 @@ public sealed class GenomeGeneGroup
     }
 
     /// <summary>
+    /// Attempts to resolve one stored gene by identifier.
+    /// </summary>
+    /// <param name="key">The gene identifier to resolve.</param>
+    /// <param name="gene">The resolved gene when found; otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> when the gene exists; otherwise <see langword="false"/>.</returns>
+    public bool TryGetGene(GenomeGeneKey key, out GenomeGene? gene)
+    {
+        foreach (GenomeGene candidate in genes)
+        {
+            if (candidate.Key == key)
+            {
+                gene = candidate;
+                return true;
+            }
+        }
+
+        gene = null;
+        return false;
+    }
+
+    /// <summary>
     /// Resolves the owning group for a supplied gene key.
     /// </summary>
     /// <param name="key">The gene key to resolve.</param>
