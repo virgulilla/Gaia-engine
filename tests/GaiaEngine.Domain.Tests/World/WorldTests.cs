@@ -103,6 +103,7 @@ public sealed class WorldTests
                 new WindState(90, 4, 6),
                 new PrecipitationState(PrecipitationType.None, 0, 0, 0),
                 new PressureState(1012)),
+            CreateWater(sequence),
             CreateResources(sequence),
             Array.Empty<OrganismId>());
     }
@@ -130,6 +131,16 @@ public sealed class WorldTests
             SurfaceType.Grass,
             GeologyType.Granite,
             Array.Empty<TerrainModifierState>());
+    }
+
+    private static WaterState CreateWater(ulong sequence)
+    {
+        return new WaterState(
+            new SurfaceWaterState(220 + (int)sequence, 3, 90, 400 + ((int)sequence * 10)),
+            new GroundWaterState(42, 58, 6, 0),
+            null,
+            null,
+            null);
     }
 
     private static ChunkResources CreateResources(ulong sequence)

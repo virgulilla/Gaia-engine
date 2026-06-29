@@ -81,6 +81,7 @@ public sealed class SimulationDiagnosticsCollectorTests
                         new GaiaEngine.Domain.World.WindState(90, 4, 6),
                         new GaiaEngine.Domain.World.PrecipitationState(GaiaEngine.Domain.World.PrecipitationType.None, 0, 0, 0),
                         new GaiaEngine.Domain.World.PressureState(1012)),
+                    CreateWater(),
                     CreateResources(2),
                     System.Array.Empty<GaiaEngine.Domain.Identifiers.OrganismId>()),
             });
@@ -109,6 +110,16 @@ public sealed class SimulationDiagnosticsCollectorTests
             GaiaEngine.Domain.World.SurfaceType.Grass,
             GaiaEngine.Domain.World.GeologyType.Limestone,
             System.Array.Empty<GaiaEngine.Domain.World.TerrainModifierState>());
+    }
+
+    private static GaiaEngine.Domain.World.WaterState CreateWater()
+    {
+        return new GaiaEngine.Domain.World.WaterState(
+            new GaiaEngine.Domain.World.SurfaceWaterState(220, 3, 90, 400),
+            new GaiaEngine.Domain.World.GroundWaterState(42, 58, 6, 0),
+            null,
+            null,
+            null);
     }
 
     private static GaiaEngine.Domain.World.ChunkResources CreateResources(ulong sequence)

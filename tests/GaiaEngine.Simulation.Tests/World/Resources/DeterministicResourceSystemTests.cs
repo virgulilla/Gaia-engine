@@ -86,6 +86,7 @@ public sealed class DeterministicResourceSystemTests
                             3,
                             80),
                         new PressureState(1005)),
+                    CreateWater(),
                     CreateResources(10),
                     System.Array.Empty<OrganismId>()),
             });
@@ -114,6 +115,16 @@ public sealed class DeterministicResourceSystemTests
             SurfaceType.Grass,
             GeologyType.Limestone,
             System.Array.Empty<TerrainModifierState>());
+    }
+
+    private static WaterState CreateWater()
+    {
+        return new WaterState(
+            new SurfaceWaterState(420, 4, 90, 700),
+            new GroundWaterState(48, 72, 8, 0),
+            null,
+            null,
+            null);
     }
 
     private static ChunkResources CreateResources(ulong sequence)

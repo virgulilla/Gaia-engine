@@ -27,6 +27,8 @@ internal sealed class ChunkDocument
 
     public ClimateStateDocument Climate { get; set; } = new();
 
+    public WaterStateDocument Water { get; set; } = new();
+
     public List<ResourceStateDocument> Resources { get; set; } = new();
 
     public List<string> OrganismIds { get; set; } = new();

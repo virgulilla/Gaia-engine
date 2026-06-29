@@ -33,6 +33,8 @@ public sealed class JsonWorldSaveGameSerializerTests
         Assert.Equal(saveGame.World.GetChunks()[0].Biome.ResourceProfile.Biomass, restored.World.GetChunks()[0].Biome.ResourceProfile.Biomass);
         Assert.Equal(saveGame.World.GetChunks()[0].Climate.Zone, restored.World.GetChunks()[0].Climate.Zone);
         Assert.Equal(saveGame.World.GetChunks()[0].Climate.Temperature.CurrentTemperature, restored.World.GetChunks()[0].Climate.Temperature.CurrentTemperature);
+        Assert.Equal(saveGame.World.GetChunks()[0].Water.SurfaceWater.WaterLevel, restored.World.GetChunks()[0].Water.SurfaceWater.WaterLevel);
+        Assert.Equal(saveGame.World.GetChunks()[0].Water.GroundWater.Saturation, restored.World.GetChunks()[0].Water.GroundWater.Saturation);
         Assert.Equal(saveGame.World.GetChunks()[0].Resources.GetAll()[0].ResourceId, restored.World.GetChunks()[0].Resources.GetAll()[0].ResourceId);
         Assert.Equal(saveGame.World.GetChunks()[0].Resources.GetAll()[0].CurrentAmount, restored.World.GetChunks()[0].Resources.GetAll()[0].CurrentAmount);
     }
@@ -55,7 +57,7 @@ public sealed class JsonWorldSaveGameSerializerTests
         JsonWorldSaveGameSerializer serializer = new();
         string payload =
             """
-            {"metadata":{"saveName":"Gaia","creationDate":"2026-06-28","lastModified":"2026-06-28","worldSeed":42,"engineVersion":"1.0.0","saveVersion":"1.0.0"},"world":{"worldId":"72057594037927937","worldName":"Gaia","seed":42,"creationDate":"2026-06-28","engineVersion":"1.0.0","configurationVersion":"2026.06.28","width":10,"height":10,"chunkSize":16,"chunkCount":1,"maximumElevation":1,"currentTick":0,"currentDay":0,"currentSeason":"Spring","currentYear":0,"chunks":[{"chunkId":"144115188075855873","worldId":"72057594037927938","x":0,"y":0,"seed":1,"size":16,"state":"Active","terrain":{"height":10,"relativeHeight":0,"seaLevelOffset":0,"gradient":4,"aspect":90,"traversalCost":120,"soilType":"Loam","fertility":70,"drainage":60,"moistureCapacity":70,"organicMatter":65,"surface":"Grass","geology":"Granite","modifiers":[]},"biome":{"biomeId":"504403158265495658","name":"Grassland","category":"Plains","description":"Open plains biome.","averageTemperature":18,"averageRainfall":2,"humidity":55,"windIntensity":4,"seasonalVariation":8,"minimumElevation":0,"maximumElevation":20,"dominantSoil":"Loam","surface":"Grass","drainage":60,"water":750,"food":800,"minerals":500,"biomass":800,"dominantVegetation":"Grassland","vegetationDensity":62,"herbivoreAffinity":72,"carnivoreAffinity":46,"plantDiversity":60,"aquaticSuitability":20},"climate":{"zone":"Temperate","weatherState":"Clear","currentTemperature":18,"dailyAverageTemperature":18,"seasonalAverageTemperature":18,"dailyTemperatureVariation":0,"relativeHumidity":55,"evaporationRate":3,"condensationRate":2,"windDirection":90,"windSpeed":4,"windGustStrength":6,"precipitationType":"None","precipitationIntensity":0,"precipitationDuration":0,"precipitationCoverage":0,"pressure":1012},"resources":[],"organismIds":[]}]},"configurationVersion":"2026.06.28","version":{"formatVersion":"1.0.0","engineVersion":"1.0.0","contentVersion":"1.0.0"}}
+            {"metadata":{"saveName":"Gaia","creationDate":"2026-06-28","lastModified":"2026-06-28","worldSeed":42,"engineVersion":"1.0.0","saveVersion":"1.0.0"},"world":{"worldId":"72057594037927937","worldName":"Gaia","seed":42,"creationDate":"2026-06-28","engineVersion":"1.0.0","configurationVersion":"2026.06.28","width":10,"height":10,"chunkSize":16,"chunkCount":1,"maximumElevation":1,"currentTick":0,"currentDay":0,"currentSeason":"Spring","currentYear":0,"chunks":[{"chunkId":"144115188075855873","worldId":"72057594037927938","x":0,"y":0,"seed":1,"size":16,"state":"Active","terrain":{"height":10,"relativeHeight":0,"seaLevelOffset":0,"gradient":4,"aspect":90,"traversalCost":120,"soilType":"Loam","fertility":70,"drainage":60,"moistureCapacity":70,"organicMatter":65,"surface":"Grass","geology":"Granite","modifiers":[]},"biome":{"biomeId":"504403158265495658","name":"Grassland","category":"Plains","description":"Open plains biome.","averageTemperature":18,"averageRainfall":2,"humidity":55,"windIntensity":4,"seasonalVariation":8,"minimumElevation":0,"maximumElevation":20,"dominantSoil":"Loam","surface":"Grass","drainage":60,"water":750,"food":800,"minerals":500,"biomass":800,"dominantVegetation":"Grassland","vegetationDensity":62,"herbivoreAffinity":72,"carnivoreAffinity":46,"plantDiversity":60,"aquaticSuitability":20},"climate":{"zone":"Temperate","weatherState":"Clear","currentTemperature":18,"dailyAverageTemperature":18,"seasonalAverageTemperature":18,"dailyTemperatureVariation":0,"relativeHumidity":55,"evaporationRate":3,"condensationRate":2,"windDirection":90,"windSpeed":4,"windGustStrength":6,"precipitationType":"None","precipitationIntensity":0,"precipitationDuration":0,"precipitationCoverage":0,"pressure":1012},"water":{"surfaceWater":{"waterLevel":220,"flowSpeed":3,"flowDirection":90,"waterVolume":400},"groundWater":{"waterTable":42,"saturation":58,"rechargeRate":6,"extractionRate":0},"river":null,"lake":null,"ocean":null},"resources":[],"organismIds":[]}]},"configurationVersion":"2026.06.28","version":{"formatVersion":"1.0.0","engineVersion":"1.0.0","contentVersion":"1.0.0"}}
             """;
 
         Assert.Throws<ArgumentException>(() => serializer.Deserialize(payload));
@@ -94,6 +96,7 @@ public sealed class JsonWorldSaveGameSerializerTests
                         new WindState(90, 4, 6),
                         new PrecipitationState(PrecipitationType.None, 0, 0, 0),
                         new PressureState(1012)),
+                    CreateWater(10),
                     CreateResources(10),
                     Array.Empty<OrganismId>()),
             });
@@ -133,6 +136,16 @@ public sealed class JsonWorldSaveGameSerializerTests
             new BiomeResourceProfile(750, 800, 500, 800),
             new BiomeVegetationProfile(VegetationType.Grassland, 62),
             new BiomeSpeciesAffinityProfile(72, 46, 60, 20));
+    }
+
+    private static WaterState CreateWater(ulong sequence)
+    {
+        return new WaterState(
+            new SurfaceWaterState(220 + (int)sequence, 3, 90, 400 + ((int)sequence * 10)),
+            new GroundWaterState(42, 58, 6, 0),
+            null,
+            null,
+            null);
     }
 
     private static ChunkResources CreateResources(ulong sequence)

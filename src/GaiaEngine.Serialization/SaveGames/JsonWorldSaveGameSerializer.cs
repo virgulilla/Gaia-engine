@@ -171,6 +171,50 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                         PrecipitationCoverage = chunk.Climate.Precipitation.Coverage,
                         Pressure = chunk.Climate.Pressure.CurrentPressure,
                     },
+                    Water = new WaterStateDocument
+                    {
+                        SurfaceWater = new SurfaceWaterStateDocument
+                        {
+                            WaterLevel = chunk.Water.SurfaceWater.WaterLevel,
+                            FlowSpeed = chunk.Water.SurfaceWater.FlowSpeed,
+                            FlowDirection = chunk.Water.SurfaceWater.FlowDirection,
+                            WaterVolume = chunk.Water.SurfaceWater.WaterVolume,
+                        },
+                        GroundWater = new GroundWaterStateDocument
+                        {
+                            WaterTable = chunk.Water.GroundWater.WaterTable,
+                            Saturation = chunk.Water.GroundWater.Saturation,
+                            RechargeRate = chunk.Water.GroundWater.RechargeRate,
+                            ExtractionRate = chunk.Water.GroundWater.ExtractionRate,
+                        },
+                        River = chunk.Water.River is null
+                            ? null
+                            : new RiverStateDocument
+                            {
+                                RiverId = chunk.Water.River.RiverId,
+                                Width = chunk.Water.River.Width,
+                                Depth = chunk.Water.River.Depth,
+                                FlowRate = chunk.Water.River.FlowRate,
+                                CurrentVelocity = chunk.Water.River.CurrentVelocity,
+                            },
+                        Lake = chunk.Water.Lake is null
+                            ? null
+                            : new LakeStateDocument
+                            {
+                                SurfaceArea = chunk.Water.Lake.SurfaceArea,
+                                MaximumDepth = chunk.Water.Lake.MaximumDepth,
+                                WaterVolume = chunk.Water.Lake.WaterVolume,
+                                OverflowLevel = chunk.Water.Lake.OverflowLevel,
+                            },
+                        Ocean = chunk.Water.Ocean is null
+                            ? null
+                            : new OceanStateDocument
+                            {
+                                SeaLevel = chunk.Water.Ocean.SeaLevel,
+                                Salinity = chunk.Water.Ocean.Salinity,
+                                Temperature = chunk.Water.Ocean.Temperature,
+                            },
+                    },
                     Resources = resourceDocuments,
                     OrganismIds = organismIds,
                 });
@@ -347,6 +391,38 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
                             chunkDocument.Climate.PrecipitationDuration,
                             chunkDocument.Climate.PrecipitationCoverage),
                         new PressureState(chunkDocument.Climate.Pressure)),
+                    new WaterState(
+                        new SurfaceWaterState(
+                            chunkDocument.Water.SurfaceWater.WaterLevel,
+                            chunkDocument.Water.SurfaceWater.FlowSpeed,
+                            chunkDocument.Water.SurfaceWater.FlowDirection,
+                            chunkDocument.Water.SurfaceWater.WaterVolume),
+                        new GroundWaterState(
+                            chunkDocument.Water.GroundWater.WaterTable,
+                            chunkDocument.Water.GroundWater.Saturation,
+                            chunkDocument.Water.GroundWater.RechargeRate,
+                            chunkDocument.Water.GroundWater.ExtractionRate),
+                        chunkDocument.Water.River is null
+                            ? null
+                            : new RiverState(
+                                chunkDocument.Water.River.RiverId,
+                                chunkDocument.Water.River.Width,
+                                chunkDocument.Water.River.Depth,
+                                chunkDocument.Water.River.FlowRate,
+                                chunkDocument.Water.River.CurrentVelocity),
+                        chunkDocument.Water.Lake is null
+                            ? null
+                            : new LakeState(
+                                chunkDocument.Water.Lake.SurfaceArea,
+                                chunkDocument.Water.Lake.MaximumDepth,
+                                chunkDocument.Water.Lake.WaterVolume,
+                                chunkDocument.Water.Lake.OverflowLevel),
+                        chunkDocument.Water.Ocean is null
+                            ? null
+                            : new OceanState(
+                                chunkDocument.Water.Ocean.SeaLevel,
+                                chunkDocument.Water.Ocean.Salinity,
+                                chunkDocument.Water.Ocean.Temperature)),
                     new ChunkResources(resourceStates.AsReadOnly()),
                     organismIds.AsReadOnly()));
         }

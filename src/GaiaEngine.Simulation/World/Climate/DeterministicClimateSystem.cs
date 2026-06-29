@@ -38,7 +38,7 @@ public sealed class DeterministicClimateSystem : IClimateSystem
         foreach (Chunk chunk in existingChunks)
         {
             ClimateState updatedClimate = CreateClimateState(world, chunk);
-            updatedChunks.Add(new Chunk(chunk.Metadata, chunk.State, chunk.Terrain, chunk.Biome, updatedClimate, chunk.Resources, chunk.OrganismIds));
+            updatedChunks.Add(new Chunk(chunk.Metadata, chunk.State, chunk.Terrain, chunk.Biome, updatedClimate, chunk.Water, chunk.Resources, chunk.OrganismIds));
         }
 
         return new GaiaEngine.Domain.World.World(world.Metadata, world.Dimensions, world.TimeState, updatedChunks.AsReadOnly());

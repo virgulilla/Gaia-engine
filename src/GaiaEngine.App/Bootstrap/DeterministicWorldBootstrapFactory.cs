@@ -87,8 +87,6 @@ public sealed class DeterministicWorldBootstrapFactory
     {
         ChunkId chunkId = idGenerator.CreateChunkId(new IdentifierGenerationContext(worldSeed, 0, new EntitySequence(sequence)));
         long chunkSeedValue = worldSeed.Value + (column * 101L) + (row * 211L) + (long)sequence;
-        TerrainState terrain = CreateTerrainState(column, row, chunkSeedValue);
-        ChunkResources resources = CreateDefaultResources(sequence);
         ClimateState climate = new(
             worldConfiguration.DefaultClimateZone,
             WeatherState.Clear,
@@ -97,6 +95,9 @@ public sealed class DeterministicWorldBootstrapFactory
             new WindState(90, 4, 6),
             new PrecipitationState(PrecipitationType.None, 0, 0, 0),
             new PressureState(1012));
+        TerrainState terrain = CreateTerrainState(column, row, chunkSeedValue);
+        WaterState water = CreateWaterState(column, row, chunkSeedValue, terrain, climate);
+        ChunkResources resources = CreateDefaultResources(sequence);
         BiomeState biome = CreateBiomeState(worldSeed, sequence, terrain, climate, resources);
 
         return new Chunk(
@@ -110,6 +111,7 @@ public sealed class DeterministicWorldBootstrapFactory
             terrain,
             biome,
             climate,
+            water,
             resources,
             Array.Empty<OrganismId>());
     }
@@ -284,6 +286,54 @@ public sealed class DeterministicWorldBootstrapFactory
             SoilType.Clay => SurfaceType.Mud,
             _ => SurfaceType.Grass,
         };
+    }
+
+    private WaterState CreateWaterState(int column, int row, long chunkSeedValue, TerrainState terrain, ClimateState climate)
+    {
+        int normalizedSeed = (int)Math.Abs(chunkSeedValue % 997);
+        int seaLevel = worldConfiguration.MaximumElevation / 3;
+        int drainageResistance = Math.Max(0, 100 - terrain.Soil.Drainage);
+        int baseSurfaceLevel = Math.Clamp((climate.Humidity.RelativeHumidity * 6) + drainageResistance - Math.Max(0, terrain.Elevation.RelativeHeight * 4), 0, 1000);
+        int flowSpeed = Math.Max(0, (terrain.Slope.Gradient / 2) + (baseSurfaceLevel / 100));
+        int flowDirection = (int)(((column * 37L) + (row * 53L) + normalizedSeed) % 360);
+        int surfaceVolume = Math.Max(0, (baseSurfaceLevel * worldConfiguration.ChunkSize) / 10);
+        int groundWaterTable = Math.Clamp(seaLevel + (terrain.Soil.MoistureCapacity / 2) - Math.Max(0, terrain.Elevation.RelativeHeight / 2), 0, worldConfiguration.MaximumElevation);
+        int groundWaterSaturation = Math.Clamp((terrain.Soil.MoistureCapacity + climate.Humidity.RelativeHumidity) / 2, 0, 100);
+        int rechargeRate = Math.Max(0, (climate.Humidity.CondensationRate + terrain.Soil.Drainage) / 4);
+
+        RiverState? river = null;
+        if (terrain.Slope.Gradient >= 10 && baseSurfaceLevel >= 360)
+        {
+            river = new RiverState(
+                $"river-{column}-{row}",
+                width: Math.Max(1, terrain.Slope.Gradient / 4),
+                depth: Math.Max(1, baseSurfaceLevel / 180),
+                flowRate: Math.Max(1, flowSpeed * 3),
+                currentVelocity: Math.Max(1, flowSpeed));
+        }
+
+        LakeState? lake = null;
+        if (terrain.Soil.Drainage <= 48 && baseSurfaceLevel >= 420)
+        {
+            lake = new LakeState(
+                surfaceArea: Math.Max(1, (baseSurfaceLevel * worldConfiguration.ChunkSize) / 20),
+                maximumDepth: Math.Max(1, baseSurfaceLevel / 140),
+                waterVolume: Math.Max(1, surfaceVolume / 2),
+                overflowLevel: Math.Clamp(baseSurfaceLevel + 120, 0, 1000));
+        }
+
+        OceanState? ocean = null;
+        if (terrain.Elevation.Height <= seaLevel)
+        {
+            ocean = new OceanState(seaLevel, salinity: 350, temperature: climate.Temperature.CurrentTemperature);
+        }
+
+        return new WaterState(
+            new SurfaceWaterState(baseSurfaceLevel, flowSpeed, flowDirection, surfaceVolume),
+            new GroundWaterState(groundWaterTable, groundWaterSaturation, rechargeRate, extractionRate: 0),
+            river,
+            lake,
+            ocean);
     }
 
     private BiomeState CreateBiomeState(WorldSeed worldSeed, ulong chunkSequence, TerrainState terrain, ClimateState climate, ChunkResources resources)

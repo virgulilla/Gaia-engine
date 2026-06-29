@@ -13,6 +13,7 @@ using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
 using GaiaEngine.Simulation.World.Climate;
 using GaiaEngine.Simulation.World.Resources;
+using GaiaEngine.Simulation.World.Water;
 using Xunit;
 
 namespace GaiaEngine.Simulation.Tests.Runtime;
@@ -29,7 +30,8 @@ public sealed class DeterministicSimulationSessionTests
             new[]
             {
                 new ScheduledSimulationSystemDefinition(SimulationSystemNames.Climate, SimulationTickPhase.WorldUpdate, 10, 0),
-                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Resources, SimulationTickPhase.WorldUpdate, 20, 0),
+                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Water, SimulationTickPhase.WorldUpdate, 10, 1),
+                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Resources, SimulationTickPhase.WorldUpdate, 20, 2),
                 new ScheduledSimulationSystemDefinition(SimulationSystemNames.Statistics, SimulationTickPhase.PostUpdate, 100, 0),
             });
         DeterministicSimulationTickPipeline pipeline = new(
@@ -41,6 +43,7 @@ public sealed class DeterministicSimulationSessionTests
                     timeSystem,
                     scheduler,
                     new DeterministicClimateSystem(new ClimateSystemSettings(300, 18, 10, 55, 1012, 4)),
+                    new DeterministicWaterSystem(new WaterSystemSettings(8, 4, 12, 6)),
                     new DeterministicResourceSystem(new ResourceSystemSettings(3, 2, 3, 4)),
                     eventPublisher),
                 new NoOpSimulationTickPhase(SimulationTickPhase.OrganismUpdate),
@@ -60,6 +63,7 @@ public sealed class DeterministicSimulationSessionTests
         Assert.Equal(2UL, result.NextEventSequence);
         Assert.NotNull(result.Diagnostics);
         Assert.Equal(100, session.CurrentWorld.TimeState.CurrentTick);
+        Assert.True(session.CurrentWorld.GetChunks()[0].Water.SurfaceWater.WaterLevel >= 0);
         Assert.True(session.CurrentWorld.GetChunks()[0].Resources.TryGet(ResourceType.Vegetation, out ResourceState? vegetation));
         Assert.NotNull(vegetation);
     }
@@ -74,7 +78,8 @@ public sealed class DeterministicSimulationSessionTests
             new[]
             {
                 new ScheduledSimulationSystemDefinition(SimulationSystemNames.Climate, SimulationTickPhase.WorldUpdate, 10, 0),
-                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Resources, SimulationTickPhase.WorldUpdate, 20, 0),
+                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Water, SimulationTickPhase.WorldUpdate, 10, 1),
+                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Resources, SimulationTickPhase.WorldUpdate, 20, 2),
                 new ScheduledSimulationSystemDefinition(SimulationSystemNames.Statistics, SimulationTickPhase.PostUpdate, 100, 0),
             });
         DeterministicSimulationTickPipeline pipeline = new(
@@ -86,6 +91,7 @@ public sealed class DeterministicSimulationSessionTests
                     timeSystem,
                     scheduler,
                     new DeterministicClimateSystem(new ClimateSystemSettings(300, 18, 10, 55, 1012, 4)),
+                    new DeterministicWaterSystem(new WaterSystemSettings(8, 4, 12, 6)),
                     new DeterministicResourceSystem(new ResourceSystemSettings(3, 2, 3, 4)),
                     eventPublisher),
                 new NoOpSimulationTickPhase(SimulationTickPhase.OrganismUpdate),
@@ -148,6 +154,7 @@ public sealed class DeterministicSimulationSessionTests
                 new WindState(90, 4, 6),
                 new PrecipitationState(PrecipitationType.None, 0, 0, 0),
                 new PressureState(1012)),
+            CreateWater(sequence),
             CreateResources(sequence),
             Array.Empty<OrganismId>());
     }
@@ -175,6 +182,16 @@ public sealed class DeterministicSimulationSessionTests
             SurfaceType.Grass,
             GeologyType.Granite,
             Array.Empty<TerrainModifierState>());
+    }
+
+    private static WaterState CreateWater(ulong sequence)
+    {
+        return new WaterState(
+            new SurfaceWaterState(220 + (int)sequence, 3, 90, 400 + ((int)sequence * 10)),
+            new GroundWaterState(42, 58, 6, 0),
+            null,
+            null,
+            null);
     }
 
     private static ChunkResources CreateResources(ulong sequence)

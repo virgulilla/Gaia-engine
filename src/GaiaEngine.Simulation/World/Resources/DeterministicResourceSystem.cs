@@ -42,6 +42,7 @@ public sealed class DeterministicResourceSystem : IResourceSystem
                     chunk.Terrain,
                     chunk.Biome,
                     chunk.Climate,
+                    chunk.Water,
                     UpdateResources(world, chunk),
                     chunk.OrganismIds));
         }
@@ -54,24 +55,24 @@ public sealed class DeterministicResourceSystem : IResourceSystem
         List<ResourceState> updatedResources = new(chunk.Resources.Count);
         foreach (ResourceState resource in chunk.Resources.GetAll())
         {
-            updatedResources.Add(UpdateResource(world.TimeState.CurrentSeason, chunk.Climate, resource));
+            updatedResources.Add(UpdateResource(world.TimeState.CurrentSeason, chunk.Climate, chunk.Water, resource));
         }
 
         return new ChunkResources(updatedResources.AsReadOnly());
     }
 
-    private ResourceState UpdateResource(string season, ClimateState climate, ResourceState resource)
+    private ResourceState UpdateResource(string season, ClimateState climate, WaterState water, ResourceState resource)
     {
         return resource.Type switch
         {
-            ResourceType.Vegetation => UpdateVegetation(season, climate, resource),
-            ResourceType.FreshWater => UpdateFreshWater(season, climate, resource),
+            ResourceType.Vegetation => UpdateVegetation(season, climate, water, resource),
+            ResourceType.FreshWater => UpdateFreshWater(season, climate, water, resource),
             ResourceType.Minerals => UpdateMinerals(resource),
             _ => throw new ArgumentOutOfRangeException(nameof(resource), "The supplied resource type is not supported."),
         };
     }
 
-    private ResourceState UpdateVegetation(string season, ClimateState climate, ResourceState resource)
+    private ResourceState UpdateVegetation(string season, ClimateState climate, WaterState water, ResourceState resource)
     {
         int seasonBonus = season switch
         {
@@ -84,6 +85,7 @@ public sealed class DeterministicResourceSystem : IResourceSystem
 
         int humidityBonus = Math.Max(0, (climate.Humidity.RelativeHumidity - 40) / 10);
         int precipitationBonus = climate.Precipitation.Intensity / settings.PrecipitationDivider;
+        int waterBonus = water.GroundWater.Saturation / 20;
         int weatherModifier = climate.WeatherState switch
         {
             WeatherState.Drought => -resource.RegenerationRate,
@@ -93,10 +95,10 @@ public sealed class DeterministicResourceSystem : IResourceSystem
             _ => 0,
         };
 
-        int regeneration = Math.Max(0, resource.RegenerationRate + seasonBonus + humidityBonus + precipitationBonus + weatherModifier);
+        int regeneration = Math.Max(0, resource.RegenerationRate + seasonBonus + humidityBonus + precipitationBonus + waterBonus + weatherModifier);
         int currentAmount = Math.Min(resource.MaximumCapacity, resource.CurrentAmount + regeneration);
         int quality = Math.Clamp(resource.Quality + seasonBonus + (climate.WeatherState == WeatherState.Drought ? -4 : 2), 0, 100);
-        int availability = CalculateAvailability(currentAmount, resource.MaximumCapacity, quality, precipitationBonus);
+        int availability = CalculateAvailability(currentAmount, resource.MaximumCapacity, quality, precipitationBonus + (water.SurfaceWater.WaterLevel / 100));
 
         return new ResourceState(
             resource.ResourceId,
@@ -109,7 +111,7 @@ public sealed class DeterministicResourceSystem : IResourceSystem
             availability);
     }
 
-    private ResourceState UpdateFreshWater(string season, ClimateState climate, ResourceState resource)
+    private ResourceState UpdateFreshWater(string season, ClimateState climate, WaterState water, ResourceState resource)
     {
         int seasonBonus = season switch
         {
@@ -131,10 +133,11 @@ public sealed class DeterministicResourceSystem : IResourceSystem
             _ => 0,
         };
 
-        int regeneration = Math.Max(0, resource.RegenerationRate + seasonBonus + precipitationBonus + weatherModifier - evaporationPenalty);
+        int waterContribution = (water.SurfaceWater.WaterLevel / 40) + (water.GroundWater.Saturation / 10);
+        int regeneration = Math.Max(0, resource.RegenerationRate + seasonBonus + precipitationBonus + waterContribution + weatherModifier - evaporationPenalty);
         int currentAmount = Math.Min(resource.MaximumCapacity, resource.CurrentAmount + regeneration);
         int quality = Math.Clamp(resource.Quality + (climate.WeatherState == WeatherState.Storm ? -2 : 1), 0, 100);
-        int availability = CalculateAvailability(currentAmount, resource.MaximumCapacity, quality, precipitationBonus);
+        int availability = CalculateAvailability(currentAmount, resource.MaximumCapacity, quality, precipitationBonus + waterContribution);
 
         return new ResourceState(
             resource.ResourceId,

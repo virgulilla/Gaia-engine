@@ -11,6 +11,7 @@ using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
 using GaiaEngine.Simulation.World.Climate;
 using GaiaEngine.Simulation.World.Resources;
+using GaiaEngine.Simulation.World.Water;
 
 namespace GaiaEngine.App.Bootstrap;
 
@@ -72,6 +73,12 @@ public sealed class GaiaEngineApplication
             basePressure: 1012,
             baseWindSpeed: 4);
         DeterministicClimateSystem climateSystem = new(climateSettings);
+        WaterSystemSettings waterSettings = new(
+            precipitationMultiplier: 8,
+            evaporationDivider: 4,
+            runoffDivider: 12,
+            infiltrationDivider: 6);
+        DeterministicWaterSystem waterSystem = new(waterSettings);
         ResourceSystemSettings resourceSettings = new(
             vegetationSeasonBonus: 3,
             waterSeasonBonus: 2,
@@ -87,10 +94,15 @@ public sealed class GaiaEngineApplication
                     frequency: 10,
                     priority: 0),
                 new ScheduledSimulationSystemDefinition(
+                    SimulationSystemNames.Water,
+                    SimulationTickPhase.WorldUpdate,
+                    frequency: 10,
+                    priority: 1),
+                new ScheduledSimulationSystemDefinition(
                     SimulationSystemNames.Resources,
                     SimulationTickPhase.WorldUpdate,
                     frequency: 20,
-                    priority: 0),
+                    priority: 2),
                 new ScheduledSimulationSystemDefinition(
                     SimulationSystemNames.Statistics,
                     SimulationTickPhase.PostUpdate,
@@ -103,7 +115,7 @@ public sealed class GaiaEngineApplication
             {
                 new NoOpSimulationTickPhase(SimulationTickPhase.InputCollection),
                 new NoOpSimulationTickPhase(SimulationTickPhase.PreUpdate),
-                new WorldUpdateTimePhase(timeSystem, scheduler, climateSystem, resourceSystem, eventPublisher),
+                new WorldUpdateTimePhase(timeSystem, scheduler, climateSystem, waterSystem, resourceSystem, eventPublisher),
                 new NoOpSimulationTickPhase(SimulationTickPhase.OrganismUpdate),
                 new NoOpSimulationTickPhase(SimulationTickPhase.InteractionSystems),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),

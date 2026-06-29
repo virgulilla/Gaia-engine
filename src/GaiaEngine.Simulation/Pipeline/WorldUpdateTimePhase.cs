@@ -5,6 +5,7 @@ using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
 using GaiaEngine.Simulation.World.Climate;
 using GaiaEngine.Simulation.World.Resources;
+using GaiaEngine.Simulation.World.Water;
 
 namespace GaiaEngine.Simulation.Pipeline;
 
@@ -16,6 +17,7 @@ public sealed class WorldUpdateTimePhase : ISimulationTickPhase
     private readonly ITimeSystem timeSystem;
     private readonly ISimulationScheduler scheduler;
     private readonly IClimateSystem climateSystem;
+    private readonly IWaterSystem waterSystem;
     private readonly IResourceSystem resourceSystem;
     private readonly ISimulationEventPublisher eventPublisher;
 
@@ -25,6 +27,7 @@ public sealed class WorldUpdateTimePhase : ISimulationTickPhase
     /// <param name="timeSystem">The Time System used to advance deterministic world time.</param>
     /// <param name="scheduler">The scheduler used to create the deterministic tick schedule.</param>
     /// <param name="climateSystem">The climate system used to update world climate state.</param>
+    /// <param name="waterSystem">The water system used to update world water state.</param>
     /// <param name="resourceSystem">The resource system used to update world resource state.</param>
     /// <param name="eventPublisher">The simulation event publisher used to enqueue time events.</param>
     /// <exception cref="ArgumentNullException">
@@ -34,12 +37,14 @@ public sealed class WorldUpdateTimePhase : ISimulationTickPhase
         ITimeSystem timeSystem,
         ISimulationScheduler scheduler,
         IClimateSystem climateSystem,
+        IWaterSystem waterSystem,
         IResourceSystem resourceSystem,
         ISimulationEventPublisher eventPublisher)
     {
         this.timeSystem = timeSystem ?? throw new ArgumentNullException(nameof(timeSystem));
         this.scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
         this.climateSystem = climateSystem ?? throw new ArgumentNullException(nameof(climateSystem));
+        this.waterSystem = waterSystem ?? throw new ArgumentNullException(nameof(waterSystem));
         this.resourceSystem = resourceSystem ?? throw new ArgumentNullException(nameof(resourceSystem));
         this.eventPublisher = eventPublisher ?? throw new ArgumentNullException(nameof(eventPublisher));
     }
@@ -67,6 +72,12 @@ public sealed class WorldUpdateTimePhase : ISimulationTickPhase
             if (scheduledSystem.SystemName == SimulationSystemNames.Climate)
             {
                 context.ApplyWorld(climateSystem.UpdateWorld(context.CurrentWorld));
+                continue;
+            }
+
+            if (scheduledSystem.SystemName == SimulationSystemNames.Water)
+            {
+                context.ApplyWorld(waterSystem.UpdateWorld(context.CurrentWorld));
                 continue;
             }
 

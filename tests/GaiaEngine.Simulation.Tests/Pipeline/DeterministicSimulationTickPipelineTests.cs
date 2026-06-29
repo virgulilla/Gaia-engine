@@ -13,6 +13,7 @@ using GaiaEngine.Simulation.Scheduling;
 using GaiaEngine.Simulation.Time;
 using GaiaEngine.Simulation.World.Climate;
 using GaiaEngine.Simulation.World.Resources;
+using GaiaEngine.Simulation.World.Water;
 using Xunit;
 
 namespace GaiaEngine.Simulation.Tests.Pipeline;
@@ -28,7 +29,8 @@ public sealed class DeterministicSimulationTickPipelineTests
             new[]
             {
                 new ScheduledSimulationSystemDefinition(SimulationSystemNames.Climate, SimulationTickPhase.WorldUpdate, 10, 0),
-                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Resources, SimulationTickPhase.WorldUpdate, 20, 0),
+                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Water, SimulationTickPhase.WorldUpdate, 10, 1),
+                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Resources, SimulationTickPhase.WorldUpdate, 20, 2),
                 new ScheduledSimulationSystemDefinition(SimulationSystemNames.Statistics, SimulationTickPhase.PostUpdate, 100, 0),
             });
         DeterministicSimulationTickPipeline pipeline = CreatePipeline(
@@ -38,6 +40,7 @@ public sealed class DeterministicSimulationTickPipelineTests
             eventBus,
             new SimulationDiagnosticsCollector(),
             new DeterministicClimateSystem(new ClimateSystemSettings(300, 18, 10, 55, 1012, 4)),
+            new DeterministicWaterSystem(new WaterSystemSettings(8, 4, 12, 6)),
             new DeterministicResourceSystem(new ResourceSystemSettings(3, 2, 3, 4)));
 
         SimulationTickResult result = pipeline.Execute(CreateWorld(99, 0, "Spring", 0), 1);
@@ -52,11 +55,12 @@ public sealed class DeterministicSimulationTickPipelineTests
         Assert.Equal(SimulationTickPhase.EventDispatch, result.ExecutedPhases[6]);
         Assert.Equal(SimulationTickPhase.PostUpdate, result.ExecutedPhases[7]);
         Assert.Equal(100, result.TimeState.CurrentTick);
-        Assert.Equal(3, result.Schedule.Systems.Count);
+        Assert.Equal(4, result.Schedule.Systems.Count);
         Assert.Single(result.EventPublicationResult.PublishedEvents);
         Assert.NotNull(result.EventDispatchResult);
         Assert.NotNull(result.Diagnostics);
         Assert.NotEqual(18, result.World.GetChunks()[0].Climate.Temperature.CurrentTemperature);
+        Assert.True(result.World.GetChunks()[0].Water.SurfaceWater.WaterLevel >= 0);
         Assert.True(result.World.GetChunks()[0].Resources.TryGet(ResourceType.Vegetation, out ResourceState? vegetation));
         Assert.NotNull(vegetation);
     }
@@ -70,7 +74,8 @@ public sealed class DeterministicSimulationTickPipelineTests
             new[]
             {
                 new ScheduledSimulationSystemDefinition(SimulationSystemNames.Climate, SimulationTickPhase.WorldUpdate, 4, 0),
-                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Resources, SimulationTickPhase.WorldUpdate, 4, 1),
+                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Water, SimulationTickPhase.WorldUpdate, 4, 1),
+                new ScheduledSimulationSystemDefinition(SimulationSystemNames.Resources, SimulationTickPhase.WorldUpdate, 4, 2),
                 new ScheduledSimulationSystemDefinition("Terrain", SimulationTickPhase.WorldUpdate, 2, 0),
                 new ScheduledSimulationSystemDefinition(SimulationSystemNames.Statistics, SimulationTickPhase.PostUpdate, 100, 0),
             });
@@ -83,6 +88,7 @@ public sealed class DeterministicSimulationTickPipelineTests
             eventBus,
             new SimulationDiagnosticsCollector(),
             new DeterministicClimateSystem(new ClimateSystemSettings(300, 18, 10, 55, 1012, 4)),
+            new DeterministicWaterSystem(new WaterSystemSettings(8, 4, 12, 6)),
             new DeterministicResourceSystem(new ResourceSystemSettings(3, 2, 3, 4)));
 
         SimulationTickResult result = pipeline.Execute(CreateWorld(3, 0, "Spring", 0), 1);
@@ -90,13 +96,14 @@ public sealed class DeterministicSimulationTickPipelineTests
         Assert.NotNull(result.TimeAdvanceResult);
         Assert.Equal(4, result.TimeAdvanceResult!.TimeState.CurrentTick);
         Assert.Single(result.TimeAdvanceResult.Transitions);
-        Assert.Equal(3, result.Schedule.Systems.Count);
+        Assert.Equal(4, result.Schedule.Systems.Count);
         Assert.Equal(4, result.Schedule.ExecutingTick);
         Assert.Single(result.EventPublicationResult.PublishedEvents);
         Assert.Equal(1, result.EventDispatchResult!.ProcessedEventCount);
         Assert.Single(receivedEvents);
         Assert.Null(result.Diagnostics);
         Assert.NotEqual(18, result.World.GetChunks()[0].Climate.Temperature.CurrentTemperature);
+        Assert.True(result.World.GetChunks()[0].Water.GroundWater.Saturation >= 0);
         Assert.True(result.World.GetChunks()[0].Resources.TryGet(ResourceType.FreshWater, out ResourceState? freshWater));
         Assert.NotNull(freshWater);
     }
@@ -127,6 +134,7 @@ public sealed class DeterministicSimulationTickPipelineTests
         IEventBus eventBus,
         ISimulationDiagnosticsCollector diagnosticsCollector,
         IClimateSystem climateSystem,
+        IWaterSystem waterSystem,
         IResourceSystem resourceSystem)
     {
         return new DeterministicSimulationTickPipeline(
@@ -134,7 +142,7 @@ public sealed class DeterministicSimulationTickPipelineTests
             {
                 new NoOpSimulationTickPhase(SimulationTickPhase.InputCollection),
                 new NoOpSimulationTickPhase(SimulationTickPhase.PreUpdate),
-                new WorldUpdateTimePhase(timeSystem, scheduler, climateSystem, resourceSystem, eventPublisher),
+                new WorldUpdateTimePhase(timeSystem, scheduler, climateSystem, waterSystem, resourceSystem, eventPublisher),
                 new NoOpSimulationTickPhase(SimulationTickPhase.OrganismUpdate),
                 new NoOpSimulationTickPhase(SimulationTickPhase.InteractionSystems),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
@@ -191,6 +199,7 @@ public sealed class DeterministicSimulationTickPipelineTests
                 new WindState(90, 4, 6),
                 new PrecipitationState(PrecipitationType.None, 0, 0, 0),
                 new PressureState(1012)),
+            CreateWater(sequence),
             CreateResources(sequence),
             Array.Empty<OrganismId>());
     }
@@ -218,6 +227,16 @@ public sealed class DeterministicSimulationTickPipelineTests
             SurfaceType.Grass,
             GeologyType.Granite,
             Array.Empty<TerrainModifierState>());
+    }
+
+    private static WaterState CreateWater(ulong sequence)
+    {
+        return new WaterState(
+            new SurfaceWaterState(220 + (int)sequence, 3, 90, 400 + ((int)sequence * 10)),
+            new GroundWaterState(42, 58, 6, 0),
+            null,
+            null,
+            null);
     }
 
     private static ChunkResources CreateResources(ulong sequence)
