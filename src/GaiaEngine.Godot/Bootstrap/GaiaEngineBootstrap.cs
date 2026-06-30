@@ -17,6 +17,7 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string WorldNameLabelPath = "HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow/WorldNameLabel";
     private const string TimeSummaryLabelPath = "HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow/TimeSummaryLabel";
     private const string TickRateLabelPath = "HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow/TickRateChip/TickRateChipMargin/TickRateLabel";
+    private const string InspectButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/InspectButton";
     private const string LeftPanelPath = "HudLayer/HudRoot/LeftPanel";
     private const string ContextPanelPath = "HudLayer/HudRoot/ContextPanel";
     private const string SelectionHintLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionHintLabel";
@@ -59,6 +60,7 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Label? worldNameLabel;
     private Label? timeSummaryLabel;
     private Label? tickRateLabel;
+    private Button? inspectButton;
     private PanelContainer? leftPanel;
     private PanelContainer? contextPanel;
     private Label? selectionHintLabel;
@@ -93,6 +95,8 @@ public sealed partial class GaiaEngineBootstrap : Node
     private double tickAccumulator;
     private HudViewSnapshot? lastSnapshot;
     private RuntimeObservationSnapshot? lastObservedState;
+    private FocusOverrideKind focusOverrideKind;
+    private GaiaEngine.Domain.Identifiers.OrganismId? focusedOrganismId;
 
     /// <summary>
     /// Initializes the application when the root scene enters the tree.
@@ -107,6 +111,7 @@ public sealed partial class GaiaEngineBootstrap : Node
         worldNameLabel = GetNode<Label>(WorldNameLabelPath);
         timeSummaryLabel = GetNode<Label>(TimeSummaryLabelPath);
         tickRateLabel = GetNode<Label>(TickRateLabelPath);
+        inspectButton = GetNode<Button>(InspectButtonPath);
         leftPanel = GetNode<PanelContainer>(LeftPanelPath);
         contextPanel = GetNode<PanelContainer>(ContextPanelPath);
         selectionHintLabel = GetNode<Label>(SelectionHintLabelPath);
@@ -164,6 +169,8 @@ public sealed partial class GaiaEngineBootstrap : Node
                 runtime.World.TimeState.CurrentTick,
                 GetDurationSeconds(HudNotificationPriority.Low),
                 actionLabel: null));
+        inspectButton.Disabled = false;
+        inspectButton.Pressed += OnInspectPressed;
 
         UpdateSimulationStatusText();
         UpdateNotificationWidgets();
@@ -209,6 +216,7 @@ public sealed partial class GaiaEngineBootstrap : Node
             || worldNameLabel is null
             || timeSummaryLabel is null
             || tickRateLabel is null
+            || inspectButton is null
             || leftPanel is null
             || contextPanel is null
             || selectionHintLabel is null
@@ -238,6 +246,7 @@ public sealed partial class GaiaEngineBootstrap : Node
 
         int aliveOrganisms = CountAliveOrganisms();
         int memoryEntries = CountMemoryEntries();
+        inspectButton.Disabled = aliveOrganisms == 0;
         GaiaEngine.Domain.World.Chunk primaryChunk = runtime.World.GetChunks()[0];
         HudViewSnapshot snapshot = new(
             runtime.World.Metadata.WorldName,
@@ -805,7 +814,9 @@ public sealed partial class GaiaEngineBootstrap : Node
             GaiaEngine.Domain.World.ResourceState primaryResource = ResolvePrimaryResource(selectedChunk);
             return new ObservationSelection(
                 IsVisible: true,
-                SelectionHint: "Observed focus updates automatically from the current simulation state.",
+                SelectionHint: focusOverrideKind == FocusOverrideKind.Automatic
+                    ? "Observed focus updates automatically. Use Inspect to cycle through organisms."
+                    : "Manual focus is active. Use Inspect to move to the next observed organism.",
                 SelectionType: "Focus: Organism",
                 SelectionPrimary: $"Organism: {selectedOrganism.Id}",
                 SelectionSecondary: $"Chunk: {selectedChunk.Metadata.Coordinates.X}, {selectedChunk.Metadata.Coordinates.Y}",
@@ -822,7 +833,9 @@ public sealed partial class GaiaEngineBootstrap : Node
         GaiaEngine.Domain.World.ResourceState primaryChunkResource = ResolvePrimaryResource(primaryChunk);
         return new ObservationSelection(
             IsVisible: true,
-            SelectionHint: "No living organism is available, so the HUD is observing the primary world chunk.",
+            SelectionHint: focusOverrideKind == FocusOverrideKind.Chunk
+                ? "Chunk focus is active. Use Inspect to return to the first available organism."
+                : "No living organism is available, so the HUD is observing the primary world chunk.",
             SelectionType: "Focus: Chunk",
             SelectionPrimary: $"Chunk: {primaryChunk.Metadata.Coordinates.X}, {primaryChunk.Metadata.Coordinates.Y}",
             SelectionSecondary: $"Biome: {primaryChunk.Biome.Name}",
@@ -842,15 +855,48 @@ public sealed partial class GaiaEngineBootstrap : Node
             return null;
         }
 
+        List<GaiaEngine.Domain.Organisms.Organism> liveOrganisms = GetLiveOrganisms();
+        if (focusOverrideKind == FocusOverrideKind.Organism && focusedOrganismId.HasValue)
+        {
+            foreach (GaiaEngine.Domain.Organisms.Organism liveOrganism in liveOrganisms)
+            {
+                if (liveOrganism.Id == focusedOrganismId.Value)
+                {
+                    return liveOrganism;
+                }
+            }
+        }
+
+        if (focusOverrideKind == FocusOverrideKind.Chunk)
+        {
+            return null;
+        }
+
+        foreach (GaiaEngine.Domain.Organisms.Organism organism in liveOrganisms)
+        {
+            return organism;
+        }
+
+        return null;
+    }
+
+    private List<GaiaEngine.Domain.Organisms.Organism> GetLiveOrganisms()
+    {
+        List<GaiaEngine.Domain.Organisms.Organism> liveOrganisms = new();
+        if (runtime is null)
+        {
+            return liveOrganisms;
+        }
+
         foreach (GaiaEngine.Domain.Organisms.Organism organism in runtime.Organisms.GetAll())
         {
             if (organism.Lifecycle.IsAlive)
             {
-                return organism;
+                liveOrganisms.Add(organism);
             }
         }
 
-        return null;
+        return liveOrganisms;
     }
 
     private GaiaEngine.Domain.World.Chunk ResolveChunk(GaiaEngine.Domain.Identifiers.ChunkId chunkId)
@@ -934,6 +980,50 @@ public sealed partial class GaiaEngineBootstrap : Node
         return identifier.Replace(".", " ", StringComparison.Ordinal).Replace("-", " ", StringComparison.Ordinal);
     }
 
+    private void OnInspectPressed()
+    {
+        if (runtime is null)
+        {
+            return;
+        }
+
+        List<GaiaEngine.Domain.Organisms.Organism> liveOrganisms = GetLiveOrganisms();
+        if (liveOrganisms.Count == 0)
+        {
+            focusOverrideKind = FocusOverrideKind.Chunk;
+            focusedOrganismId = null;
+            return;
+        }
+
+        GaiaEngine.Domain.Organisms.Organism? currentOrganism = TryResolveObservedOrganism();
+        if (currentOrganism is null)
+        {
+            focusOverrideKind = FocusOverrideKind.Organism;
+            focusedOrganismId = liveOrganisms[0].Id;
+            return;
+        }
+
+        int currentIndex = -1;
+        for (int index = 0; index < liveOrganisms.Count; index++)
+        {
+            if (liveOrganisms[index].Id == currentOrganism.Id)
+            {
+                currentIndex = index;
+                break;
+            }
+        }
+
+        if (currentIndex >= 0 && currentIndex < liveOrganisms.Count - 1)
+        {
+            focusOverrideKind = FocusOverrideKind.Organism;
+            focusedOrganismId = liveOrganisms[currentIndex + 1].Id;
+            return;
+        }
+
+        focusOverrideKind = FocusOverrideKind.Chunk;
+        focusedOrganismId = null;
+    }
+
     private sealed record HudViewSnapshot(
         string WorldName,
         string TimeSummary,
@@ -992,6 +1082,13 @@ public sealed partial class GaiaEngineBootstrap : Node
             string.Empty,
             string.Empty,
             string.Empty);
+    }
+
+    private enum FocusOverrideKind
+    {
+        Automatic = 0,
+        Organism = 1,
+        Chunk = 2,
     }
 
     private sealed record RuntimeObservationSnapshot(
