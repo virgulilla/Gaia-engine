@@ -18,6 +18,11 @@ internal sealed class PlayerProfileDocument
     public List<DiscoveryEntryDocument> Discoveries { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets the serialized encyclopedia section.
+    /// </summary>
+    public List<EncyclopediaEntryDocument> Encyclopedia { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets the serialized progression section.
     /// </summary>
     public PlayerProgressionDocument? Progression { get; set; }

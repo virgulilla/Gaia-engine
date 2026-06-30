@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Foundation.Determinism;
 using GaiaEngine.Gameplay.Discovery;
+using GaiaEngine.Gameplay.Encyclopedia;
 using GaiaEngine.Gameplay.Player;
 using Xunit;
 
@@ -28,6 +29,7 @@ public sealed class DeterministicDiscoverySystemTests
         DiscoveryEntry unlocked = Assert.Single(result.UnlockedDiscoveries);
         Assert.Equal("species.herbivore.a", unlocked.DiscoveryId);
         Assert.Equal(1, result.Profile.Knowledge.Discoveries.Count);
+        Assert.Equal(1, result.Profile.Knowledge.Encyclopedia.Count);
         Assert.Equal(10, result.Profile.Progression.Experience);
         Assert.Equal(1, result.Profile.Progression.Discoveries);
         Assert.Equal(1, result.Profile.Statistics.TotalDiscoveriesUnlocked);
@@ -92,7 +94,7 @@ public sealed class DeterministicDiscoverySystemTests
     {
         return new PlayerProfile(
             new PlayerIdentity("player-001", "Oscar", "2026-06-30"),
-            new PlayerKnowledge(discoveries ?? DiscoveryCollection.Empty),
+            new PlayerKnowledge(discoveries ?? DiscoveryCollection.Empty, EncyclopediaCollection.Empty),
             progression ?? new PlayerProgression(0, 0, 0),
             statistics ?? new PlayerStatistics(0, 0));
     }

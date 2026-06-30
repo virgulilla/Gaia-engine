@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using GaiaEngine.Domain.Identifiers;
+using GaiaEngine.Gameplay.Encyclopedia;
 using GaiaEngine.Gameplay.Player;
 
 namespace GaiaEngine.Gameplay.Discovery;
@@ -18,9 +19,23 @@ public sealed class DeterministicDiscoverySystem : IDiscoverySystem
     /// <param name="ruleSet">The configurable discovery rule set.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="ruleSet"/> is <see langword="null"/>.</exception>
     public DeterministicDiscoverySystem(DiscoveryRuleSet ruleSet)
+        : this(ruleSet, new DeterministicEncyclopediaSystem())
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DeterministicDiscoverySystem"/> class.
+    /// </summary>
+    /// <param name="ruleSet">The configurable discovery rule set.</param>
+    /// <param name="encyclopediaSystem">The encyclopedia system used to rebuild player knowledge.</param>
+    /// <exception cref="ArgumentNullException">Thrown when any dependency is <see langword="null"/>.</exception>
+    public DeterministicDiscoverySystem(DiscoveryRuleSet ruleSet, IEncyclopediaSystem encyclopediaSystem)
     {
         this.ruleSet = ruleSet ?? throw new ArgumentNullException(nameof(ruleSet));
+        this.encyclopediaSystem = encyclopediaSystem ?? throw new ArgumentNullException(nameof(encyclopediaSystem));
     }
+
+    private readonly IEncyclopediaSystem encyclopediaSystem;
 
     /// <summary>
     /// Evaluates one discovery pass for the supplied player profile.
@@ -92,9 +107,10 @@ public sealed class DeterministicDiscoverySystem : IDiscoverySystem
         }
 
         DiscoveryCollection updatedCollection = new(discoveries.AsReadOnly());
+        EncyclopediaCollection updatedEncyclopedia = encyclopediaSystem.Build(updatedCollection);
         PlayerProfile updatedProfile = new(
             profile.Identity,
-            new PlayerKnowledge(updatedCollection),
+            new PlayerKnowledge(updatedCollection, updatedEncyclopedia),
             new PlayerProgression(experience, discoveryCount, profile.Progression.UnlockLevel),
             new PlayerStatistics(totalUnlocked, duplicateObservations));
         return new DiscoveryEvaluationResult(updatedProfile, unlocked.AsReadOnly());

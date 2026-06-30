@@ -80,3 +80,6 @@ text = "Biome: Unknown"
 
 [node name="ExperienceLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
 text = "XP: 0"
+
+[node name="EncyclopediaCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Encyclopedia: 0"

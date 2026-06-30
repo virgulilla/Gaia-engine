@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Gameplay.Discovery;
+using GaiaEngine.Gameplay.Encyclopedia;
 using GaiaEngine.Gameplay.Player;
 using GaiaEngine.Serialization.Profiles.Documents;
 
@@ -57,6 +58,7 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
     private static PlayerProfileDocument CreateDocument(PlayerProfile profile)
     {
         List<DiscoveryEntryDocument> discoveries = new(profile.Knowledge.Discoveries.Count);
+        List<EncyclopediaEntryDocument> encyclopedia = new(profile.Knowledge.Encyclopedia.Count);
         foreach (DiscoveryEntry entry in profile.Knowledge.Discoveries.GetAll())
         {
             discoveries.Add(
@@ -72,6 +74,33 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
                 });
         }
 
+        foreach (EncyclopediaEntry entry in profile.Knowledge.Encyclopedia.GetAll())
+        {
+            List<EncyclopediaStatisticDocument> statistics = new(entry.GetStatistics().Count);
+            foreach (EncyclopediaStatistic statistic in entry.GetStatistics())
+            {
+                statistics.Add(
+                    new EncyclopediaStatisticDocument
+                    {
+                        Key = statistic.Key,
+                        Value = statistic.Value,
+                    });
+            }
+
+            encyclopedia.Add(
+                new EncyclopediaEntryDocument
+                {
+                    EntryId = entry.EntryId,
+                    Category = entry.Category.ToString(),
+                    Title = entry.Title,
+                    Description = entry.Description,
+                    UnlockState = entry.UnlockState.ToString(),
+                    DiscoveryDate = entry.DiscoveryDate,
+                    RelatedEntries = new List<string>(entry.GetRelatedEntries()),
+                    Statistics = statistics,
+                });
+        }
+
         return new PlayerProfileDocument
         {
             Identity = new PlayerIdentityDocument
@@ -81,6 +110,7 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
                 CreationDate = profile.Identity.CreationDate,
             },
             Discoveries = discoveries,
+            Encyclopedia = encyclopedia,
             Progression = new PlayerProgressionDocument
             {
                 Experience = profile.Progression.Experience,
@@ -126,9 +156,32 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
                     entry.PlayerId));
         }
 
+        List<EncyclopediaEntry> encyclopediaEntries = new(document.Encyclopedia.Count);
+        foreach (EncyclopediaEntryDocument entry in document.Encyclopedia)
+        {
+            List<EncyclopediaStatistic> statistics = new(entry.Statistics.Count);
+            foreach (EncyclopediaStatisticDocument statistic in entry.Statistics)
+            {
+                statistics.Add(new EncyclopediaStatistic(statistic.Key, statistic.Value));
+            }
+
+            encyclopediaEntries.Add(
+                new EncyclopediaEntry(
+                    entry.EntryId,
+                    Enum.Parse<EncyclopediaCategory>(entry.Category, ignoreCase: false),
+                    entry.Title,
+                    entry.Description,
+                    Enum.Parse<EncyclopediaUnlockState>(entry.UnlockState, ignoreCase: false),
+                    entry.DiscoveryDate,
+                    entry.RelatedEntries.AsReadOnly(),
+                    statistics.AsReadOnly()));
+        }
+
         return new PlayerProfile(
             new PlayerIdentity(document.Identity.PlayerId, document.Identity.ProfileName, document.Identity.CreationDate),
-            new PlayerKnowledge(new DiscoveryCollection(discoveries.AsReadOnly())),
+            new PlayerKnowledge(
+                new DiscoveryCollection(discoveries.AsReadOnly()),
+                new EncyclopediaCollection(encyclopediaEntries.AsReadOnly())),
             new PlayerProgression(document.Progression.Experience, document.Progression.Discoveries, document.Progression.UnlockLevel),
             new PlayerStatistics(document.Statistics.TotalDiscoveriesUnlocked, document.Statistics.DuplicateDiscoveryObservations));
     }

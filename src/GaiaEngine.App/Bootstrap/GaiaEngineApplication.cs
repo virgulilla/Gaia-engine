@@ -8,6 +8,7 @@ using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
 using GaiaEngine.Gameplay.Discovery;
+using GaiaEngine.Gameplay.Encyclopedia;
 using GaiaEngine.Gameplay.Player;
 using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.AI.Decision;
@@ -213,10 +214,11 @@ public sealed class GaiaEngineApplication
             bootstrapOrganismState.Genomes,
             bootstrapOrganismState.Species);
         DiscoveryRuleSet discoveryRuleSet = DefaultDiscoveryRuleSetFactory.Create(bootstrapOrganismState.World, bootstrapOrganismState.Species);
-        DeterministicDiscoverySystem discoverySystem = new(discoveryRuleSet);
+        DeterministicEncyclopediaSystem encyclopediaSystem = new();
+        DeterministicDiscoverySystem discoverySystem = new(discoveryRuleSet, encyclopediaSystem);
         PlayerProfile initialProfile = new(
             new PlayerIdentity("player-001", "Local Observer", bootstrapOrganismState.World.Metadata.CreationDate),
-            new PlayerKnowledge(DiscoveryCollection.Empty),
+            new PlayerKnowledge(DiscoveryCollection.Empty, EncyclopediaCollection.Empty),
             new PlayerProgression(0, 0, 0),
             new PlayerStatistics(0, 0));
         List<DiscoverySignal> initialSignals = new();

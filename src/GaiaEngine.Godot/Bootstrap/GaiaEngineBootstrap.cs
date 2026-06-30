@@ -28,6 +28,7 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string WeatherLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/WeatherLabel";
     private const string BiomeLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/BiomeLabel";
     private const string ExperienceLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/ExperienceLabel";
+    private const string EncyclopediaCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/EncyclopediaCountLabel";
 
     private GaiaEngineApplication? application;
     private GaiaEngineRuntime? runtime;
@@ -50,6 +51,7 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Label? weatherLabel;
     private Label? biomeLabel;
     private Label? experienceLabel;
+    private Label? encyclopediaCountLabel;
     private double tickAccumulator;
 
     /// <summary>
@@ -81,6 +83,7 @@ public sealed partial class GaiaEngineBootstrap : Node
         weatherLabel = GetNode<Label>(WeatherLabelPath);
         biomeLabel = GetNode<Label>(BiomeLabelPath);
         experienceLabel = GetNode<Label>(ExperienceLabelPath);
+        encyclopediaCountLabel = GetNode<Label>(EncyclopediaCountLabelPath);
 
         UpdateSimulationStatusText();
         GD.Print($"Gaia Engine initialized with tick rate {runtime.EngineConfiguration.TickRate}.");
@@ -130,7 +133,8 @@ public sealed partial class GaiaEngineBootstrap : Node
             || actionCountLabel is null
             || weatherLabel is null
             || biomeLabel is null
-            || experienceLabel is null)
+            || experienceLabel is null
+            || encyclopediaCountLabel is null)
         {
             return;
         }
@@ -170,5 +174,6 @@ public sealed partial class GaiaEngineBootstrap : Node
         weatherLabel.Text = $"Weather: {primaryChunk.Climate.WeatherState}";
         biomeLabel.Text = $"Biome: {primaryChunk.Biome.Name}";
         experienceLabel.Text = $"XP: {runtime.PlayerProfile.Progression.Experience}";
+        encyclopediaCountLabel.Text = $"Encyclopedia: {runtime.PlayerProfile.Knowledge.Encyclopedia.Count}";
     }
 }
