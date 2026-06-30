@@ -6,6 +6,7 @@ using GaiaEngine.App.Configuration;
 using GaiaEngine.Domain.Genetics;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Gameplay.Discovery;
+using GaiaEngine.Gameplay.Objectives;
 using GaiaEngine.Gameplay.Player;
 using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.Pipeline;
@@ -24,6 +25,9 @@ public sealed class GaiaEngineRuntime
     /// <param name="engineConfiguration">The loaded engine configuration.</param>
     /// <param name="simulationConfiguration">The loaded simulation configuration.</param>
     /// <param name="simulationSession">The initialized simulation session.</param>
+    /// <param name="discoverySystem">The gameplay discovery system used to update permanent knowledge.</param>
+    /// <param name="objectiveSystem">The gameplay objective system used to update player progression goals.</param>
+    /// <param name="playerProfile">The current player profile owned by the gameplay layer.</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when any required dependency is <see langword="null"/>.
     /// </exception>
@@ -32,16 +36,19 @@ public sealed class GaiaEngineRuntime
         SimulationConfiguration simulationConfiguration,
         ISimulationSession simulationSession,
         IDiscoverySystem discoverySystem,
+        IObjectiveSystem objectiveSystem,
         PlayerProfile playerProfile)
     {
         EngineConfiguration = engineConfiguration ?? throw new ArgumentNullException(nameof(engineConfiguration));
         SimulationConfiguration = simulationConfiguration ?? throw new ArgumentNullException(nameof(simulationConfiguration));
         SimulationSession = simulationSession ?? throw new ArgumentNullException(nameof(simulationSession));
         this.discoverySystem = discoverySystem ?? throw new ArgumentNullException(nameof(discoverySystem));
+        this.objectiveSystem = objectiveSystem ?? throw new ArgumentNullException(nameof(objectiveSystem));
         PlayerProfile = playerProfile ?? throw new ArgumentNullException(nameof(playerProfile));
     }
 
     private readonly IDiscoverySystem discoverySystem;
+    private readonly IObjectiveSystem objectiveSystem;
 
     /// <summary>
     /// Gets the loaded engine configuration.
@@ -100,7 +107,7 @@ public sealed class GaiaEngineRuntime
     public SimulationTickResult AdvanceTick()
     {
         SimulationTickResult result = SimulationSession.AdvanceTick();
-        PlayerProfile = EvaluateDiscoveries(PlayerProfile, result.World, result.Species, result.TimeState.CurrentTick, result.EventPublicationResult.PublishedEvents);
+        PlayerProfile = EvaluateGameplay(PlayerProfile, result.World, result.Species, result.TimeState.CurrentTick, result.EventPublicationResult.PublishedEvents);
         return result;
     }
 
@@ -123,7 +130,7 @@ public sealed class GaiaEngineRuntime
         return count;
     }
 
-    private PlayerProfile EvaluateDiscoveries(
+    private PlayerProfile EvaluateGameplay(
         PlayerProfile profile,
         GaiaEngine.Domain.World.World world,
         SpeciesCollection species,
@@ -141,6 +148,8 @@ public sealed class GaiaEngineRuntime
             signals.Add(signal);
         }
 
-        return discoverySystem.Evaluate(profile, world.Id, tick, signals.AsReadOnly()).Profile;
+        DiscoveryEvaluationResult discoveryResult = discoverySystem.Evaluate(profile, world.Id, tick, signals.AsReadOnly());
+        IReadOnlyList<ObjectiveSignal> objectiveSignals = ObjectiveSignalFactory.CreateSignals(discoveryResult.UnlockedDiscoveries, events);
+        return objectiveSystem.Evaluate(discoveryResult.Profile, tick, objectiveSignals).Profile;
     }
 }

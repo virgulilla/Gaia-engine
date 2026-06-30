@@ -9,6 +9,7 @@ using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
 using GaiaEngine.Gameplay.Discovery;
 using GaiaEngine.Gameplay.Encyclopedia;
+using GaiaEngine.Gameplay.Objectives;
 using GaiaEngine.Gameplay.Player;
 using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.AI.Decision;
@@ -216,10 +217,12 @@ public sealed class GaiaEngineApplication
         DiscoveryRuleSet discoveryRuleSet = DefaultDiscoveryRuleSetFactory.Create(bootstrapOrganismState.World, bootstrapOrganismState.Species);
         DeterministicEncyclopediaSystem encyclopediaSystem = new();
         DeterministicDiscoverySystem discoverySystem = new(discoveryRuleSet, encyclopediaSystem);
+        DeterministicObjectiveSystem objectiveSystem = new(DefaultObjectiveCatalogFactory.Create());
         PlayerProfile initialProfile = new(
             new PlayerIdentity("player-001", "Local Observer", bootstrapOrganismState.World.Metadata.CreationDate),
             new PlayerKnowledge(DiscoveryCollection.Empty, EncyclopediaCollection.Empty),
-            new PlayerProgression(0, 0, 0),
+            ObjectiveCollection.Empty,
+            new PlayerProgression(0, 0, 0, 0),
             new PlayerStatistics(0, 0));
         List<DiscoverySignal> initialSignals = new();
         foreach (DiscoverySignal signal in DiscoveryObservationSnapshotFactory.CreateSignals(bootstrapOrganismState.World, bootstrapOrganismState.Species))
@@ -232,7 +235,11 @@ public sealed class GaiaEngineApplication
             bootstrapOrganismState.World.Id,
             bootstrapOrganismState.World.TimeState.CurrentTick,
             initialSignals.AsReadOnly()).Profile;
+        PlayerProfile objectiveReadyProfile = objectiveSystem.Evaluate(
+            discoveredProfile,
+            bootstrapOrganismState.World.TimeState.CurrentTick,
+            Array.Empty<ObjectiveSignal>()).Profile;
 
-        return new GaiaEngineRuntime(engineConfiguration, simulationConfiguration, simulationSession, discoverySystem, discoveredProfile);
+        return new GaiaEngineRuntime(engineConfiguration, simulationConfiguration, simulationSession, discoverySystem, objectiveSystem, objectiveReadyProfile);
     }
 }

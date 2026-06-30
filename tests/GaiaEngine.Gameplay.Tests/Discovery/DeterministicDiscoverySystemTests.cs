@@ -3,6 +3,7 @@ using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Foundation.Determinism;
 using GaiaEngine.Gameplay.Discovery;
 using GaiaEngine.Gameplay.Encyclopedia;
+using GaiaEngine.Gameplay.Objectives;
 using GaiaEngine.Gameplay.Player;
 using Xunit;
 
@@ -95,6 +96,7 @@ public sealed class DeterministicDiscoverySystemTests
         return new PlayerProfile(
             new PlayerIdentity("player-001", "Oscar", "2026-06-30"),
             new PlayerKnowledge(discoveries ?? DiscoveryCollection.Empty, EncyclopediaCollection.Empty),
+            ObjectiveCollection.Empty,
             progression ?? new PlayerProgression(0, 0, 0),
             statistics ?? new PlayerStatistics(0, 0));
     }

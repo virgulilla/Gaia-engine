@@ -43,6 +43,8 @@ public sealed class GaiaEngineApplicationTests
         Assert.Equal("Local Observer", first.PlayerProfile.Identity.ProfileName);
         Assert.True(first.PlayerProfile.Knowledge.Discoveries.Count > 0);
         Assert.True(first.CountDiscoveries(DiscoveryCategory.Biomes) > 0);
+        Assert.True(first.PlayerProfile.Objectives.Count > 0);
+        Assert.True(first.PlayerProfile.Progression.CompletedObjectives >= 1);
         Assert.Empty(first.SimulationSession.CurrentActionRequests.GetAll());
         Assert.Empty(first.AdvanceTick().MovementRequests.GetAll());
         Assert.Empty(first.SimulationSession.CurrentFeedingRequests.GetAll());

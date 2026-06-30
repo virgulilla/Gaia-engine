@@ -23,6 +23,11 @@ internal sealed class PlayerProfileDocument
     public List<EncyclopediaEntryDocument> Encyclopedia { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets the serialized objectives section.
+    /// </summary>
+    public List<ObjectiveEntryDocument> Objectives { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets the serialized progression section.
     /// </summary>
     public PlayerProgressionDocument? Progression { get; set; }

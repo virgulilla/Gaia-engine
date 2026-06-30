@@ -83,3 +83,6 @@ text = "XP: 0"
 
 [node name="EncyclopediaCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
 text = "Encyclopedia: 0"
+
+[node name="ObjectiveCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Objectives: 0 / 0"

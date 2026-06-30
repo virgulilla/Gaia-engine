@@ -111,7 +111,8 @@ public sealed class DeterministicDiscoverySystem : IDiscoverySystem
         PlayerProfile updatedProfile = new(
             profile.Identity,
             new PlayerKnowledge(updatedCollection, updatedEncyclopedia),
-            new PlayerProgression(experience, discoveryCount, profile.Progression.UnlockLevel),
+            profile.Objectives,
+            new PlayerProgression(experience, discoveryCount, profile.Progression.UnlockLevel, profile.Progression.CompletedObjectives),
             new PlayerStatistics(totalUnlocked, duplicateObservations));
         return new DiscoveryEvaluationResult(updatedProfile, unlocked.AsReadOnly());
     }

@@ -1,4 +1,5 @@
 using System;
+using GaiaEngine.Gameplay.Objectives;
 
 namespace GaiaEngine.Gameplay.Player;
 
@@ -12,17 +13,20 @@ public sealed record PlayerProfile
     /// </summary>
     /// <param name="identity">The immutable player identity.</param>
     /// <param name="knowledge">The accumulated permanent player knowledge.</param>
+    /// <param name="objectives">The persistent objective state owned by the player profile.</param>
     /// <param name="progression">The persistent player progression state.</param>
     /// <param name="statistics">The deterministic player activity statistics.</param>
     /// <exception cref="ArgumentNullException">Thrown when any argument is <see langword="null"/>.</exception>
     public PlayerProfile(
         PlayerIdentity identity,
         PlayerKnowledge knowledge,
+        ObjectiveCollection objectives,
         PlayerProgression progression,
         PlayerStatistics statistics)
     {
         Identity = identity ?? throw new ArgumentNullException(nameof(identity));
         Knowledge = knowledge ?? throw new ArgumentNullException(nameof(knowledge));
+        Objectives = objectives ?? throw new ArgumentNullException(nameof(objectives));
         Progression = progression ?? throw new ArgumentNullException(nameof(progression));
         Statistics = statistics ?? throw new ArgumentNullException(nameof(statistics));
     }
@@ -36,6 +40,11 @@ public sealed record PlayerProfile
     /// Gets the accumulated permanent player knowledge.
     /// </summary>
     public PlayerKnowledge Knowledge { get; }
+
+    /// <summary>
+    /// Gets the persistent objective state owned by the player profile.
+    /// </summary>
+    public ObjectiveCollection Objectives { get; }
 
     /// <summary>
     /// Gets the persistent player progression state.

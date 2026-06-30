@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Foundation.Determinism;
 using GaiaEngine.Gameplay.Discovery;
@@ -15,7 +16,7 @@ public sealed class SimulationDiscoverySignalFactoryTests
         EventId actionEventId = EventId.FromSequence(new EntitySequence(1));
         EventId timeEventId = EventId.FromSequence(new EntitySequence(2));
 
-        var signals = SimulationDiscoverySignalFactory.CreateSignals(
+        IReadOnlyList<DiscoverySignal> signals = SimulationDiscoverySignalFactory.CreateSignals(
             new GaiaEngine.Engine.Events.IEvent[]
             {
                 new ActionCompletedSimulationEvent(

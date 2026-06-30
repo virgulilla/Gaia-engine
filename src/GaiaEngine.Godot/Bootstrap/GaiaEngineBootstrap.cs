@@ -29,6 +29,7 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string BiomeLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/BiomeLabel";
     private const string ExperienceLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/ExperienceLabel";
     private const string EncyclopediaCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/EncyclopediaCountLabel";
+    private const string ObjectiveCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/ObjectiveCountLabel";
 
     private GaiaEngineApplication? application;
     private GaiaEngineRuntime? runtime;
@@ -52,6 +53,7 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Label? biomeLabel;
     private Label? experienceLabel;
     private Label? encyclopediaCountLabel;
+    private Label? objectiveCountLabel;
     private double tickAccumulator;
 
     /// <summary>
@@ -84,6 +86,7 @@ public sealed partial class GaiaEngineBootstrap : Node
         biomeLabel = GetNode<Label>(BiomeLabelPath);
         experienceLabel = GetNode<Label>(ExperienceLabelPath);
         encyclopediaCountLabel = GetNode<Label>(EncyclopediaCountLabelPath);
+        objectiveCountLabel = GetNode<Label>(ObjectiveCountLabelPath);
 
         UpdateSimulationStatusText();
         GD.Print($"Gaia Engine initialized with tick rate {runtime.EngineConfiguration.TickRate}.");
@@ -134,7 +137,8 @@ public sealed partial class GaiaEngineBootstrap : Node
             || weatherLabel is null
             || biomeLabel is null
             || experienceLabel is null
-            || encyclopediaCountLabel is null)
+            || encyclopediaCountLabel is null
+            || objectiveCountLabel is null)
         {
             return;
         }
@@ -175,5 +179,6 @@ public sealed partial class GaiaEngineBootstrap : Node
         biomeLabel.Text = $"Biome: {primaryChunk.Biome.Name}";
         experienceLabel.Text = $"XP: {runtime.PlayerProfile.Progression.Experience}";
         encyclopediaCountLabel.Text = $"Encyclopedia: {runtime.PlayerProfile.Knowledge.Encyclopedia.Count}";
+        objectiveCountLabel.Text = $"Objectives: {runtime.PlayerProfile.Progression.CompletedObjectives} / {runtime.PlayerProfile.Objectives.Count}";
     }
 }

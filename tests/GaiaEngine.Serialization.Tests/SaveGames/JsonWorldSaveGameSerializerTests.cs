@@ -10,6 +10,7 @@ using GaiaEngine.Foundation.Determinism;
 using GaiaEngine.Foundation.Versioning;
 using GaiaEngine.Gameplay.Discovery;
 using GaiaEngine.Gameplay.Encyclopedia;
+using GaiaEngine.Gameplay.Objectives;
 using GaiaEngine.Gameplay.Player;
 using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Serialization.Profiles;
@@ -102,7 +103,30 @@ public sealed class JsonWorldSaveGameSerializerTests
                                 new EncyclopediaStatistic("WorldsFound", 1),
                             }),
                     })),
-            new PlayerProgression(10, 1, 0),
+            new ObjectiveCollection(
+                new[]
+                {
+                    new ObjectiveEntry(
+                        "objective.discovery.first-species",
+                        ObjectiveCategory.Discovery,
+                        "Discover your first species",
+                        "Unlock one species discovery.",
+                        new[]
+                        {
+                            new ObjectiveRequirementDefinition(
+                                "requirement.discovery.first-species",
+                                ObjectiveRequirementType.Counter,
+                                targetCount: 1,
+                                discoveryCategory: DiscoveryCategory.Species),
+                        },
+                        new[]
+                        {
+                            new ObjectiveRequirementProgress("requirement.discovery.first-species", 1),
+                        },
+                        new ObjectiveRewardDefinition(25, Array.Empty<string>()),
+                        ObjectiveStatus.Completed),
+                }),
+            new PlayerProgression(10, 1, 0, 1),
             new PlayerStatistics(1, 0));
 
         string payload = serializer.Serialize(profile);
@@ -114,7 +138,9 @@ public sealed class JsonWorldSaveGameSerializerTests
         Assert.Equal(profile.Knowledge.Discoveries.GetAll()[0].WorldId, restored.Knowledge.Discoveries.GetAll()[0].WorldId);
         Assert.Equal(profile.Knowledge.Encyclopedia.GetAll()[0].EntryId, restored.Knowledge.Encyclopedia.GetAll()[0].EntryId);
         Assert.Equal(profile.Knowledge.Encyclopedia.GetAll()[0].UnlockState, restored.Knowledge.Encyclopedia.GetAll()[0].UnlockState);
+        Assert.Equal(profile.Objectives.GetAll()[0].Status, restored.Objectives.GetAll()[0].Status);
         Assert.Equal(profile.Progression.Experience, restored.Progression.Experience);
+        Assert.Equal(profile.Progression.CompletedObjectives, restored.Progression.CompletedObjectives);
         Assert.Equal(profile.Statistics.TotalDiscoveriesUnlocked, restored.Statistics.TotalDiscoveriesUnlocked);
     }
 

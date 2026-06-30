@@ -19,4 +19,9 @@ internal sealed class PlayerProgressionDocument
     /// Gets or sets the unlock level.
     /// </summary>
     public int UnlockLevel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the completed objective count.
+    /// </summary>
+    public int CompletedObjectives { get; set; }
 }

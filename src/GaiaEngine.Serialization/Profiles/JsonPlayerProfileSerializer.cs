@@ -4,6 +4,7 @@ using System.Text.Json;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Gameplay.Discovery;
 using GaiaEngine.Gameplay.Encyclopedia;
+using GaiaEngine.Gameplay.Objectives;
 using GaiaEngine.Gameplay.Player;
 using GaiaEngine.Serialization.Profiles.Documents;
 
@@ -59,6 +60,7 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
     {
         List<DiscoveryEntryDocument> discoveries = new(profile.Knowledge.Discoveries.Count);
         List<EncyclopediaEntryDocument> encyclopedia = new(profile.Knowledge.Encyclopedia.Count);
+        List<ObjectiveEntryDocument> objectives = new(profile.Objectives.Count);
         foreach (DiscoveryEntry entry in profile.Knowledge.Discoveries.GetAll())
         {
             discoveries.Add(
@@ -101,6 +103,51 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
                 });
         }
 
+        foreach (ObjectiveEntry entry in profile.Objectives.GetAll())
+        {
+            List<ObjectiveRequirementDocument> requirements = new(entry.Requirements.Count);
+            foreach (ObjectiveRequirementDefinition requirement in entry.Requirements)
+            {
+                requirements.Add(
+                    new ObjectiveRequirementDocument
+                    {
+                        RequirementId = requirement.RequirementId,
+                        Type = requirement.Type.ToString(),
+                        TargetCount = requirement.TargetCount,
+                        DiscoveryCategory = requirement.DiscoveryCategory?.ToString(),
+                        SignalKey = requirement.SignalKey,
+                    });
+            }
+
+            List<ObjectiveRequirementProgressDocument> progress = new(entry.GetProgress().Count);
+            foreach (ObjectiveRequirementProgress requirementProgress in entry.GetProgress())
+            {
+                progress.Add(
+                    new ObjectiveRequirementProgressDocument
+                    {
+                        RequirementId = requirementProgress.RequirementId,
+                        CurrentValue = requirementProgress.CurrentValue,
+                    });
+            }
+
+            objectives.Add(
+                new ObjectiveEntryDocument
+                {
+                    ObjectiveId = entry.ObjectiveId,
+                    Category = entry.Category.ToString(),
+                    Title = entry.Title,
+                    Description = entry.Description,
+                    Requirements = requirements,
+                    Progress = progress,
+                    Reward = new ObjectiveRewardDocument
+                    {
+                        Experience = entry.Reward.Experience,
+                        Unlocks = new List<string>(entry.Reward.Unlocks),
+                    },
+                    Status = entry.Status.ToString(),
+                });
+        }
+
         return new PlayerProfileDocument
         {
             Identity = new PlayerIdentityDocument
@@ -111,11 +158,13 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
             },
             Discoveries = discoveries,
             Encyclopedia = encyclopedia,
+            Objectives = objectives,
             Progression = new PlayerProgressionDocument
             {
                 Experience = profile.Progression.Experience,
                 Discoveries = profile.Progression.Discoveries,
                 UnlockLevel = profile.Progression.UnlockLevel,
+                CompletedObjectives = profile.Progression.CompletedObjectives,
             },
             Statistics = new PlayerStatisticsDocument
             {
@@ -177,12 +226,55 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
                     statistics.AsReadOnly()));
         }
 
+        List<ObjectiveEntry> objectiveEntries = new(document.Objectives.Count);
+        foreach (ObjectiveEntryDocument entry in document.Objectives)
+        {
+            if (entry.Reward is null)
+            {
+                throw new InvalidOperationException("Each objective entry requires a reward section.");
+            }
+
+            List<ObjectiveRequirementDefinition> requirements = new(entry.Requirements.Count);
+            foreach (ObjectiveRequirementDocument requirement in entry.Requirements)
+            {
+                requirements.Add(
+                    new ObjectiveRequirementDefinition(
+                        requirement.RequirementId,
+                        Enum.Parse<ObjectiveRequirementType>(requirement.Type, ignoreCase: false),
+                        requirement.TargetCount,
+                        requirement.DiscoveryCategory is null ? null : Enum.Parse<DiscoveryCategory>(requirement.DiscoveryCategory, ignoreCase: false),
+                        requirement.SignalKey));
+            }
+
+            List<ObjectiveRequirementProgress> progress = new(entry.Progress.Count);
+            foreach (ObjectiveRequirementProgressDocument requirementProgress in entry.Progress)
+            {
+                progress.Add(new ObjectiveRequirementProgress(requirementProgress.RequirementId, requirementProgress.CurrentValue));
+            }
+
+            objectiveEntries.Add(
+                new ObjectiveEntry(
+                    entry.ObjectiveId,
+                    Enum.Parse<ObjectiveCategory>(entry.Category, ignoreCase: false),
+                    entry.Title,
+                    entry.Description,
+                    requirements.AsReadOnly(),
+                    progress.AsReadOnly(),
+                    new ObjectiveRewardDefinition(entry.Reward.Experience, entry.Reward.Unlocks.AsReadOnly()),
+                    Enum.Parse<ObjectiveStatus>(entry.Status, ignoreCase: false)));
+        }
+
         return new PlayerProfile(
             new PlayerIdentity(document.Identity.PlayerId, document.Identity.ProfileName, document.Identity.CreationDate),
             new PlayerKnowledge(
                 new DiscoveryCollection(discoveries.AsReadOnly()),
                 new EncyclopediaCollection(encyclopediaEntries.AsReadOnly())),
-            new PlayerProgression(document.Progression.Experience, document.Progression.Discoveries, document.Progression.UnlockLevel),
+            new ObjectiveCollection(objectiveEntries.AsReadOnly()),
+            new PlayerProgression(
+                document.Progression.Experience,
+                document.Progression.Discoveries,
+                document.Progression.UnlockLevel,
+                document.Progression.CompletedObjectives),
             new PlayerStatistics(document.Statistics.TotalDiscoveriesUnlocked, document.Statistics.DuplicateDiscoveryObservations));
     }
 }
