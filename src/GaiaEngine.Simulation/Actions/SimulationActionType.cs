@@ -19,4 +19,9 @@ public enum SimulationActionType
     /// Identifies a hydration action.
     /// </summary>
     Drink = 2,
+
+    /// <summary>
+    /// Identifies the default idle action.
+    /// </summary>
+    Idle = 3,
 }

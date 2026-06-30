@@ -2,38 +2,42 @@ using System;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Simulation.Actions;
 
-namespace GaiaEngine.Simulation.AI.Utility;
+namespace GaiaEngine.Simulation.AI.Decision;
 
 /// <summary>
-/// Represents one deterministic utility score assigned to one candidate action.
+/// Represents one deterministic selected action ready to be handed to behaviour execution.
 /// </summary>
-public sealed record UtilityActionEvaluation
+public sealed class SelectedDecision
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="UtilityActionEvaluation"/> class.
+    /// Initializes a new instance of the <see cref="SelectedDecision"/> class.
     /// </summary>
-    /// <param name="actionId">The deterministic action identifier assigned to the candidate.</param>
-    /// <param name="actionType">The candidate action type.</param>
-    /// <param name="target">The candidate target metadata.</param>
+    /// <param name="organismId">The organism that owns the decision.</param>
+    /// <param name="actionId">The deterministic selected action identifier.</param>
+    /// <param name="actionType">The selected action type.</param>
+    /// <param name="target">The selected target metadata.</param>
     /// <param name="utilityScore">
     /// The normalized utility score scaled to the inclusive range [0, 1000],
     /// which represents the specification range [0.0, 1.0].
     /// </param>
-    /// <param name="estimatedCost">The deterministic estimated energy or traversal cost.</param>
+    /// <param name="estimatedCost">The deterministic estimated cost.</param>
     /// <param name="expectedDuration">The deterministic expected duration in ticks.</param>
-    /// <param name="isValid">A value indicating whether the candidate passed current validation.</param>
+    /// <param name="decisionTick">The simulation tick used during selection.</param>
+    /// <param name="isIdleFallback">A value indicating whether this decision was produced by the default idle fallback.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="target"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="utilityScore"/>, <paramref name="estimatedCost"/>, or <paramref name="expectedDuration"/> is negative.
+    /// Thrown when one or more numeric values are negative or when <paramref name="utilityScore"/> is outside [0, 1000].
     /// </exception>
-    public UtilityActionEvaluation(
+    public SelectedDecision(
+        OrganismId organismId,
         ActionId actionId,
         SimulationActionType actionType,
         SimulationActionTarget target,
         int utilityScore,
         int estimatedCost,
         int expectedDuration,
-        bool isValid)
+        long decisionTick,
+        bool isIdleFallback)
     {
         if (utilityScore < 0 || utilityScore > 1000)
         {
@@ -50,27 +54,39 @@ public sealed record UtilityActionEvaluation
             throw new ArgumentOutOfRangeException(nameof(expectedDuration), "The expected duration must be zero or greater.");
         }
 
+        if (decisionTick < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(decisionTick), "The decision tick must be zero or greater.");
+        }
+
+        OrganismId = organismId;
         ActionId = actionId;
         ActionType = actionType;
         Target = target;
         UtilityScore = utilityScore;
         EstimatedCost = estimatedCost;
         ExpectedDuration = expectedDuration;
-        IsValid = isValid;
+        DecisionTick = decisionTick;
+        IsIdleFallback = isIdleFallback;
     }
 
     /// <summary>
-    /// Gets the deterministic action identifier assigned to the candidate.
+    /// Gets the organism that owns the decision.
+    /// </summary>
+    public OrganismId OrganismId { get; }
+
+    /// <summary>
+    /// Gets the selected action identifier.
     /// </summary>
     public ActionId ActionId { get; }
 
     /// <summary>
-    /// Gets the candidate action type.
+    /// Gets the selected action type.
     /// </summary>
     public SimulationActionType ActionType { get; }
 
     /// <summary>
-    /// Gets the candidate target metadata.
+    /// Gets the selected target metadata.
     /// </summary>
     public SimulationActionTarget Target { get; }
 
@@ -90,7 +106,12 @@ public sealed record UtilityActionEvaluation
     public int ExpectedDuration { get; }
 
     /// <summary>
-    /// Gets a value indicating whether the candidate passed current validation.
+    /// Gets the simulation tick used during selection.
     /// </summary>
-    public bool IsValid { get; }
+    public long DecisionTick { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether this decision was produced by the idle fallback.
+    /// </summary>
+    public bool IsIdleFallback { get; }
 }

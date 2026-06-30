@@ -75,7 +75,7 @@ public sealed class DeterministicUtilityEvaluationSystemTests
 
     private static DeterministicUtilityEvaluationSystem CreateUtilitySystem()
     {
-        return new DeterministicUtilityEvaluationSystem(UtilityEvaluationSettings.Default, new DeterministicUtilityCurveEvaluator());
+        return new DeterministicUtilityEvaluationSystem(UtilityEvaluationSettings.Default, new DeterministicUtilityCurveEvaluator(), new DeterministicEntityIdGenerator());
     }
 
     private static UtilityActionEvaluation FindCandidate(UtilityEvaluationResult result, SimulationActionType actionType)

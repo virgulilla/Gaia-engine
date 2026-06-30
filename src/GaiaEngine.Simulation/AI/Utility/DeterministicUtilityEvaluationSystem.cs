@@ -15,19 +15,22 @@ public sealed class DeterministicUtilityEvaluationSystem : IUtilityEvaluationSys
 {
     private readonly UtilityEvaluationSettings settings;
     private readonly IUtilityCurveEvaluator curveEvaluator;
+    private readonly IEntityIdGenerator idGenerator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeterministicUtilityEvaluationSystem"/> class.
     /// </summary>
     /// <param name="settings">The deterministic utility evaluation settings.</param>
     /// <param name="curveEvaluator">The deterministic utility curve evaluator.</param>
+    /// <param name="idGenerator">The deterministic entity identifier generator.</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="settings"/> or <paramref name="curveEvaluator"/> is <see langword="null"/>.
     /// </exception>
-    public DeterministicUtilityEvaluationSystem(UtilityEvaluationSettings settings, IUtilityCurveEvaluator curveEvaluator)
+    public DeterministicUtilityEvaluationSystem(UtilityEvaluationSettings settings, IUtilityCurveEvaluator curveEvaluator, IEntityIdGenerator idGenerator)
     {
         this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
         this.curveEvaluator = curveEvaluator ?? throw new ArgumentNullException(nameof(curveEvaluator));
+        this.idGenerator = idGenerator ?? throw new ArgumentNullException(nameof(idGenerator));
     }
 
     /// <summary>
@@ -79,7 +82,7 @@ public sealed class DeterministicUtilityEvaluationSystem : IUtilityEvaluationSys
         ResourceObservation? resourceObservation = TryFindCurrentResourceObservation(world, perception, currentChunk, ResourceType.Vegetation);
         if (resourceObservation is null)
         {
-            return CreateInvalidCandidate(SimulationActionType.Eat, currentChunk.Id);
+            return CreateInvalidCandidate(SimulationActionType.Eat, organism.Id, currentChunk.Id, currentChunk.Metadata.Seed, perception.DetectionTick);
         }
 
         int urgency = curveEvaluator.Evaluate(organism.Needs.Hunger, settings.EatCurve);
@@ -88,6 +91,7 @@ public sealed class DeterministicUtilityEvaluationSystem : IUtilityEvaluationSys
         int score = CombineFactors(urgency, resourceFactor, confidenceFactor);
         int cost = Math.Max(0, 100 - organism.Physiology.DigestionEfficiency);
         return new UtilityActionEvaluation(
+            CreateActionId(organism.Id, currentChunk.Id.ToString(), SimulationActionType.Eat, currentChunk.Metadata.Seed, perception.DetectionTick),
             SimulationActionType.Eat,
             new SimulationActionTarget(ActionTargetKind.Chunk, currentChunk.Id.ToString()),
             score,
@@ -101,7 +105,7 @@ public sealed class DeterministicUtilityEvaluationSystem : IUtilityEvaluationSys
         ResourceObservation? resourceObservation = TryFindCurrentResourceObservation(world, perception, currentChunk, ResourceType.FreshWater);
         if (resourceObservation is null)
         {
-            return CreateInvalidCandidate(SimulationActionType.Drink, currentChunk.Id);
+            return CreateInvalidCandidate(SimulationActionType.Drink, organism.Id, currentChunk.Id, currentChunk.Metadata.Seed, perception.DetectionTick);
         }
 
         int urgency = curveEvaluator.Evaluate(organism.Needs.Hydration, settings.DrinkCurve);
@@ -110,6 +114,7 @@ public sealed class DeterministicUtilityEvaluationSystem : IUtilityEvaluationSys
         int score = CombineFactors(urgency, resourceFactor, confidenceFactor);
         int cost = Math.Max(0, 100 - organism.Physiology.WaterEfficiency);
         return new UtilityActionEvaluation(
+            CreateActionId(organism.Id, currentChunk.Id.ToString(), SimulationActionType.Drink, currentChunk.Metadata.Seed, perception.DetectionTick),
             SimulationActionType.Drink,
             new SimulationActionTarget(ActionTargetKind.Chunk, currentChunk.Id.ToString()),
             score,
@@ -159,11 +164,12 @@ public sealed class DeterministicUtilityEvaluationSystem : IUtilityEvaluationSys
 
         if (bestTarget is null || bestTarget.Score <= 0)
         {
-            return CreateInvalidCandidate(SimulationActionType.Move, currentChunk.Id);
+            return CreateInvalidCandidate(SimulationActionType.Move, organism.Id, currentChunk.Id, currentChunk.Metadata.Seed, perception.DetectionTick);
         }
 
         int estimatedCost = Math.Max(1, bestTarget.TargetChunk.Terrain.Slope.TraversalCost / 10);
         return new UtilityActionEvaluation(
+            CreateActionId(organism.Id, bestTarget.TargetChunk.Id.ToString(), SimulationActionType.Move, currentChunk.Metadata.Seed, perception.DetectionTick),
             SimulationActionType.Move,
             new SimulationActionTarget(ActionTargetKind.Chunk, bestTarget.TargetChunk.Id.ToString()),
             bestTarget.Score,
@@ -251,13 +257,7 @@ public sealed class DeterministicUtilityEvaluationSystem : IUtilityEvaluationSys
             return durationComparison;
         }
 
-        int actionComparison = left.ActionType.CompareTo(right.ActionType);
-        if (actionComparison != 0)
-        {
-            return actionComparison;
-        }
-
-        return string.CompareOrdinal(left.Target.TargetId, right.Target.TargetId);
+        return left.ActionId.Value.CompareTo(right.ActionId.Value);
     }
 
     private static Chunk ResolveChunkById(GaiaEngine.Domain.World.World world, ChunkId chunkId)
@@ -307,15 +307,43 @@ public sealed class DeterministicUtilityEvaluationSystem : IUtilityEvaluationSys
 
         return false;
     }
-    private UtilityActionEvaluation CreateInvalidCandidate(SimulationActionType actionType, ChunkId fallbackChunkId)
+    private UtilityActionEvaluation CreateInvalidCandidate(SimulationActionType actionType, OrganismId organismId, ChunkId fallbackChunkId, GaiaEngine.Foundation.Determinism.WorldSeed worldSeed, long tick)
     {
         return new UtilityActionEvaluation(
+            CreateActionId(organismId, fallbackChunkId.ToString(), actionType, worldSeed, tick),
             actionType,
             new SimulationActionTarget(ActionTargetKind.Chunk, fallbackChunkId.ToString()),
             utilityScore: 0,
             estimatedCost: 0,
             expectedDuration: 0,
             isValid: false);
+    }
+
+    private ActionId CreateActionId(OrganismId organismId, string targetId, SimulationActionType actionType, GaiaEngine.Foundation.Determinism.WorldSeed worldSeed, long tick)
+    {
+        ulong hash = 1469598103934665603UL;
+        hash = Mix(hash, organismId.Value);
+        hash = Mix(hash, (ulong)tick);
+        hash = Mix(hash, (ulong)actionType);
+        foreach (char character in targetId)
+        {
+            hash = Mix(hash, character);
+        }
+
+        ulong sequenceValue = hash & EntitySequence.MAX_VALUE;
+        if (sequenceValue == 0)
+        {
+            sequenceValue = 1;
+        }
+
+        IdentifierGenerationContext context = new(worldSeed, tick, new EntitySequence(sequenceValue));
+        return idGenerator.CreateActionId(context);
+    }
+
+    private static ulong Mix(ulong current, ulong value)
+    {
+        const ulong prime = 1099511628211UL;
+        return (current ^ value) * prime;
     }
 
     private sealed record ResourceObservation(PerceivedObject Observation, Chunk Chunk, ResourceState Resource);
