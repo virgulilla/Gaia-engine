@@ -31,6 +31,11 @@ public static class SimulationSystemNames
     public const string Species = "Species";
 
     /// <summary>
+    /// Gets the logical name of the memory system.
+    /// </summary>
+    public const string Memory = "Memory";
+
+    /// <summary>
     /// Gets the logical name of the autonomous behaviour system.
     /// </summary>
     public const string AI = "AI";

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GaiaEngine.Domain.AI;
 using GaiaEngine.Domain.Genetics;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
@@ -27,6 +28,7 @@ public sealed record SimulationTickResult
     /// <param name="organisms">The resulting organism state.</param>
     /// <param name="genomes">The resulting genome state.</param>
     /// <param name="species">The resulting species state.</param>
+    /// <param name="memories">The resulting memory state.</param>
     /// <param name="actionRequests">The resulting common action request state.</param>
     /// <param name="movementRequests">The resulting movement request state.</param>
     /// <param name="feedingRequests">The resulting feeding request state.</param>
@@ -47,6 +49,7 @@ public sealed record SimulationTickResult
         OrganismCollection organisms,
         GenomeCollection genomes,
         SpeciesCollection species,
+        MemoryCollection memories,
         SimulationActionRequestCollection actionRequests,
         MovementRequestCollection movementRequests,
         FeedingRequestCollection feedingRequests,
@@ -64,6 +67,7 @@ public sealed record SimulationTickResult
         Organisms = organisms ?? throw new ArgumentNullException(nameof(organisms));
         Genomes = genomes ?? throw new ArgumentNullException(nameof(genomes));
         Species = species ?? throw new ArgumentNullException(nameof(species));
+        Memories = memories ?? throw new ArgumentNullException(nameof(memories));
         ActionRequests = actionRequests ?? throw new ArgumentNullException(nameof(actionRequests));
         MovementRequests = movementRequests ?? throw new ArgumentNullException(nameof(movementRequests));
         FeedingRequests = feedingRequests ?? throw new ArgumentNullException(nameof(feedingRequests));
@@ -102,6 +106,11 @@ public sealed record SimulationTickResult
     /// Gets the resulting species state.
     /// </summary>
     public SpeciesCollection Species { get; }
+
+    /// <summary>
+    /// Gets the resulting memory state.
+    /// </summary>
+    public MemoryCollection Memories { get; }
 
     /// <summary>
     /// Gets the resulting common action request state.

@@ -1,4 +1,5 @@
 using System;
+using GaiaEngine.Domain.AI;
 using GaiaEngine.Domain.Genetics;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
@@ -34,7 +35,7 @@ public sealed record WorldSaveGame
         SimulationActionRequestCollection actionRequests,
         ConfigurationVersion configurationVersion,
         SaveVersionInfo version)
-        : this(metadata, world, organisms, genomes, SpeciesCollection.Empty, actionRequests, configurationVersion, version)
+        : this(metadata, world, organisms, genomes, SpeciesCollection.Empty, MemoryCollection.Empty, actionRequests, configurationVersion, version)
     {
     }
 
@@ -46,6 +47,7 @@ public sealed record WorldSaveGame
     /// <param name="organisms">The serialized organism aggregate.</param>
     /// <param name="genomes">The serialized genome aggregate.</param>
     /// <param name="species">The serialized species aggregate.</param>
+    /// <param name="memories">The serialized memory aggregate.</param>
     /// <param name="actionRequests">The serialized common action request aggregate.</param>
     /// <param name="configurationVersion">The serialized configuration version string.</param>
     /// <param name="version">The embedded version information.</param>
@@ -59,6 +61,7 @@ public sealed record WorldSaveGame
         OrganismCollection organisms,
         GenomeCollection genomes,
         SpeciesCollection species,
+        MemoryCollection memories,
         SimulationActionRequestCollection actionRequests,
         ConfigurationVersion configurationVersion,
         SaveVersionInfo version)
@@ -68,6 +71,7 @@ public sealed record WorldSaveGame
         Organisms = organisms ?? throw new ArgumentNullException(nameof(organisms));
         Genomes = genomes ?? throw new ArgumentNullException(nameof(genomes));
         Species = species ?? throw new ArgumentNullException(nameof(species));
+        Memories = memories ?? throw new ArgumentNullException(nameof(memories));
         ActionRequests = actionRequests ?? throw new ArgumentNullException(nameof(actionRequests));
         ConfigurationVersion = configurationVersion;
         Version = version ?? throw new ArgumentNullException(nameof(version));
@@ -85,7 +89,7 @@ public sealed record WorldSaveGame
         World world,
         ConfigurationVersion configurationVersion,
         SaveVersionInfo version)
-        : this(metadata, world, OrganismCollection.Empty, GenomeCollection.Empty, SpeciesCollection.Empty, SimulationActionRequestCollection.Empty, configurationVersion, version)
+        : this(metadata, world, OrganismCollection.Empty, GenomeCollection.Empty, SpeciesCollection.Empty, MemoryCollection.Empty, SimulationActionRequestCollection.Empty, configurationVersion, version)
     {
     }
 
@@ -103,7 +107,7 @@ public sealed record WorldSaveGame
         OrganismCollection organisms,
         ConfigurationVersion configurationVersion,
         SaveVersionInfo version)
-        : this(metadata, world, organisms, GenomeCollection.Empty, SpeciesCollection.Empty, SimulationActionRequestCollection.Empty, configurationVersion, version)
+        : this(metadata, world, organisms, GenomeCollection.Empty, SpeciesCollection.Empty, MemoryCollection.Empty, SimulationActionRequestCollection.Empty, configurationVersion, version)
     {
     }
 
@@ -136,6 +140,11 @@ public sealed record WorldSaveGame
     /// Gets the serialized species aggregate.
     /// </summary>
     public SpeciesCollection Species { get; }
+
+    /// <summary>
+    /// Gets the serialized memory aggregate.
+    /// </summary>
+    public MemoryCollection Memories { get; }
 
     /// <summary>
     /// Gets the serialized common action request aggregate.

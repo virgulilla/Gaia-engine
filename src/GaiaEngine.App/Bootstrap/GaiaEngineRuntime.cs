@@ -1,4 +1,5 @@
 using System;
+using GaiaEngine.Domain.AI;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.App.Configuration;
 using GaiaEngine.Domain.Genetics;
@@ -66,6 +67,11 @@ public sealed class GaiaEngineRuntime
     /// Gets the initialized species bootstrap state.
     /// </summary>
     public SpeciesCollection Species => SimulationSession.CurrentSpecies;
+
+    /// <summary>
+    /// Gets the initialized memory bootstrap state.
+    /// </summary>
+    public MemoryCollection Memories => SimulationSession.CurrentMemories;
 
     /// <summary>
     /// Gets the initialized common action request state.

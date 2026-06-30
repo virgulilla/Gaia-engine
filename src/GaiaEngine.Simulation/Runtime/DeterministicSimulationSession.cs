@@ -1,4 +1,5 @@
 using System;
+using GaiaEngine.Domain.AI;
 using GaiaEngine.Domain.Genetics;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
@@ -27,7 +28,7 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// Thrown when <paramref name="tickPipeline"/> or <paramref name="initialWorld"/> is <see langword="null"/>.
     /// </exception>
     public DeterministicSimulationSession(ISimulationTickPipeline tickPipeline, GaiaEngine.Domain.World.World initialWorld)
-        : this(tickPipeline, initialWorld, OrganismCollection.Empty, GenomeCollection.Empty, SpeciesCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty)
+        : this(tickPipeline, initialWorld, OrganismCollection.Empty, GenomeCollection.Empty, SpeciesCollection.Empty, MemoryCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty)
     {
     }
 
@@ -46,7 +47,7 @@ public sealed class DeterministicSimulationSession : ISimulationSession
         GaiaEngine.Domain.World.World initialWorld,
         OrganismCollection initialOrganisms,
         GenomeCollection initialGenomes)
-        : this(tickPipeline, initialWorld, initialOrganisms, initialGenomes, SpeciesCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty)
+        : this(tickPipeline, initialWorld, initialOrganisms, initialGenomes, SpeciesCollection.Empty, MemoryCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty)
     {
     }
 
@@ -67,7 +68,7 @@ public sealed class DeterministicSimulationSession : ISimulationSession
         OrganismCollection initialOrganisms,
         GenomeCollection initialGenomes,
         SpeciesCollection initialSpecies)
-        : this(tickPipeline, initialWorld, initialOrganisms, initialGenomes, initialSpecies, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty)
+        : this(tickPipeline, initialWorld, initialOrganisms, initialGenomes, initialSpecies, MemoryCollection.Empty, SimulationActionRequestCollection.Empty, MovementRequestCollection.Empty, FeedingRequestCollection.Empty, HydrationRequestCollection.Empty)
     {
     }
 
@@ -79,6 +80,7 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// <param name="initialOrganisms">The initial organism state.</param>
     /// <param name="initialGenomes">The initial genome state.</param>
     /// <param name="initialSpecies">The initial species state.</param>
+    /// <param name="initialMemories">The initial memory state.</param>
     /// <param name="initialActionRequests">The initial common action request state.</param>
     /// <param name="initialMovementRequests">The initial movement request state.</param>
     /// <param name="initialFeedingRequests">The initial feeding request state.</param>
@@ -93,6 +95,7 @@ public sealed class DeterministicSimulationSession : ISimulationSession
         OrganismCollection initialOrganisms,
         GenomeCollection initialGenomes,
         SpeciesCollection initialSpecies,
+        MemoryCollection initialMemories,
         SimulationActionRequestCollection initialActionRequests,
         MovementRequestCollection initialMovementRequests,
         FeedingRequestCollection initialFeedingRequests,
@@ -103,6 +106,7 @@ public sealed class DeterministicSimulationSession : ISimulationSession
         CurrentOrganisms = initialOrganisms ?? throw new ArgumentNullException(nameof(initialOrganisms));
         CurrentGenomes = initialGenomes ?? throw new ArgumentNullException(nameof(initialGenomes));
         CurrentSpecies = initialSpecies ?? throw new ArgumentNullException(nameof(initialSpecies));
+        CurrentMemories = initialMemories ?? throw new ArgumentNullException(nameof(initialMemories));
         CurrentActionRequests = initialActionRequests ?? throw new ArgumentNullException(nameof(initialActionRequests));
         CurrentMovementRequests = initialMovementRequests ?? throw new ArgumentNullException(nameof(initialMovementRequests));
         CurrentFeedingRequests = initialFeedingRequests ?? throw new ArgumentNullException(nameof(initialFeedingRequests));
@@ -128,6 +132,11 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// Gets the current simulation species state.
     /// </summary>
     public SpeciesCollection CurrentSpecies { get; private set; }
+
+    /// <summary>
+    /// Gets the current simulation memory state.
+    /// </summary>
+    public MemoryCollection CurrentMemories { get; private set; }
 
     /// <summary>
     /// Gets the current common action request state.
@@ -160,11 +169,12 @@ public sealed class DeterministicSimulationSession : ISimulationSession
     /// <returns>The deterministic tick pipeline result.</returns>
     public SimulationTickResult AdvanceTick()
     {
-        SimulationTickResult result = tickPipeline.Execute(CurrentWorld, CurrentOrganisms, CurrentSpecies, CurrentGenomes, CurrentActionRequests, CurrentMovementRequests, CurrentFeedingRequests, CurrentHydrationRequests, nextEventSequence);
+        SimulationTickResult result = tickPipeline.Execute(CurrentWorld, CurrentOrganisms, CurrentSpecies, CurrentGenomes, CurrentMemories, CurrentActionRequests, CurrentMovementRequests, CurrentFeedingRequests, CurrentHydrationRequests, nextEventSequence);
         CurrentWorld = result.World;
         CurrentOrganisms = result.Organisms;
         CurrentGenomes = result.Genomes;
         CurrentSpecies = result.Species;
+        CurrentMemories = result.Memories;
         CurrentActionRequests = result.ActionRequests;
         CurrentMovementRequests = result.MovementRequests;
         CurrentFeedingRequests = result.FeedingRequests;

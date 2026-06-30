@@ -9,6 +9,7 @@ using GaiaEngine.Engine.Events;
 using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.AI.Decision;
 using GaiaEngine.Simulation.AI.Execution;
+using GaiaEngine.Simulation.AI.Memory;
 using GaiaEngine.Simulation.AI.Perception;
 using GaiaEngine.Simulation.AI.Utility;
 using GaiaEngine.Simulation.Events;
@@ -113,6 +114,7 @@ public sealed class GaiaEngineApplication
         DeterministicFeedingSystem feedingSystem = new();
         DeterministicHydrationSystem hydrationSystem = new();
         DeterministicPerceptionSystem perceptionSystem = new(PerceptionSettings.Default, spatialQueryService);
+        DeterministicMemorySystem memorySystem = new(MemorySettings.Default, perceptionSystem);
         DeterministicUtilityEvaluationSystem utilityEvaluationSystem = new(UtilityEvaluationSettings.Default, new DeterministicUtilityCurveEvaluator(), eventIdGenerator);
         DeterministicDecisionMakingSystem decisionMakingSystem = new(eventIdGenerator);
         DeterministicBehaviourExecutionSystem behaviourExecutionSystem = new();
@@ -151,10 +153,15 @@ public sealed class GaiaEngineApplication
                     frequency: speciesRecognitionSettings.EvaluationFrequency,
                     priority: 1),
                 new ScheduledSimulationSystemDefinition(
-                    SimulationSystemNames.AI,
+                    SimulationSystemNames.Memory,
                     SimulationTickPhase.OrganismUpdate,
                     frequency: 1,
                     priority: 2),
+                new ScheduledSimulationSystemDefinition(
+                    SimulationSystemNames.AI,
+                    SimulationTickPhase.OrganismUpdate,
+                    frequency: 1,
+                    priority: 3),
                 new ScheduledSimulationSystemDefinition(
                     SimulationSystemNames.Movement,
                     SimulationTickPhase.InteractionSystems,
@@ -189,7 +196,7 @@ public sealed class GaiaEngineApplication
                 new NoOpSimulationTickPhase(SimulationTickPhase.InputCollection),
                 new NoOpSimulationTickPhase(SimulationTickPhase.PreUpdate),
                 new WorldUpdateTimePhase(timeSystem, scheduler, climateSystem, waterSystem, resourceSystem, eventPublisher),
-                new OrganismUpdatePhase(organismUpdateSystem, speciesRecognitionSystem, speciesLifecycleSystem, autonomousBehaviourSystem, eventPublisher),
+                new OrganismUpdatePhase(organismUpdateSystem, speciesRecognitionSystem, speciesLifecycleSystem, memorySystem, autonomousBehaviourSystem, eventPublisher),
                 new InteractionSystemsPhase(movementSystem, feedingSystem, hydrationSystem, actionRequestDispatcher, eventPublisher),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
                 new EventDispatchPhase(eventBus),

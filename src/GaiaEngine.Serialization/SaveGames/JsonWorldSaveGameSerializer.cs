@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using GaiaEngine.Domain.AI;
 using GaiaEngine.Domain.Genetics;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Domain.Organisms;
@@ -67,6 +68,7 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
         List<OrganismDocument> organismDocuments = new();
         List<GenomeDocument> genomeDocuments = new();
         List<SpeciesDocument> speciesDocuments = new();
+        List<OrganismMemoryDocument> memoryDocuments = new();
         List<ActionRequestDocument> actionRequestDocuments = new();
         foreach (Chunk chunk in saveGame.World.GetChunks())
         {
@@ -287,6 +289,34 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
             speciesDocuments.Add(CreateSpeciesDocument(species));
         }
 
+        foreach (OrganismMemory memory in saveGame.Memories.GetAll())
+        {
+            List<MemoryEntryDocument> entryDocuments = new(memory.Count);
+            foreach (MemoryEntry entry in memory.GetAll())
+            {
+                entryDocuments.Add(
+                    new MemoryEntryDocument
+                    {
+                        Identifier = entry.Identifier,
+                        Category = entry.Category.ToString(),
+                        PositionX = entry.Position.X,
+                        PositionY = entry.Position.Y,
+                        Confidence = entry.Confidence,
+                        CreationTick = entry.CreationTick,
+                        LastUpdateTick = entry.LastUpdateTick,
+                        ExpirationTick = entry.ExpirationTick,
+                        EstimatedAvailability = entry.EstimatedAvailability,
+                    });
+            }
+
+            memoryDocuments.Add(
+                new OrganismMemoryDocument
+                {
+                    OrganismId = memory.OrganismId.ToString(),
+                    Entries = entryDocuments,
+                });
+        }
+
         foreach (SimulationActionRequest actionRequest in saveGame.ActionRequests.GetAll())
         {
             actionRequestDocuments.Add(
@@ -339,6 +369,7 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
             Organisms = organismDocuments,
             Genomes = genomeDocuments,
             Species = speciesDocuments,
+            Memories = memoryDocuments,
             ActionRequests = actionRequestDocuments,
             Version = new SaveVersionInfoDocument
             {
@@ -612,6 +643,29 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
         SpeciesCollection speciesCollection = new(species.AsReadOnly());
         ValidateSpeciesReferences(organismCollection, speciesCollection);
 
+        List<OrganismMemory> memories = new(document.Memories.Count);
+        foreach (OrganismMemoryDocument memoryDocument in document.Memories)
+        {
+            List<MemoryEntry> entries = new(memoryDocument.Entries.Count);
+            foreach (MemoryEntryDocument entryDocument in memoryDocument.Entries)
+            {
+                entries.Add(
+                    new MemoryEntry(
+                        entryDocument.Identifier,
+                        Enum.Parse<MemoryCategory>(entryDocument.Category, ignoreCase: false),
+                        new ChunkCoordinates(entryDocument.PositionX, entryDocument.PositionY),
+                        entryDocument.Confidence,
+                        entryDocument.CreationTick,
+                        entryDocument.LastUpdateTick,
+                        entryDocument.ExpirationTick,
+                        entryDocument.EstimatedAvailability));
+            }
+
+            memories.Add(new OrganismMemory(OrganismId.Parse(memoryDocument.OrganismId), entries.AsReadOnly()));
+        }
+
+        MemoryCollection memoryCollection = new(memories.AsReadOnly());
+
         List<SimulationActionRequest> actionRequests = new(document.ActionRequests.Count);
         foreach (ActionRequestDocument actionRequestDocument in document.ActionRequests)
         {
@@ -649,6 +703,7 @@ public sealed class JsonWorldSaveGameSerializer : IWorldSaveGameSerializer
             organismCollection,
             genomeCollection,
             speciesCollection,
+            memoryCollection,
             new SimulationActionRequestCollection(actionRequests.AsReadOnly()),
             new ConfigurationVersion(document.ConfigurationVersion),
             version);

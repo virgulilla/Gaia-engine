@@ -38,6 +38,11 @@ internal sealed class WorldSaveGameDocument
     public List<SpeciesDocument> Species { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets the serialized memory section.
+    /// </summary>
+    public List<OrganismMemoryDocument> Memories { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets the serialized action request section.
     /// </summary>
     public List<ActionRequestDocument> ActionRequests { get; set; } = new();

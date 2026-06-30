@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GaiaEngine.Domain.AI;
 using GaiaEngine.Domain.Genetics;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Domain.Organisms;
@@ -52,6 +53,10 @@ public sealed class JsonWorldSaveGameSerializerTests
         Assert.Single(restored.Species.GetAll());
         Assert.Equal(saveGame.Species.GetAll()[0].Id, restored.Species.GetAll()[0].Id);
         Assert.Equal(saveGame.Species.GetAll()[0].GetFounderPopulation()[0], restored.Species.GetAll()[0].GetFounderPopulation()[0]);
+        Assert.Single(restored.Memories.GetAll());
+        Assert.Equal(saveGame.Memories.GetAll()[0].OrganismId, restored.Memories.GetAll()[0].OrganismId);
+        Assert.Equal(saveGame.Memories.GetAll()[0].GetAll()[0].Identifier, restored.Memories.GetAll()[0].GetAll()[0].Identifier);
+        Assert.Equal(saveGame.Memories.GetAll()[0].GetAll()[0].Confidence, restored.Memories.GetAll()[0].GetAll()[0].Confidence);
         Assert.Single(restored.ActionRequests.GetAll());
         Assert.Equal(saveGame.ActionRequests.GetAll()[0].ActionId, restored.ActionRequests.GetAll()[0].ActionId);
         Assert.Equal(saveGame.ActionRequests.GetAll()[0].ActionType, restored.ActionRequests.GetAll()[0].ActionType);
@@ -190,12 +195,31 @@ public sealed class JsonWorldSaveGameSerializerTests
             originTick: 0,
             extinctionTick: null,
             new[] { organism.Id });
+        MemoryCollection memories = new(
+            new[]
+            {
+                new OrganismMemory(
+                    organism.Id,
+                    new[]
+                    {
+                        new MemoryEntry(
+                            identifier: 1234,
+                            MemoryCategory.Resource,
+                            new ChunkCoordinates(0, 0),
+                            confidence: 780,
+                            creationTick: 10,
+                            lastUpdateTick: 15,
+                            expirationTick: 120,
+                            estimatedAvailability: 640),
+                    }),
+            });
         return new WorldSaveGame(
             metadata,
             world,
             new OrganismCollection(new[] { organism }),
             new GenomeCollection(new[] { genome }),
             new SpeciesCollection(new[] { species }),
+            memories,
             new SimulationActionRequestCollection(new[] { actionRequest }),
             new ConfigurationVersion("2026.06.28"),
             version);

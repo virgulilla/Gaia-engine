@@ -1,3 +1,4 @@
+using GaiaEngine.Domain.AI;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.Genetics;
 using GaiaEngine.Simulation.Actions;
@@ -56,6 +57,7 @@ public interface ISimulationTickPipeline
     /// <param name="organisms">The current organism state.</param>
     /// <param name="species">The current species state.</param>
     /// <param name="genomes">The current genome state.</param>
+    /// <param name="memories">The current memory state.</param>
     /// <param name="actionRequests">The current common action request state.</param>
     /// <param name="movementRequests">The current movement request state.</param>
     /// <param name="feedingRequests">The current feeding request state.</param>
@@ -67,6 +69,7 @@ public interface ISimulationTickPipeline
         OrganismCollection organisms,
         SpeciesCollection species,
         GenomeCollection genomes,
+        MemoryCollection memories,
         SimulationActionRequestCollection actionRequests,
         MovementRequestCollection movementRequests,
         FeedingRequestCollection feedingRequests,
