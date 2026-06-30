@@ -17,6 +17,13 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string WorldNameLabelPath = "HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow/WorldNameLabel";
     private const string TimeSummaryLabelPath = "HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow/TimeSummaryLabel";
     private const string TickRateLabelPath = "HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow/TickRateChip/TickRateChipMargin/TickRateLabel";
+    private const string LeftPanelPath = "HudLayer/HudRoot/LeftPanel";
+    private const string ContextPanelPath = "HudLayer/HudRoot/ContextPanel";
+    private const string SelectionHintLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionHintLabel";
+    private const string SelectionTypeLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionTypeLabel";
+    private const string SelectionPrimaryLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionPrimaryLabel";
+    private const string SelectionSecondaryLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionSecondaryLabel";
+    private const string SelectionTertiaryLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionTertiaryLabel";
     private const string PopulationLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/PopulationLabel";
     private const string AlivePopulationLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/AlivePopulationLabel";
     private const string SpeciesCountLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/SpeciesCountLabel";
@@ -31,6 +38,12 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string ObjectiveCountLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/ObjectiveCountLabel";
     private const string LevelLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/LevelLabel";
     private const string AchievementCountLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/AchievementCountLabel";
+    private const string ContextTitleLabelPath = "HudLayer/HudRoot/ContextPanel/ContextPanelMargin/ContextPanelColumn/ContextTitleLabel";
+    private const string ContextBodyLabelPath = "HudLayer/HudRoot/ContextPanel/ContextPanelMargin/ContextPanelColumn/ContextBodyLabel";
+    private const string ContextLine1LabelPath = "HudLayer/HudRoot/ContextPanel/ContextPanelMargin/ContextPanelColumn/ContextLine1Label";
+    private const string ContextLine2LabelPath = "HudLayer/HudRoot/ContextPanel/ContextPanelMargin/ContextPanelColumn/ContextLine2Label";
+    private const string ContextLine3LabelPath = "HudLayer/HudRoot/ContextPanel/ContextPanelMargin/ContextPanelColumn/ContextLine3Label";
+    private const string ContextLine4LabelPath = "HudLayer/HudRoot/ContextPanel/ContextPanelMargin/ContextPanelColumn/ContextLine4Label";
     private const string NotificationCard1Path = "HudLayer/HudRoot/NotificationArea/NotificationCard1";
     private const string NotificationCard2Path = "HudLayer/HudRoot/NotificationArea/NotificationCard2";
     private const string NotificationCard3Path = "HudLayer/HudRoot/NotificationArea/NotificationCard3";
@@ -46,6 +59,13 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Label? worldNameLabel;
     private Label? timeSummaryLabel;
     private Label? tickRateLabel;
+    private PanelContainer? leftPanel;
+    private PanelContainer? contextPanel;
+    private Label? selectionHintLabel;
+    private Label? selectionTypeLabel;
+    private Label? selectionPrimaryLabel;
+    private Label? selectionSecondaryLabel;
+    private Label? selectionTertiaryLabel;
     private Label? populationLabel;
     private Label? alivePopulationLabel;
     private Label? speciesCountLabel;
@@ -60,6 +80,12 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Label? objectiveCountLabel;
     private Label? levelLabel;
     private Label? achievementCountLabel;
+    private Label? contextTitleLabel;
+    private Label? contextBodyLabel;
+    private Label? contextLine1Label;
+    private Label? contextLine2Label;
+    private Label? contextLine3Label;
+    private Label? contextLine4Label;
     private PanelContainer[]? notificationCards;
     private Label[]? notificationTitleLabels;
     private Label[]? notificationBodyLabels;
@@ -81,6 +107,13 @@ public sealed partial class GaiaEngineBootstrap : Node
         worldNameLabel = GetNode<Label>(WorldNameLabelPath);
         timeSummaryLabel = GetNode<Label>(TimeSummaryLabelPath);
         tickRateLabel = GetNode<Label>(TickRateLabelPath);
+        leftPanel = GetNode<PanelContainer>(LeftPanelPath);
+        contextPanel = GetNode<PanelContainer>(ContextPanelPath);
+        selectionHintLabel = GetNode<Label>(SelectionHintLabelPath);
+        selectionTypeLabel = GetNode<Label>(SelectionTypeLabelPath);
+        selectionPrimaryLabel = GetNode<Label>(SelectionPrimaryLabelPath);
+        selectionSecondaryLabel = GetNode<Label>(SelectionSecondaryLabelPath);
+        selectionTertiaryLabel = GetNode<Label>(SelectionTertiaryLabelPath);
         populationLabel = GetNode<Label>(PopulationLabelPath);
         alivePopulationLabel = GetNode<Label>(AlivePopulationLabelPath);
         speciesCountLabel = GetNode<Label>(SpeciesCountLabelPath);
@@ -95,6 +128,12 @@ public sealed partial class GaiaEngineBootstrap : Node
         objectiveCountLabel = GetNode<Label>(ObjectiveCountLabelPath);
         levelLabel = GetNode<Label>(LevelLabelPath);
         achievementCountLabel = GetNode<Label>(AchievementCountLabelPath);
+        contextTitleLabel = GetNode<Label>(ContextTitleLabelPath);
+        contextBodyLabel = GetNode<Label>(ContextBodyLabelPath);
+        contextLine1Label = GetNode<Label>(ContextLine1LabelPath);
+        contextLine2Label = GetNode<Label>(ContextLine2LabelPath);
+        contextLine3Label = GetNode<Label>(ContextLine3LabelPath);
+        contextLine4Label = GetNode<Label>(ContextLine4LabelPath);
         notificationCards =
         [
             GetNode<PanelContainer>(NotificationCard1Path),
@@ -170,6 +209,13 @@ public sealed partial class GaiaEngineBootstrap : Node
             || worldNameLabel is null
             || timeSummaryLabel is null
             || tickRateLabel is null
+            || leftPanel is null
+            || contextPanel is null
+            || selectionHintLabel is null
+            || selectionTypeLabel is null
+            || selectionPrimaryLabel is null
+            || selectionSecondaryLabel is null
+            || selectionTertiaryLabel is null
             || populationLabel is null
             || alivePopulationLabel is null
             || speciesCountLabel is null
@@ -187,6 +233,8 @@ public sealed partial class GaiaEngineBootstrap : Node
         {
             return;
         }
+
+        ObservationSelection selection = ResolveObservationSelection();
 
         int aliveOrganisms = CountAliveOrganisms();
         int memoryEntries = CountMemoryEntries();
@@ -208,7 +256,19 @@ public sealed partial class GaiaEngineBootstrap : Node
             $"Encyclopedia: {runtime.PlayerProfile.Knowledge.Encyclopedia.Count}",
             $"Objectives: {runtime.PlayerProfile.Progression.CompletedObjectives} / {runtime.PlayerProfile.Objectives.Count}",
             $"Level: {runtime.PlayerProfile.Progression.UnlockLevel}",
-            $"Achievements: {runtime.PlayerProfile.Achievements.Count}");
+            $"Achievements: {runtime.PlayerProfile.Achievements.Count}",
+            selection.IsVisible,
+            selection.SelectionHint,
+            selection.SelectionType,
+            selection.SelectionPrimary,
+            selection.SelectionSecondary,
+            selection.SelectionTertiary,
+            selection.ContextTitle,
+            selection.ContextBody,
+            selection.ContextLine1,
+            selection.ContextLine2,
+            selection.ContextLine3,
+            selection.ContextLine4);
 
         if (snapshot == lastSnapshot)
         {
@@ -233,6 +293,27 @@ public sealed partial class GaiaEngineBootstrap : Node
         objectiveCountLabel.Text = snapshot.ObjectiveCount;
         levelLabel.Text = snapshot.Level;
         achievementCountLabel.Text = snapshot.AchievementCount;
+        leftPanel.Visible = snapshot.SelectionVisible;
+        contextPanel.Visible = snapshot.SelectionVisible;
+        selectionHintLabel.Text = snapshot.SelectionHint;
+        selectionTypeLabel.Text = snapshot.SelectionType;
+        selectionPrimaryLabel.Text = snapshot.SelectionPrimary;
+        selectionSecondaryLabel.Text = snapshot.SelectionSecondary;
+        selectionTertiaryLabel.Text = snapshot.SelectionTertiary;
+        if (contextTitleLabel is not null
+            && contextBodyLabel is not null
+            && contextLine1Label is not null
+            && contextLine2Label is not null
+            && contextLine3Label is not null
+            && contextLine4Label is not null)
+        {
+            contextTitleLabel.Text = snapshot.ContextTitle;
+            contextBodyLabel.Text = snapshot.ContextBody;
+            contextLine1Label.Text = snapshot.ContextLine1;
+            contextLine2Label.Text = snapshot.ContextLine2;
+            contextLine3Label.Text = snapshot.ContextLine3;
+            contextLine4Label.Text = snapshot.ContextLine4;
+        }
     }
 
     private IReadOnlyList<HudNotificationEntry> BuildNotificationsFromObservedChanges()
@@ -710,6 +791,100 @@ public sealed partial class GaiaEngineBootstrap : Node
         return memoryEntries;
     }
 
+    private ObservationSelection ResolveObservationSelection()
+    {
+        if (runtime is null)
+        {
+            return ObservationSelection.Hidden;
+        }
+
+        GaiaEngine.Domain.Organisms.Organism? selectedOrganism = TryResolveObservedOrganism();
+        if (selectedOrganism is not null)
+        {
+            GaiaEngine.Domain.World.Chunk selectedChunk = ResolveChunk(selectedOrganism.CurrentChunkId);
+            GaiaEngine.Domain.World.ResourceState primaryResource = ResolvePrimaryResource(selectedChunk);
+            return new ObservationSelection(
+                IsVisible: true,
+                SelectionHint: "Observed focus updates automatically from the current simulation state.",
+                SelectionType: "Focus: Organism",
+                SelectionPrimary: $"Organism: {selectedOrganism.Id}",
+                SelectionSecondary: $"Chunk: {selectedChunk.Metadata.Coordinates.X}, {selectedChunk.Metadata.Coordinates.Y}",
+                SelectionTertiary: $"Biome: {selectedChunk.Biome.Name}",
+                ContextTitle: "Organism Context",
+                ContextBody: $"Tracking organism {selectedOrganism.Id} in species {selectedOrganism.SpeciesId}.",
+                ContextLine1: $"Stage: {selectedOrganism.Lifecycle.Stage}   Age: {selectedOrganism.Lifecycle.AgeTicks} ticks",
+                ContextLine2: $"Health: {selectedOrganism.Health.CurrentValue}/{selectedOrganism.Health.MaximumValue}   Hunger: {selectedOrganism.Needs.Hunger}/1000",
+                ContextLine3: $"Hydration: {selectedOrganism.Needs.Hydration}/1000   Rest: {selectedOrganism.Needs.Rest}/1000",
+                ContextLine4: $"Resource: {primaryResource.Type} {primaryResource.CurrentAmount}/{primaryResource.MaximumCapacity}   Weather: {selectedChunk.Climate.WeatherState}");
+        }
+
+        GaiaEngine.Domain.World.Chunk primaryChunk = runtime.World.GetChunks()[0];
+        GaiaEngine.Domain.World.ResourceState primaryChunkResource = ResolvePrimaryResource(primaryChunk);
+        return new ObservationSelection(
+            IsVisible: true,
+            SelectionHint: "No living organism is available, so the HUD is observing the primary world chunk.",
+            SelectionType: "Focus: Chunk",
+            SelectionPrimary: $"Chunk: {primaryChunk.Metadata.Coordinates.X}, {primaryChunk.Metadata.Coordinates.Y}",
+            SelectionSecondary: $"Biome: {primaryChunk.Biome.Name}",
+            SelectionTertiary: $"Weather: {primaryChunk.Climate.WeatherState}",
+            ContextTitle: "Biome Context",
+            ContextBody: primaryChunk.Biome.Description,
+            ContextLine1: $"Temperature: {primaryChunk.Climate.Temperature.CurrentTemperature} C   Humidity: {primaryChunk.Climate.Humidity.RelativeHumidity}%",
+            ContextLine2: $"Wind: {primaryChunk.Climate.Wind.Speed}   Pressure: {primaryChunk.Climate.Pressure.CurrentPressure}",
+            ContextLine3: $"Vegetation density: {primaryChunk.Biome.VegetationProfile.Density}   Plant diversity: {primaryChunk.Biome.SpeciesAffinity.PlantDiversity}",
+            ContextLine4: $"Primary resource: {primaryChunkResource.Type} {primaryChunkResource.CurrentAmount}/{primaryChunkResource.MaximumCapacity}");
+    }
+
+    private GaiaEngine.Domain.Organisms.Organism? TryResolveObservedOrganism()
+    {
+        if (runtime is null)
+        {
+            return null;
+        }
+
+        foreach (GaiaEngine.Domain.Organisms.Organism organism in runtime.Organisms.GetAll())
+        {
+            if (organism.Lifecycle.IsAlive)
+            {
+                return organism;
+            }
+        }
+
+        return null;
+    }
+
+    private GaiaEngine.Domain.World.Chunk ResolveChunk(GaiaEngine.Domain.Identifiers.ChunkId chunkId)
+    {
+        if (runtime is null)
+        {
+            throw new InvalidOperationException("Runtime must exist to resolve chunks.");
+        }
+
+        foreach (GaiaEngine.Domain.World.Chunk chunk in runtime.World.GetChunks())
+        {
+            if (chunk.Id == chunkId)
+            {
+                return chunk;
+            }
+        }
+
+        return runtime.World.GetChunks()[0];
+    }
+
+    private static GaiaEngine.Domain.World.ResourceState ResolvePrimaryResource(GaiaEngine.Domain.World.Chunk chunk)
+    {
+        GaiaEngine.Domain.World.ResourceState? selectedResource = null;
+        foreach (GaiaEngine.Domain.World.ResourceState resource in chunk.Resources.GetAll())
+        {
+            if (selectedResource is null || resource.CurrentAmount > selectedResource.CurrentAmount)
+            {
+                selectedResource = resource;
+            }
+        }
+
+        return selectedResource ?? throw new InvalidOperationException("The observed chunk must contain at least one resource.");
+    }
+
     private static string GetDiscoveryCategoryLabel(DiscoveryCategory category)
     {
         return category switch
@@ -776,7 +951,48 @@ public sealed partial class GaiaEngineBootstrap : Node
         string EncyclopediaCount,
         string ObjectiveCount,
         string Level,
-        string AchievementCount);
+        string AchievementCount,
+        bool SelectionVisible,
+        string SelectionHint,
+        string SelectionType,
+        string SelectionPrimary,
+        string SelectionSecondary,
+        string SelectionTertiary,
+        string ContextTitle,
+        string ContextBody,
+        string ContextLine1,
+        string ContextLine2,
+        string ContextLine3,
+        string ContextLine4);
+
+    private sealed record ObservationSelection(
+        bool IsVisible,
+        string SelectionHint,
+        string SelectionType,
+        string SelectionPrimary,
+        string SelectionSecondary,
+        string SelectionTertiary,
+        string ContextTitle,
+        string ContextBody,
+        string ContextLine1,
+        string ContextLine2,
+        string ContextLine3,
+        string ContextLine4)
+    {
+        public static ObservationSelection Hidden { get; } = new(
+            false,
+            "No selection is available.",
+            "Focus: None",
+            "Primary: -",
+            "Secondary: -",
+            "Tertiary: -",
+            "Context",
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            string.Empty);
+    }
 
     private sealed record RuntimeObservationSnapshot(
         long Tick,

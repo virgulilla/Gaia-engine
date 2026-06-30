@@ -146,6 +146,25 @@ layout_mode = 2
 autowrap_mode = 3
 text = "No organism, resource or biome is selected yet."
 
+[node name="SelectionTypeLabel" type="Label" parent="HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn"]
+layout_mode = 2
+text = "Focus: None"
+
+[node name="SelectionPrimaryLabel" type="Label" parent="HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = "Primary: -"
+
+[node name="SelectionSecondaryLabel" type="Label" parent="HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = "Secondary: -"
+
+[node name="SelectionTertiaryLabel" type="Label" parent="HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = "Tertiary: -"
+
 [node name="RightPanel" type="PanelContainer" parent="HudLayer/HudRoot"]
 layout_mode = 1
 anchors_preset = 3
@@ -266,6 +285,26 @@ text = "Context"
 layout_mode = 2
 autowrap_mode = 3
 text = "Detailed context will appear here when inspection is available."
+
+[node name="ContextLine1Label" type="Label" parent="HudLayer/HudRoot/ContextPanel/ContextPanelMargin/ContextPanelColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = ""
+
+[node name="ContextLine2Label" type="Label" parent="HudLayer/HudRoot/ContextPanel/ContextPanelMargin/ContextPanelColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = ""
+
+[node name="ContextLine3Label" type="Label" parent="HudLayer/HudRoot/ContextPanel/ContextPanelMargin/ContextPanelColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = ""
+
+[node name="ContextLine4Label" type="Label" parent="HudLayer/HudRoot/ContextPanel/ContextPanelMargin/ContextPanelColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = ""
 
 [node name="BottomToolbar" type="PanelContainer" parent="HudLayer/HudRoot"]
 layout_mode = 1
