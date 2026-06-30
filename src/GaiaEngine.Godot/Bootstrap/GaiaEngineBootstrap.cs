@@ -1,5 +1,4 @@
 using GaiaEngine.App.Bootstrap;
-using GaiaEngine.Gameplay.Discovery;
 using Godot;
 
 namespace GaiaEngine.Godot.Bootstrap;
@@ -9,60 +8,49 @@ namespace GaiaEngine.Godot.Bootstrap;
 /// </summary>
 public sealed partial class GaiaEngineBootstrap : Node
 {
-    private const string TickLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/TickLabel";
-    private const string DayLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/DayLabel";
-    private const string SeasonLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/SeasonLabel";
-    private const string YearLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/YearLabel";
-    private const string TickRateLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/TickRateLabel";
-    private const string PlayerLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/PlayerLabel";
-    private const string DiscoveryCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/DiscoveryCountLabel";
-    private const string SpeciesDiscoveryLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/SpeciesDiscoveryLabel";
-    private const string BiomeDiscoveryLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/BiomeDiscoveryLabel";
-    private const string ResourceDiscoveryLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/ResourceDiscoveryLabel";
-    private const string BehaviourDiscoveryLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/BehaviourDiscoveryLabel";
-    private const string OrganismCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/OrganismCountLabel";
-    private const string AliveOrganismCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/AliveOrganismCountLabel";
-    private const string SpeciesCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/SpeciesCountLabel";
-    private const string MemoryCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/MemoryCountLabel";
-    private const string ActionCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/ActionCountLabel";
-    private const string WeatherLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/WeatherLabel";
-    private const string BiomeLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/BiomeLabel";
-    private const string ExperienceLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/ExperienceLabel";
-    private const string EncyclopediaCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/EncyclopediaCountLabel";
-    private const string ObjectiveCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/ObjectiveCountLabel";
-    private const string LevelLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/LevelLabel";
-    private const string UnlockCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/UnlockCountLabel";
-    private const string MilestoneCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/MilestoneCountLabel";
-    private const string AchievementCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/AchievementCountLabel";
+    private const string WorldNameLabelPath = "HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow/WorldNameLabel";
+    private const string TimeSummaryLabelPath = "HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow/TimeSummaryLabel";
+    private const string TickRateLabelPath = "HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow/TickRateChip/TickRateChipMargin/TickRateLabel";
+    private const string PopulationLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/PopulationLabel";
+    private const string AlivePopulationLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/AlivePopulationLabel";
+    private const string SpeciesCountLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/SpeciesCountLabel";
+    private const string WeatherLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/WeatherLabel";
+    private const string BiomeLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/BiomeLabel";
+    private const string TemperatureLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/TemperatureLabel";
+    private const string HumidityLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/HumidityLabel";
+    private const string MemoryCountLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/MemoryCountLabel";
+    private const string ActionCountLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/ActionCountLabel";
+    private const string DiscoveryCountLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/DiscoveryCountLabel";
+    private const string EncyclopediaCountLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/EncyclopediaCountLabel";
+    private const string ObjectiveCountLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/ObjectiveCountLabel";
+    private const string LevelLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/LevelLabel";
+    private const string AchievementCountLabelPath = "HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn/AchievementCountLabel";
+    private const string NotificationTitleLabelPath = "HudLayer/HudRoot/NotificationArea/NotificationCard/NotificationMargin/NotificationColumn/NotificationTitleLabel";
+    private const string NotificationBodyLabelPath = "HudLayer/HudRoot/NotificationArea/NotificationCard/NotificationMargin/NotificationColumn/NotificationBodyLabel";
 
     private GaiaEngineApplication? application;
     private GaiaEngineRuntime? runtime;
-    private Label? tickLabel;
-    private Label? dayLabel;
-    private Label? seasonLabel;
-    private Label? yearLabel;
+    private Label? worldNameLabel;
+    private Label? timeSummaryLabel;
     private Label? tickRateLabel;
-    private Label? playerLabel;
-    private Label? discoveryCountLabel;
-    private Label? speciesDiscoveryLabel;
-    private Label? biomeDiscoveryLabel;
-    private Label? resourceDiscoveryLabel;
-    private Label? behaviourDiscoveryLabel;
-    private Label? organismCountLabel;
-    private Label? aliveOrganismCountLabel;
+    private Label? populationLabel;
+    private Label? alivePopulationLabel;
     private Label? speciesCountLabel;
-    private Label? memoryCountLabel;
-    private Label? actionCountLabel;
     private Label? weatherLabel;
     private Label? biomeLabel;
-    private Label? experienceLabel;
+    private Label? temperatureLabel;
+    private Label? humidityLabel;
+    private Label? memoryCountLabel;
+    private Label? actionCountLabel;
+    private Label? discoveryCountLabel;
     private Label? encyclopediaCountLabel;
     private Label? objectiveCountLabel;
     private Label? levelLabel;
-    private Label? unlockCountLabel;
-    private Label? milestoneCountLabel;
     private Label? achievementCountLabel;
+    private Label? notificationTitleLabel;
+    private Label? notificationBodyLabel;
     private double tickAccumulator;
+    private HudViewSnapshot? lastSnapshot;
 
     /// <summary>
     /// Initializes the application when the root scene enters the tree.
@@ -74,38 +62,32 @@ public sealed partial class GaiaEngineBootstrap : Node
         string worldConfigurationPath = ProjectSettings.GlobalizePath("res://Configuration/World/WorldConfiguration.json");
         application = GaiaEngineCompositionRoot.CreateApplication(engineConfigurationPath, simulationConfigurationPath, worldConfigurationPath);
         runtime = application.Initialize();
-        tickLabel = GetNode<Label>(TickLabelPath);
-        dayLabel = GetNode<Label>(DayLabelPath);
-        seasonLabel = GetNode<Label>(SeasonLabelPath);
-        yearLabel = GetNode<Label>(YearLabelPath);
+        worldNameLabel = GetNode<Label>(WorldNameLabelPath);
+        timeSummaryLabel = GetNode<Label>(TimeSummaryLabelPath);
         tickRateLabel = GetNode<Label>(TickRateLabelPath);
-        playerLabel = GetNode<Label>(PlayerLabelPath);
-        discoveryCountLabel = GetNode<Label>(DiscoveryCountLabelPath);
-        speciesDiscoveryLabel = GetNode<Label>(SpeciesDiscoveryLabelPath);
-        biomeDiscoveryLabel = GetNode<Label>(BiomeDiscoveryLabelPath);
-        resourceDiscoveryLabel = GetNode<Label>(ResourceDiscoveryLabelPath);
-        behaviourDiscoveryLabel = GetNode<Label>(BehaviourDiscoveryLabelPath);
-        organismCountLabel = GetNode<Label>(OrganismCountLabelPath);
-        aliveOrganismCountLabel = GetNode<Label>(AliveOrganismCountLabelPath);
+        populationLabel = GetNode<Label>(PopulationLabelPath);
+        alivePopulationLabel = GetNode<Label>(AlivePopulationLabelPath);
         speciesCountLabel = GetNode<Label>(SpeciesCountLabelPath);
-        memoryCountLabel = GetNode<Label>(MemoryCountLabelPath);
-        actionCountLabel = GetNode<Label>(ActionCountLabelPath);
         weatherLabel = GetNode<Label>(WeatherLabelPath);
         biomeLabel = GetNode<Label>(BiomeLabelPath);
-        experienceLabel = GetNode<Label>(ExperienceLabelPath);
+        temperatureLabel = GetNode<Label>(TemperatureLabelPath);
+        humidityLabel = GetNode<Label>(HumidityLabelPath);
+        memoryCountLabel = GetNode<Label>(MemoryCountLabelPath);
+        actionCountLabel = GetNode<Label>(ActionCountLabelPath);
+        discoveryCountLabel = GetNode<Label>(DiscoveryCountLabelPath);
         encyclopediaCountLabel = GetNode<Label>(EncyclopediaCountLabelPath);
         objectiveCountLabel = GetNode<Label>(ObjectiveCountLabelPath);
         levelLabel = GetNode<Label>(LevelLabelPath);
-        unlockCountLabel = GetNode<Label>(UnlockCountLabelPath);
-        milestoneCountLabel = GetNode<Label>(MilestoneCountLabelPath);
         achievementCountLabel = GetNode<Label>(AchievementCountLabelPath);
+        notificationTitleLabel = GetNode<Label>(NotificationTitleLabelPath);
+        notificationBodyLabel = GetNode<Label>(NotificationBodyLabelPath);
 
         UpdateSimulationStatusText();
         GD.Print($"Gaia Engine initialized with tick rate {runtime.EngineConfiguration.TickRate}.");
     }
 
     /// <summary>
-    /// Advances the minimal simulation session and refreshes the diagnostics panel.
+    /// Advances the minimal simulation session and refreshes the HUD.
     /// </summary>
     /// <param name="delta">The real elapsed frame time.</param>
     public override void _Process(double delta)
@@ -130,37 +112,31 @@ public sealed partial class GaiaEngineBootstrap : Node
     private void UpdateSimulationStatusText()
     {
         if (runtime is null
-            || tickLabel is null
-            || dayLabel is null
-            || seasonLabel is null
-            || yearLabel is null
+            || worldNameLabel is null
+            || timeSummaryLabel is null
             || tickRateLabel is null
-            || playerLabel is null
-            || discoveryCountLabel is null
-            || speciesDiscoveryLabel is null
-            || biomeDiscoveryLabel is null
-            || resourceDiscoveryLabel is null
-            || behaviourDiscoveryLabel is null
-            || organismCountLabel is null
-            || aliveOrganismCountLabel is null
+            || populationLabel is null
+            || alivePopulationLabel is null
             || speciesCountLabel is null
-            || memoryCountLabel is null
-            || actionCountLabel is null
             || weatherLabel is null
             || biomeLabel is null
-            || experienceLabel is null
+            || temperatureLabel is null
+            || humidityLabel is null
+            || memoryCountLabel is null
+            || actionCountLabel is null
+            || discoveryCountLabel is null
             || encyclopediaCountLabel is null
             || objectiveCountLabel is null
             || levelLabel is null
-            || unlockCountLabel is null
-            || milestoneCountLabel is null
-            || achievementCountLabel is null)
+            || achievementCountLabel is null
+            || notificationTitleLabel is null
+            || notificationBodyLabel is null)
         {
             return;
         }
 
         int aliveOrganisms = 0;
-        foreach (var organism in runtime.Organisms.GetAll())
+        foreach (GaiaEngine.Domain.Organisms.Organism organism in runtime.Organisms.GetAll())
         {
             if (organism.Lifecycle.IsAlive)
             {
@@ -169,36 +145,100 @@ public sealed partial class GaiaEngineBootstrap : Node
         }
 
         int memoryEntries = 0;
-        foreach (var memory in runtime.Memories.GetAll())
+        foreach (GaiaEngine.Domain.AI.OrganismMemory memory in runtime.Memories.GetAll())
         {
             memoryEntries += memory.Count;
         }
 
-        var primaryChunk = runtime.World.GetChunks()[0];
-        tickLabel.Text = $"Tick: {runtime.SimulationSession.CurrentTimeState.CurrentTick}";
-        dayLabel.Text = $"Day: {runtime.SimulationSession.CurrentTimeState.CurrentDay}";
-        seasonLabel.Text = $"Season: {runtime.SimulationSession.CurrentTimeState.CurrentSeason}";
-        yearLabel.Text = $"Year: {runtime.SimulationSession.CurrentTimeState.CurrentYear}";
-        tickRateLabel.Text = $"Tick Rate: {runtime.EngineConfiguration.TickRate}";
-        playerLabel.Text = $"Player: {runtime.PlayerProfile.Identity.ProfileName}";
-        discoveryCountLabel.Text = $"Discoveries: {runtime.PlayerProfile.Knowledge.Discoveries.Count}";
-        speciesDiscoveryLabel.Text = $"Species: {runtime.CountDiscoveries(DiscoveryCategory.Species)}";
-        biomeDiscoveryLabel.Text = $"Biomes: {runtime.CountDiscoveries(DiscoveryCategory.Biomes)}";
-        resourceDiscoveryLabel.Text = $"Resources: {runtime.CountDiscoveries(DiscoveryCategory.Resources)}";
-        behaviourDiscoveryLabel.Text = $"Behaviours: {runtime.CountDiscoveries(DiscoveryCategory.Behaviours)}";
-        organismCountLabel.Text = $"Organisms: {runtime.Organisms.Count}";
-        aliveOrganismCountLabel.Text = $"Alive: {aliveOrganisms}";
-        speciesCountLabel.Text = $"Species Total: {runtime.Species.Count}";
-        memoryCountLabel.Text = $"Memory Entries: {memoryEntries}";
-        actionCountLabel.Text = $"Actions: {runtime.ActionRequests.Count}";
-        weatherLabel.Text = $"Weather: {primaryChunk.Climate.WeatherState}";
-        biomeLabel.Text = $"Biome: {primaryChunk.Biome.Name}";
-        experienceLabel.Text = $"XP: {runtime.PlayerProfile.Progression.Experience}";
-        encyclopediaCountLabel.Text = $"Encyclopedia: {runtime.PlayerProfile.Knowledge.Encyclopedia.Count}";
-        objectiveCountLabel.Text = $"Objectives: {runtime.PlayerProfile.Progression.CompletedObjectives} / {runtime.PlayerProfile.Objectives.Count}";
-        levelLabel.Text = $"Level: {runtime.PlayerProfile.Progression.UnlockLevel}";
-        unlockCountLabel.Text = $"Unlocks: {runtime.PlayerProfile.Progression.Unlocks.Count}";
-        milestoneCountLabel.Text = $"Milestones: {runtime.PlayerProfile.Progression.CompletedMilestones.Count}";
-        achievementCountLabel.Text = $"Achievements: {runtime.PlayerProfile.Achievements.Count}";
+        GaiaEngine.Domain.World.Chunk primaryChunk = runtime.World.GetChunks()[0];
+        HudViewSnapshot snapshot = new(
+            runtime.World.Metadata.WorldName,
+            $"Day {runtime.SimulationSession.CurrentTimeState.CurrentDay} - {runtime.SimulationSession.CurrentTimeState.CurrentSeason} - Year {runtime.SimulationSession.CurrentTimeState.CurrentYear} - Tick {runtime.SimulationSession.CurrentTimeState.CurrentTick}",
+            $"Tick Rate: {runtime.EngineConfiguration.TickRate}",
+            $"Population: {runtime.Organisms.Count}",
+            $"Alive: {aliveOrganisms}",
+            $"Species: {runtime.Species.Count}",
+            $"Weather: {primaryChunk.Climate.WeatherState}",
+            $"Biome: {primaryChunk.Biome.Name}",
+            $"Temperature: {primaryChunk.Climate.Temperature.CurrentTemperature} C",
+            $"Humidity: {primaryChunk.Climate.Humidity.RelativeHumidity}%",
+            $"Memory Entries: {memoryEntries}",
+            $"Actions: {runtime.ActionRequests.Count}",
+            $"Discoveries: {runtime.PlayerProfile.Knowledge.Discoveries.Count}",
+            $"Encyclopedia: {runtime.PlayerProfile.Knowledge.Encyclopedia.Count}",
+            $"Objectives: {runtime.PlayerProfile.Progression.CompletedObjectives} / {runtime.PlayerProfile.Objectives.Count}",
+            $"Level: {runtime.PlayerProfile.Progression.UnlockLevel}",
+            $"Achievements: {runtime.PlayerProfile.Achievements.Count}",
+            BuildNotificationTitle(primaryChunk),
+            BuildNotificationBody(primaryChunk, aliveOrganisms));
+
+        if (snapshot == lastSnapshot)
+        {
+            return;
+        }
+
+        lastSnapshot = snapshot;
+        worldNameLabel.Text = snapshot.WorldName;
+        timeSummaryLabel.Text = snapshot.TimeSummary;
+        tickRateLabel.Text = snapshot.TickRate;
+        populationLabel.Text = snapshot.Population;
+        alivePopulationLabel.Text = snapshot.AlivePopulation;
+        speciesCountLabel.Text = snapshot.SpeciesCount;
+        weatherLabel.Text = snapshot.Weather;
+        biomeLabel.Text = snapshot.Biome;
+        temperatureLabel.Text = snapshot.Temperature;
+        humidityLabel.Text = snapshot.Humidity;
+        memoryCountLabel.Text = snapshot.MemoryCount;
+        actionCountLabel.Text = snapshot.ActionCount;
+        discoveryCountLabel.Text = snapshot.DiscoveryCount;
+        encyclopediaCountLabel.Text = snapshot.EncyclopediaCount;
+        objectiveCountLabel.Text = snapshot.ObjectiveCount;
+        levelLabel.Text = snapshot.Level;
+        achievementCountLabel.Text = snapshot.AchievementCount;
+        notificationTitleLabel.Text = snapshot.NotificationTitle;
+        notificationBodyLabel.Text = snapshot.NotificationBody;
     }
+
+    private static string BuildNotificationTitle(GaiaEngine.Domain.World.Chunk primaryChunk)
+    {
+        return primaryChunk.Climate.WeatherState switch
+        {
+            GaiaEngine.Domain.World.WeatherState.Storm => "Weather Warning",
+            GaiaEngine.Domain.World.WeatherState.Drought => "Climate Warning",
+            GaiaEngine.Domain.World.WeatherState.Rain => "Seasonal Update",
+            _ => "Observation Mode",
+        };
+    }
+
+    private static string BuildNotificationBody(GaiaEngine.Domain.World.Chunk primaryChunk, int aliveOrganisms)
+    {
+        return primaryChunk.Climate.WeatherState switch
+        {
+            GaiaEngine.Domain.World.WeatherState.Storm => $"A storm is active over the observed biome. {aliveOrganisms} organisms remain alive in the current simulation snapshot.",
+            GaiaEngine.Domain.World.WeatherState.Drought => $"Dry conditions are active in {primaryChunk.Biome.Name}. Monitor resources as the ecosystem evolves.",
+            GaiaEngine.Domain.World.WeatherState.Rain => $"Rain is currently falling over {primaryChunk.Biome.Name}. The simulation continues in read-only observation mode.",
+            _ => $"The simulation is running in {primaryChunk.Biome.Name}. Interactive inspection, filters and notifications will expand in later UI steps.",
+        };
+    }
+
+    private sealed record HudViewSnapshot(
+        string WorldName,
+        string TimeSummary,
+        string TickRate,
+        string Population,
+        string AlivePopulation,
+        string SpeciesCount,
+        string Weather,
+        string Biome,
+        string Temperature,
+        string Humidity,
+        string MemoryCount,
+        string ActionCount,
+        string DiscoveryCount,
+        string EncyclopediaCount,
+        string ObjectiveCount,
+        string Level,
+        string AchievementCount,
+        string NotificationTitle,
+        string NotificationBody);
 }

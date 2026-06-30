@@ -1,100 +1,363 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://src/GaiaEngine.Godot/Bootstrap/GaiaEngineBootstrap.cs" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="1"]
+bg_color = Color(0.0784314, 0.101961, 0.109804, 0.82)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.298039, 0.388235, 0.388235, 0.55)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="2"]
+bg_color = Color(0.101961, 0.129412, 0.137255, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.333333, 0.490196, 0.466667, 0.65)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="3"]
+bg_color = Color(0.176471, 0.235294, 0.223529, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.529412, 0.705882, 0.588235, 0.55)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="4"]
+bg_color = Color(0.121569, 0.14902, 0.160784, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.32549, 0.439216, 0.501961, 0.55)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
 
 [node name="GaiaEngineBootstrap" type="Node"]
 script = ExtResource("1")
 
-[node name="DiagnosticsLayer" type="CanvasLayer" parent="."]
+[node name="HudLayer" type="CanvasLayer" parent="."]
 
-[node name="SimulationStatusPanel" type="PanelContainer" parent="DiagnosticsLayer"]
+[node name="HudRoot" type="Control" parent="HudLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopBar" type="PanelContainer" parent="HudLayer/HudRoot"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
 offset_left = 16.0
 offset_top = 16.0
-offset_right = 360.0
-offset_bottom = 470.0
+offset_right = -16.0
+offset_bottom = 76.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("2")
 
-[node name="SimulationStatusMargin" type="MarginContainer" parent="DiagnosticsLayer/SimulationStatusPanel"]
+[node name="TopBarMargin" type="MarginContainer" parent="HudLayer/HudRoot/TopBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 14
+
+[node name="TopBarRow" type="HBoxContainer" parent="HudLayer/HudRoot/TopBar/TopBarMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="WorldNameLabel" type="Label" parent="HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "Gaia"
+
+[node name="TimeSummaryLabel" type="Label" parent="HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Day 0  •  Spring  •  Year 0"
+horizontal_alignment = 1
+
+[node name="TickRateChip" type="PanelContainer" parent="HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("3")
+
+[node name="TickRateChipMargin" type="MarginContainer" parent="HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow/TickRateChip"]
+layout_mode = 2
 theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
+theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_bottom = 8
 
-[node name="SimulationStatusRows" type="VBoxContainer" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin"]
-
-[node name="SimulationStatusTitleLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Gaia Engine Debug"
-
-[node name="TickLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Tick: 0"
-
-[node name="DayLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Day: 0"
-
-[node name="SeasonLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Season: Spring"
-
-[node name="YearLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Year: 0"
-
-[node name="TickRateLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+[node name="TickRateLabel" type="Label" parent="HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow/TickRateChip/TickRateChipMargin"]
+layout_mode = 2
 text = "Tick Rate: 0"
 
-[node name="PlayerLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Player: Local Observer"
+[node name="LeftPanel" type="PanelContainer" parent="HudLayer/HudRoot"]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_top = 0.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 96.0
+offset_right = 288.0
+offset_bottom = -96.0
+theme_override_styles/panel = SubResource("1")
 
-[node name="DiscoveryCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Discoveries: 0"
+[node name="LeftPanelMargin" type="MarginContainer" parent="HudLayer/HudRoot/LeftPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
 
-[node name="SpeciesDiscoveryLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Species: 0"
+[node name="LeftPanelColumn" type="VBoxContainer" parent="HudLayer/HudRoot/LeftPanel/LeftPanelMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
 
-[node name="BiomeDiscoveryLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Biomes: 0"
+[node name="LeftPanelTitleLabel" type="Label" parent="HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Selection"
 
-[node name="ResourceDiscoveryLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Resources: 0"
+[node name="SelectionHintLabel" type="Label" parent="HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = "No organism, resource or biome is selected yet."
 
-[node name="BehaviourDiscoveryLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Behaviours: 0"
+[node name="RightPanel" type="PanelContainer" parent="HudLayer/HudRoot"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -312.0
+offset_top = 96.0
+offset_right = -16.0
+offset_bottom = -116.0
+grow_horizontal = 0
+theme_override_styles/panel = SubResource("1")
 
-[node name="OrganismCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Organisms: 0"
+[node name="RightPanelMargin" type="MarginContainer" parent="HudLayer/HudRoot/RightPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
 
-[node name="AliveOrganismCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+[node name="RightPanelColumn" type="VBoxContainer" parent="HudLayer/HudRoot/RightPanel/RightPanelMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="RightPanelTitleLabel" type="Label" parent="HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "World Overview"
+
+[node name="PopulationLabel" type="Label" parent="HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn"]
+layout_mode = 2
+text = "Population: 0"
+
+[node name="AlivePopulationLabel" type="Label" parent="HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn"]
+layout_mode = 2
 text = "Alive: 0"
 
-[node name="SpeciesCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Species Total: 0"
+[node name="SpeciesCountLabel" type="Label" parent="HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn"]
+layout_mode = 2
+text = "Species: 0"
 
-[node name="MemoryCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Memory Entries: 0"
-
-[node name="ActionCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Actions: 0"
-
-[node name="WeatherLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+[node name="WeatherLabel" type="Label" parent="HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn"]
+layout_mode = 2
 text = "Weather: Clear"
 
-[node name="BiomeLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+[node name="BiomeLabel" type="Label" parent="HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn"]
+layout_mode = 2
 text = "Biome: Unknown"
 
-[node name="ExperienceLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "XP: 0"
+[node name="TemperatureLabel" type="Label" parent="HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn"]
+layout_mode = 2
+text = "Temperature: 0 C"
 
-[node name="EncyclopediaCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+[node name="HumidityLabel" type="Label" parent="HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn"]
+layout_mode = 2
+text = "Humidity: 0%"
+
+[node name="MemoryCountLabel" type="Label" parent="HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn"]
+layout_mode = 2
+text = "Memory Entries: 0"
+
+[node name="ActionCountLabel" type="Label" parent="HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn"]
+layout_mode = 2
+text = "Actions: 0"
+
+[node name="DiscoveryCountLabel" type="Label" parent="HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn"]
+layout_mode = 2
+text = "Discoveries: 0"
+
+[node name="EncyclopediaCountLabel" type="Label" parent="HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn"]
+layout_mode = 2
 text = "Encyclopedia: 0"
 
-[node name="ObjectiveCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+[node name="ObjectiveCountLabel" type="Label" parent="HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn"]
+layout_mode = 2
 text = "Objectives: 0 / 0"
 
-[node name="LevelLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+[node name="LevelLabel" type="Label" parent="HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn"]
+layout_mode = 2
 text = "Level: 0"
 
-[node name="UnlockCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Unlocks: 0"
-
-[node name="MilestoneCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
-text = "Milestones: 0"
-
-[node name="AchievementCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+[node name="AchievementCountLabel" type="Label" parent="HudLayer/HudRoot/RightPanel/RightPanelMargin/RightPanelColumn"]
+layout_mode = 2
 text = "Achievements: 0"
+
+[node name="ContextPanel" type="PanelContainer" parent="HudLayer/HudRoot"]
+visible = false
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -180.0
+offset_right = -344.0
+offset_bottom = -96.0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("4")
+
+[node name="ContextPanelMargin" type="MarginContainer" parent="HudLayer/HudRoot/ContextPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="ContextPanelColumn" type="VBoxContainer" parent="HudLayer/HudRoot/ContextPanel/ContextPanelMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ContextTitleLabel" type="Label" parent="HudLayer/HudRoot/ContextPanel/ContextPanelMargin/ContextPanelColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Context"
+
+[node name="ContextBodyLabel" type="Label" parent="HudLayer/HudRoot/ContextPanel/ContextPanelMargin/ContextPanelColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = "Detailed context will appear here when inspection is available."
+
+[node name="BottomToolbar" type="PanelContainer" parent="HudLayer/HudRoot"]
+layout_mode = 1
+anchors_preset = 12
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -328.0
+offset_top = -80.0
+offset_right = 328.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("2")
+
+[node name="BottomToolbarMargin" type="MarginContainer" parent="HudLayer/HudRoot/BottomToolbar"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="BottomToolbarRow" type="HBoxContainer" parent="HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="InspectButton" type="Button" parent="HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(96, 40)
+disabled = true
+text = "Inspect"
+
+[node name="TimeControlsButton" type="Button" parent="HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(96, 40)
+disabled = true
+text = "Time"
+
+[node name="EncyclopediaButton" type="Button" parent="HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(112, 40)
+disabled = true
+text = "Encyclopedia"
+
+[node name="StatisticsButton" type="Button" parent="HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(96, 40)
+disabled = true
+text = "Statistics"
+
+[node name="SettingsButton" type="Button" parent="HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(96, 40)
+disabled = true
+text = "Settings"
+
+[node name="NotificationArea" type="VBoxContainer" parent="HudLayer/HudRoot"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 16.0
+offset_top = 96.0
+offset_right = 312.0
+offset_bottom = 200.0
+theme_override_constants/separation = 8
+
+[node name="NotificationCard" type="PanelContainer" parent="HudLayer/HudRoot/NotificationArea"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("4")
+
+[node name="NotificationMargin" type="MarginContainer" parent="HudLayer/HudRoot/NotificationArea/NotificationCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="NotificationColumn" type="VBoxContainer" parent="HudLayer/HudRoot/NotificationArea/NotificationCard/NotificationMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="NotificationTitleLabel" type="Label" parent="HudLayer/HudRoot/NotificationArea/NotificationCard/NotificationMargin/NotificationColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Observation Mode"
+
+[node name="NotificationBodyLabel" type="Label" parent="HudLayer/HudRoot/NotificationArea/NotificationCard/NotificationMargin/NotificationColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = "The simulation is running. Interactive tools and contextual inspection will arrive in later UI steps."
