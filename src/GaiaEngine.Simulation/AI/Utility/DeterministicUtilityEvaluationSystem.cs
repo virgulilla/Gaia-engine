@@ -1,0 +1,324 @@
+using System;
+using System.Collections.Generic;
+using GaiaEngine.Domain.Identifiers;
+using GaiaEngine.Domain.Organisms;
+using GaiaEngine.Domain.World;
+using GaiaEngine.Simulation.Actions;
+using GaiaEngine.Simulation.AI.Perception;
+
+namespace GaiaEngine.Simulation.AI.Utility;
+
+/// <summary>
+/// Evaluates deterministic utility scores for the currently supported simulation actions.
+/// </summary>
+public sealed class DeterministicUtilityEvaluationSystem : IUtilityEvaluationSystem
+{
+    private readonly UtilityEvaluationSettings settings;
+    private readonly IUtilityCurveEvaluator curveEvaluator;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DeterministicUtilityEvaluationSystem"/> class.
+    /// </summary>
+    /// <param name="settings">The deterministic utility evaluation settings.</param>
+    /// <param name="curveEvaluator">The deterministic utility curve evaluator.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="settings"/> or <paramref name="curveEvaluator"/> is <see langword="null"/>.
+    /// </exception>
+    public DeterministicUtilityEvaluationSystem(UtilityEvaluationSettings settings, IUtilityCurveEvaluator curveEvaluator)
+    {
+        this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        this.curveEvaluator = curveEvaluator ?? throw new ArgumentNullException(nameof(curveEvaluator));
+    }
+
+    /// <summary>
+    /// Evaluates candidate action utilities for one organism based on current perception and world state.
+    /// </summary>
+    /// <param name="world">The current world state.</param>
+    /// <param name="organisms">The current organism state.</param>
+    /// <param name="perception">The current perception output for the evaluated organism.</param>
+    /// <param name="organismId">The evaluated organism identifier.</param>
+    /// <returns>The deterministic utility evaluation result.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="world"/>, <paramref name="organisms"/>, or <paramref name="perception"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the organism does not exist or when <paramref name="perception"/> belongs to another organism.
+    /// </exception>
+    public UtilityEvaluationResult Evaluate(
+        GaiaEngine.Domain.World.World world,
+        OrganismCollection organisms,
+        PerceptionResult perception,
+        OrganismId organismId)
+    {
+        ArgumentNullException.ThrowIfNull(world);
+        ArgumentNullException.ThrowIfNull(organisms);
+        ArgumentNullException.ThrowIfNull(perception);
+
+        if (perception.ObserverId != organismId)
+        {
+            throw new InvalidOperationException("The supplied perception result does not belong to the evaluated organism.");
+        }
+
+        if (!organisms.TryGet(organismId, out Organism? organism))
+        {
+            throw new InvalidOperationException("The evaluated organism does not exist in the organism collection.");
+        }
+
+        Chunk currentChunk = ResolveChunkById(world, organism!.CurrentChunkId);
+        UtilityActionEvaluation eat = EvaluateEat(world, perception, organism, currentChunk);
+        UtilityActionEvaluation drink = EvaluateDrink(world, perception, organism, currentChunk);
+        UtilityActionEvaluation move = EvaluateMove(world, perception, organism, currentChunk, eat.IsValid, drink.IsValid);
+
+        List<UtilityActionEvaluation> candidates = new() { eat, drink, move };
+        candidates.Sort(static (left, right) => CompareCandidates(left, right));
+        return new UtilityEvaluationResult(organismId, world.TimeState.CurrentTick, candidates.AsReadOnly());
+    }
+
+    private UtilityActionEvaluation EvaluateEat(GaiaEngine.Domain.World.World world, PerceptionResult perception, Organism organism, Chunk currentChunk)
+    {
+        ResourceObservation? resourceObservation = TryFindCurrentResourceObservation(world, perception, currentChunk, ResourceType.Vegetation);
+        if (resourceObservation is null)
+        {
+            return CreateInvalidCandidate(SimulationActionType.Eat, currentChunk.Id);
+        }
+
+        int urgency = curveEvaluator.Evaluate(organism.Needs.Hunger, settings.EatCurve);
+        int resourceFactor = resourceObservation.Resource!.Availability;
+        int confidenceFactor = resourceObservation.Observation.Confidence;
+        int score = CombineFactors(urgency, resourceFactor, confidenceFactor);
+        int cost = Math.Max(0, 100 - organism.Physiology.DigestionEfficiency);
+        return new UtilityActionEvaluation(
+            SimulationActionType.Eat,
+            new SimulationActionTarget(ActionTargetKind.Chunk, currentChunk.Id.ToString()),
+            score,
+            cost,
+            expectedDuration: 1,
+            isValid: true);
+    }
+
+    private UtilityActionEvaluation EvaluateDrink(GaiaEngine.Domain.World.World world, PerceptionResult perception, Organism organism, Chunk currentChunk)
+    {
+        ResourceObservation? resourceObservation = TryFindCurrentResourceObservation(world, perception, currentChunk, ResourceType.FreshWater);
+        if (resourceObservation is null)
+        {
+            return CreateInvalidCandidate(SimulationActionType.Drink, currentChunk.Id);
+        }
+
+        int urgency = curveEvaluator.Evaluate(organism.Needs.Hydration, settings.DrinkCurve);
+        int resourceFactor = resourceObservation.Resource!.Availability;
+        int confidenceFactor = resourceObservation.Observation.Confidence;
+        int score = CombineFactors(urgency, resourceFactor, confidenceFactor);
+        int cost = Math.Max(0, 100 - organism.Physiology.WaterEfficiency);
+        return new UtilityActionEvaluation(
+            SimulationActionType.Drink,
+            new SimulationActionTarget(ActionTargetKind.Chunk, currentChunk.Id.ToString()),
+            score,
+            cost,
+            expectedDuration: 1,
+            isValid: true);
+    }
+
+    private UtilityActionEvaluation EvaluateMove(GaiaEngine.Domain.World.World world, PerceptionResult perception, Organism organism, Chunk currentChunk, bool canEatHere, bool canDrinkHere)
+    {
+        MoveTargetCandidate? bestTarget = null;
+
+        foreach (PerceivedObject observation in perception.Observations)
+        {
+            if (observation.SensorType == SensorType.Touch || observation.SensorType == SensorType.Hearing)
+            {
+                continue;
+            }
+
+            if (observation.Confidence < settings.MinimumPerceptionConfidence)
+            {
+                continue;
+            }
+
+            if (TryResolveObservedResourceChunk(world, observation.ObjectId, ResourceType.Vegetation, out Chunk? foodChunk, out ResourceState? foodResource)
+                && foodChunk!.Id != currentChunk.Id
+                && observation.Distance == 1)
+            {
+                int urgency = canEatHere ? organism.Needs.Hunger / 4 : organism.Needs.Hunger;
+                int baseScore = curveEvaluator.Evaluate(urgency, settings.MoveCurve);
+                int score = CombineFactors(baseScore, foodResource!.Availability, observation.Confidence);
+                score = Math.Max(0, score - 150);
+                TryPromoteMoveCandidate(ref bestTarget, foodChunk, score);
+            }
+
+            if (TryResolveObservedResourceChunk(world, observation.ObjectId, ResourceType.FreshWater, out Chunk? waterChunk, out ResourceState? waterResource)
+                && waterChunk!.Id != currentChunk.Id
+                && observation.Distance == 1)
+            {
+                int urgency = canDrinkHere ? organism.Needs.Hydration / 4 : organism.Needs.Hydration;
+                int baseScore = curveEvaluator.Evaluate(urgency, settings.MoveCurve);
+                int score = CombineFactors(baseScore, waterResource!.Availability, observation.Confidence);
+                score = Math.Max(0, score - 150);
+                TryPromoteMoveCandidate(ref bestTarget, waterChunk, score);
+            }
+        }
+
+        if (bestTarget is null || bestTarget.Score <= 0)
+        {
+            return CreateInvalidCandidate(SimulationActionType.Move, currentChunk.Id);
+        }
+
+        int estimatedCost = Math.Max(1, bestTarget.TargetChunk.Terrain.Slope.TraversalCost / 10);
+        return new UtilityActionEvaluation(
+            SimulationActionType.Move,
+            new SimulationActionTarget(ActionTargetKind.Chunk, bestTarget.TargetChunk.Id.ToString()),
+            bestTarget.Score,
+            estimatedCost,
+            expectedDuration: 1,
+            isValid: true);
+    }
+
+    private static void TryPromoteMoveCandidate(ref MoveTargetCandidate? bestTarget, Chunk chunk, int score)
+    {
+        if (bestTarget is null
+            || score > bestTarget.Score
+            || (score == bestTarget.Score && chunk.Metadata.Coordinates.Y < bestTarget.TargetChunk.Metadata.Coordinates.Y)
+            || (score == bestTarget.Score
+                && chunk.Metadata.Coordinates.Y == bestTarget.TargetChunk.Metadata.Coordinates.Y
+                && chunk.Metadata.Coordinates.X < bestTarget.TargetChunk.Metadata.Coordinates.X))
+        {
+            bestTarget = new MoveTargetCandidate(chunk, score);
+        }
+    }
+
+    private ResourceObservation? TryFindCurrentResourceObservation(GaiaEngine.Domain.World.World world, PerceptionResult perception, Chunk currentChunk, ResourceType resourceType)
+    {
+        foreach (PerceivedObject observation in perception.Observations)
+        {
+            if (observation.SensorType == SensorType.Hearing || observation.SensorType == SensorType.Touch)
+            {
+                continue;
+            }
+
+            if (observation.Confidence < settings.MinimumPerceptionConfidence)
+            {
+                continue;
+            }
+
+            if (!TryResolveObservedResourceChunk(world, observation.ObjectId, resourceType, out Chunk? observedChunk, out ResourceState? resource))
+            {
+                continue;
+            }
+
+            if (observedChunk!.Id != currentChunk.Id)
+            {
+                continue;
+            }
+
+            if (resource!.CurrentAmount < settings.MinimumResourceAmount)
+            {
+                continue;
+            }
+
+            return new ResourceObservation(observation, observedChunk, resource);
+        }
+
+        return null;
+    }
+
+    private static int CombineFactors(int urgency, int resourceAvailability, int confidence)
+    {
+        return ((urgency * 6) + (resourceAvailability * 2) + (confidence * 2)) / 10;
+    }
+
+    private static int CompareCandidates(UtilityActionEvaluation left, UtilityActionEvaluation right)
+    {
+        int validityComparison = right.IsValid.CompareTo(left.IsValid);
+        if (validityComparison != 0)
+        {
+            return validityComparison;
+        }
+
+        int scoreComparison = right.UtilityScore.CompareTo(left.UtilityScore);
+        if (scoreComparison != 0)
+        {
+            return scoreComparison;
+        }
+
+        int costComparison = left.EstimatedCost.CompareTo(right.EstimatedCost);
+        if (costComparison != 0)
+        {
+            return costComparison;
+        }
+
+        int durationComparison = left.ExpectedDuration.CompareTo(right.ExpectedDuration);
+        if (durationComparison != 0)
+        {
+            return durationComparison;
+        }
+
+        int actionComparison = left.ActionType.CompareTo(right.ActionType);
+        if (actionComparison != 0)
+        {
+            return actionComparison;
+        }
+
+        return string.CompareOrdinal(left.Target.TargetId, right.Target.TargetId);
+    }
+
+    private static Chunk ResolveChunkById(GaiaEngine.Domain.World.World world, ChunkId chunkId)
+    {
+        foreach (Chunk chunk in world.GetChunks())
+        {
+            if (chunk.Id == chunkId)
+            {
+                return chunk;
+            }
+        }
+
+        throw new InvalidOperationException("The requested chunk could not be resolved in the current world state.");
+    }
+
+    private static bool TryResolveObservedResourceChunk(GaiaEngine.Domain.World.World world, ulong objectId, ResourceType resourceType, out Chunk? observedChunk, out ResourceState? resource)
+    {
+        observedChunk = null;
+        resource = null;
+
+        ResourceId resourceId;
+        try
+        {
+            resourceId = new ResourceId(objectId);
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+
+        foreach (Chunk chunk in world.GetChunks())
+        {
+            if (!chunk.Resources.TryGet(resourceId, out ResourceState? resolvedResource))
+            {
+                continue;
+            }
+
+            if (resolvedResource!.Type != resourceType)
+            {
+                return false;
+            }
+
+            observedChunk = chunk;
+            resource = resolvedResource;
+            return true;
+        }
+
+        return false;
+    }
+    private UtilityActionEvaluation CreateInvalidCandidate(SimulationActionType actionType, ChunkId fallbackChunkId)
+    {
+        return new UtilityActionEvaluation(
+            actionType,
+            new SimulationActionTarget(ActionTargetKind.Chunk, fallbackChunkId.ToString()),
+            utilityScore: 0,
+            estimatedCost: 0,
+            expectedDuration: 0,
+            isValid: false);
+    }
+
+    private sealed record ResourceObservation(PerceivedObject Observation, Chunk Chunk, ResourceState Resource);
+
+    private sealed record MoveTargetCandidate(Chunk TargetChunk, int Score);
+}
