@@ -31,6 +31,11 @@ public static class SimulationSystemNames
     public const string Species = "Species";
 
     /// <summary>
+    /// Gets the logical name of the autonomous behaviour system.
+    /// </summary>
+    public const string AI = "AI";
+
+    /// <summary>
     /// Gets the logical name of the movement interaction system.
     /// </summary>
     public const string Movement = "Movement";

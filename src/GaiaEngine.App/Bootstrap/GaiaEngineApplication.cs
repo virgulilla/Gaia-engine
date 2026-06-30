@@ -7,6 +7,10 @@ using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
 using GaiaEngine.Simulation.Actions;
+using GaiaEngine.Simulation.AI.Decision;
+using GaiaEngine.Simulation.AI.Execution;
+using GaiaEngine.Simulation.AI.Perception;
+using GaiaEngine.Simulation.AI.Utility;
 using GaiaEngine.Simulation.Events;
 using GaiaEngine.Simulation.Genetics;
 using GaiaEngine.Simulation.Interactions.Feeding;
@@ -108,6 +112,15 @@ public sealed class GaiaEngineApplication
         DeterministicMovementSystem movementSystem = new(spatialQueryService);
         DeterministicFeedingSystem feedingSystem = new();
         DeterministicHydrationSystem hydrationSystem = new();
+        DeterministicPerceptionSystem perceptionSystem = new(PerceptionSettings.Default, spatialQueryService);
+        DeterministicUtilityEvaluationSystem utilityEvaluationSystem = new(UtilityEvaluationSettings.Default, new DeterministicUtilityCurveEvaluator(), eventIdGenerator);
+        DeterministicDecisionMakingSystem decisionMakingSystem = new(eventIdGenerator);
+        DeterministicBehaviourExecutionSystem behaviourExecutionSystem = new();
+        DeterministicAutonomousBehaviourSystem autonomousBehaviourSystem = new(
+            perceptionSystem,
+            utilityEvaluationSystem,
+            decisionMakingSystem,
+            behaviourExecutionSystem);
         DeterministicActionRequestDispatcher actionRequestDispatcher = new();
         DeterministicSimulationScheduler scheduler = new(
             new[]
@@ -137,6 +150,11 @@ public sealed class GaiaEngineApplication
                     SimulationTickPhase.OrganismUpdate,
                     frequency: speciesRecognitionSettings.EvaluationFrequency,
                     priority: 1),
+                new ScheduledSimulationSystemDefinition(
+                    SimulationSystemNames.AI,
+                    SimulationTickPhase.OrganismUpdate,
+                    frequency: 1,
+                    priority: 2),
                 new ScheduledSimulationSystemDefinition(
                     SimulationSystemNames.Movement,
                     SimulationTickPhase.InteractionSystems,
@@ -171,7 +189,7 @@ public sealed class GaiaEngineApplication
                 new NoOpSimulationTickPhase(SimulationTickPhase.InputCollection),
                 new NoOpSimulationTickPhase(SimulationTickPhase.PreUpdate),
                 new WorldUpdateTimePhase(timeSystem, scheduler, climateSystem, waterSystem, resourceSystem, eventPublisher),
-                new OrganismUpdatePhase(organismUpdateSystem, speciesRecognitionSystem, speciesLifecycleSystem),
+                new OrganismUpdatePhase(organismUpdateSystem, speciesRecognitionSystem, speciesLifecycleSystem, autonomousBehaviourSystem),
                 new InteractionSystemsPhase(movementSystem, feedingSystem, hydrationSystem, actionRequestDispatcher),
                 new NoOpSimulationTickPhase(SimulationTickPhase.EnvironmentUpdate),
                 new EventDispatchPhase(eventBus),
