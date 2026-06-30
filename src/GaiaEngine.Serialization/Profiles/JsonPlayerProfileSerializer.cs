@@ -7,6 +7,7 @@ using GaiaEngine.Gameplay.Encyclopedia;
 using GaiaEngine.Gameplay.Objectives;
 using GaiaEngine.Gameplay.Player;
 using GaiaEngine.Gameplay.Progression;
+using GaiaEngine.Gameplay.Achievements;
 using GaiaEngine.Serialization.Profiles.Documents;
 
 namespace GaiaEngine.Serialization.Profiles;
@@ -62,6 +63,7 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
         List<DiscoveryEntryDocument> discoveries = new(profile.Knowledge.Discoveries.Count);
         List<EncyclopediaEntryDocument> encyclopedia = new(profile.Knowledge.Encyclopedia.Count);
         List<ObjectiveEntryDocument> objectives = new(profile.Objectives.Count);
+        List<AchievementEntryDocument> achievements = new(profile.Achievements.Count);
         foreach (DiscoveryEntry entry in profile.Knowledge.Discoveries.GetAll())
         {
             discoveries.Add(
@@ -149,6 +151,28 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
                 });
         }
 
+        foreach (AchievementEntry entry in profile.Achievements.GetAll())
+        {
+            achievements.Add(
+                new AchievementEntryDocument
+                {
+                    AchievementId = entry.AchievementId,
+                    Category = entry.Category.ToString(),
+                    Title = entry.Title,
+                    Description = entry.Description,
+                    TargetValue = entry.TargetValue,
+                    CurrentValue = entry.CurrentValue,
+                    Reward = new AchievementRewardDocument
+                    {
+                        RewardId = entry.Reward.RewardId,
+                        Category = entry.Reward.Category.ToString(),
+                        Name = entry.Reward.Name,
+                    },
+                    Hidden = entry.Hidden,
+                    UnlockDate = entry.UnlockDate,
+                });
+        }
+
         return new PlayerProfileDocument
         {
             Identity = new PlayerIdentityDocument
@@ -160,6 +184,7 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
             Discoveries = discoveries,
             Encyclopedia = encyclopedia,
             Objectives = objectives,
+            Achievements = achievements,
             Progression = new PlayerProgressionDocument
             {
                 Experience = profile.Progression.Experience,
@@ -267,6 +292,30 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
                     Enum.Parse<ObjectiveStatus>(entry.Status, ignoreCase: false)));
         }
 
+        List<AchievementEntry> achievementEntries = new(document.Achievements.Count);
+        foreach (AchievementEntryDocument entry in document.Achievements)
+        {
+            if (entry.Reward is null)
+            {
+                throw new InvalidOperationException("Each achievement entry requires a reward section.");
+            }
+
+            achievementEntries.Add(
+                new AchievementEntry(
+                    entry.AchievementId,
+                    Enum.Parse<AchievementCategory>(entry.Category, ignoreCase: false),
+                    entry.Title,
+                    entry.Description,
+                    entry.TargetValue,
+                    entry.CurrentValue,
+                    new AchievementRewardDefinition(
+                        entry.Reward.RewardId,
+                        Enum.Parse<AchievementRewardCategory>(entry.Reward.Category, ignoreCase: false),
+                        entry.Reward.Name),
+                    entry.Hidden,
+                    entry.UnlockDate));
+        }
+
         return new PlayerProfile(
             new PlayerIdentity(document.Identity.PlayerId, document.Identity.ProfileName, document.Identity.CreationDate),
             new PlayerKnowledge(
@@ -280,6 +329,7 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
                 document.Progression.CompletedObjectives,
                 new ProgressionUnlockCollection(document.Progression.Unlocks.AsReadOnly()),
                 new ProgressionMilestoneCollection(document.Progression.CompletedMilestones.AsReadOnly())),
+            new AchievementCollection(achievementEntries.AsReadOnly()),
             new PlayerStatistics(document.Statistics.TotalDiscoveriesUnlocked, document.Statistics.DuplicateDiscoveryObservations));
     }
 }

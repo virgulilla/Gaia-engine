@@ -95,3 +95,6 @@ text = "Unlocks: 0"
 
 [node name="MilestoneCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
 text = "Milestones: 0"
+
+[node name="AchievementCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Achievements: 0"

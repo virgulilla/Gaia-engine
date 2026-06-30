@@ -48,6 +48,7 @@ public sealed class GaiaEngineApplicationTests
         Assert.True(first.PlayerProfile.Progression.UnlockLevel >= 0);
         Assert.True(first.PlayerProfile.Progression.Unlocks.Count > 0);
         Assert.True(first.PlayerProfile.Progression.CompletedMilestones.Count > 0);
+        Assert.True(first.PlayerProfile.Achievements.Count > 0);
         Assert.Empty(first.SimulationSession.CurrentActionRequests.GetAll());
         Assert.Empty(first.AdvanceTick().MovementRequests.GetAll());
         Assert.Empty(first.SimulationSession.CurrentFeedingRequests.GetAll());

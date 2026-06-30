@@ -5,6 +5,7 @@ using GaiaEngine.Gameplay.Encyclopedia;
 using GaiaEngine.Gameplay.Objectives;
 using GaiaEngine.Gameplay.Player;
 using GaiaEngine.Gameplay.Progression;
+using GaiaEngine.Gameplay.Achievements;
 using Xunit;
 
 namespace GaiaEngine.Gameplay.Tests.Progression;
@@ -45,6 +46,7 @@ public sealed class DeterministicProgressionSystemTests
                     })),
             ObjectiveCollection.Empty,
             new PlayerProgression(50, 1, 0, 1),
+            AchievementCollection.Empty,
             new PlayerStatistics(1, 0));
 
         ProgressionEvaluationResult result = system.Evaluate(profile);
@@ -76,6 +78,7 @@ public sealed class DeterministicProgressionSystemTests
                         "simulation.time-acceleration",
                     }),
                 ProgressionMilestoneCollection.Empty),
+            AchievementCollection.Empty,
             new PlayerStatistics(0, 0));
 
         ProgressionEvaluationResult result = system.Evaluate(profile);

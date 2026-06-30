@@ -9,6 +9,7 @@ using GaiaEngine.Gameplay.Discovery;
 using GaiaEngine.Gameplay.Objectives;
 using GaiaEngine.Gameplay.Player;
 using GaiaEngine.Gameplay.Progression;
+using GaiaEngine.Gameplay.Achievements;
 using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.Pipeline;
 using GaiaEngine.Simulation.Runtime;
@@ -29,6 +30,7 @@ public sealed class GaiaEngineRuntime
     /// <param name="discoverySystem">The gameplay discovery system used to update permanent knowledge.</param>
     /// <param name="objectiveSystem">The gameplay objective system used to update player progression goals.</param>
     /// <param name="progressionSystem">The gameplay progression system used to update levels, unlocks, and milestones.</param>
+    /// <param name="achievementSystem">The gameplay achievement system used to update permanent accomplishments.</param>
     /// <param name="playerProfile">The current player profile owned by the gameplay layer.</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when any required dependency is <see langword="null"/>.
@@ -40,6 +42,7 @@ public sealed class GaiaEngineRuntime
         IDiscoverySystem discoverySystem,
         IObjectiveSystem objectiveSystem,
         IProgressionSystem progressionSystem,
+        IAchievementSystem achievementSystem,
         PlayerProfile playerProfile)
     {
         EngineConfiguration = engineConfiguration ?? throw new ArgumentNullException(nameof(engineConfiguration));
@@ -48,12 +51,14 @@ public sealed class GaiaEngineRuntime
         this.discoverySystem = discoverySystem ?? throw new ArgumentNullException(nameof(discoverySystem));
         this.objectiveSystem = objectiveSystem ?? throw new ArgumentNullException(nameof(objectiveSystem));
         this.progressionSystem = progressionSystem ?? throw new ArgumentNullException(nameof(progressionSystem));
+        this.achievementSystem = achievementSystem ?? throw new ArgumentNullException(nameof(achievementSystem));
         PlayerProfile = playerProfile ?? throw new ArgumentNullException(nameof(playerProfile));
     }
 
     private readonly IDiscoverySystem discoverySystem;
     private readonly IObjectiveSystem objectiveSystem;
     private readonly IProgressionSystem progressionSystem;
+    private readonly IAchievementSystem achievementSystem;
 
     /// <summary>
     /// Gets the loaded engine configuration.
@@ -156,6 +161,7 @@ public sealed class GaiaEngineRuntime
         DiscoveryEvaluationResult discoveryResult = discoverySystem.Evaluate(profile, world.Id, tick, signals.AsReadOnly());
         IReadOnlyList<ObjectiveSignal> objectiveSignals = ObjectiveSignalFactory.CreateSignals(discoveryResult.UnlockedDiscoveries, events);
         PlayerProfile objectiveProfile = objectiveSystem.Evaluate(discoveryResult.Profile, tick, objectiveSignals).Profile;
-        return progressionSystem.Evaluate(objectiveProfile).Profile;
+        PlayerProfile progressionProfile = progressionSystem.Evaluate(objectiveProfile).Profile;
+        return achievementSystem.Evaluate(progressionProfile).Profile;
     }
 }

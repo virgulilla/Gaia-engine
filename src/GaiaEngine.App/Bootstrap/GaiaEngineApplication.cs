@@ -12,6 +12,7 @@ using GaiaEngine.Gameplay.Encyclopedia;
 using GaiaEngine.Gameplay.Objectives;
 using GaiaEngine.Gameplay.Player;
 using GaiaEngine.Gameplay.Progression;
+using GaiaEngine.Gameplay.Achievements;
 using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.AI.Decision;
 using GaiaEngine.Simulation.AI.Execution;
@@ -220,6 +221,7 @@ public sealed class GaiaEngineApplication
         DeterministicDiscoverySystem discoverySystem = new(discoveryRuleSet, encyclopediaSystem);
         DeterministicObjectiveSystem objectiveSystem = new(DefaultObjectiveCatalogFactory.Create());
         DeterministicProgressionSystem progressionSystem = new(DefaultProgressionCatalogFactory.Create());
+        DeterministicAchievementSystem achievementSystem = new(DefaultAchievementCatalogFactory.Create());
         PlayerProfile initialProfile = new(
             new PlayerIdentity("player-001", "Local Observer", bootstrapOrganismState.World.Metadata.CreationDate),
             new PlayerKnowledge(DiscoveryCollection.Empty, EncyclopediaCollection.Empty),
@@ -231,6 +233,7 @@ public sealed class GaiaEngineApplication
                 0,
                 ProgressionUnlockCollection.Empty,
                 ProgressionMilestoneCollection.Empty),
+            AchievementCollection.Empty,
             new PlayerStatistics(0, 0));
         List<DiscoverySignal> initialSignals = new();
         foreach (DiscoverySignal signal in DiscoveryObservationSnapshotFactory.CreateSignals(bootstrapOrganismState.World, bootstrapOrganismState.Species))
@@ -248,6 +251,7 @@ public sealed class GaiaEngineApplication
             bootstrapOrganismState.World.TimeState.CurrentTick,
             Array.Empty<ObjectiveSignal>()).Profile;
         PlayerProfile progressionReadyProfile = progressionSystem.Evaluate(objectiveReadyProfile).Profile;
+        PlayerProfile achievementReadyProfile = achievementSystem.Evaluate(progressionReadyProfile).Profile;
 
         return new GaiaEngineRuntime(
             engineConfiguration,
@@ -256,6 +260,7 @@ public sealed class GaiaEngineApplication
             discoverySystem,
             objectiveSystem,
             progressionSystem,
-            progressionReadyProfile);
+            achievementSystem,
+            achievementReadyProfile);
     }
 }

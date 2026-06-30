@@ -4,6 +4,7 @@ using GaiaEngine.Gameplay.Discovery;
 using GaiaEngine.Gameplay.Encyclopedia;
 using GaiaEngine.Gameplay.Objectives;
 using GaiaEngine.Gameplay.Player;
+using GaiaEngine.Gameplay.Achievements;
 using Xunit;
 
 namespace GaiaEngine.Gameplay.Tests.Objectives;
@@ -102,6 +103,7 @@ public sealed class DeterministicObjectiveSystemTests
             knowledge ?? new PlayerKnowledge(DiscoveryCollection.Empty, EncyclopediaCollection.Empty),
             ObjectiveCollection.Empty,
             new PlayerProgression(0, 0, 0, 0),
+            AchievementCollection.Empty,
             new PlayerStatistics(0, 0));
     }
 }

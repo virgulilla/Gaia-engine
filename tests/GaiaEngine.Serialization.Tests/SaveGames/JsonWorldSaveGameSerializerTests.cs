@@ -13,6 +13,7 @@ using GaiaEngine.Gameplay.Encyclopedia;
 using GaiaEngine.Gameplay.Objectives;
 using GaiaEngine.Gameplay.Player;
 using GaiaEngine.Gameplay.Progression;
+using GaiaEngine.Gameplay.Achievements;
 using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Serialization.Profiles;
 using GaiaEngine.Serialization.SaveGames;
@@ -142,6 +143,23 @@ public sealed class JsonWorldSaveGameSerializerTests
                     {
                         "milestone.first-discovery",
                     })),
+            new AchievementCollection(
+                new[]
+                {
+                    new AchievementEntry(
+                        "achievement.discovery.first-species",
+                        AchievementCategory.Discovery,
+                        "First Species",
+                        "Discover your first species.",
+                        1,
+                        1,
+                        new AchievementRewardDefinition(
+                            "reward.badge.first-species",
+                            AchievementRewardCategory.ProfileBadge,
+                            "First Species Badge"),
+                        hidden: false,
+                        unlockDate: "2026-06-30"),
+                }),
             new PlayerStatistics(1, 0));
 
         string payload = serializer.Serialize(profile);
@@ -158,6 +176,8 @@ public sealed class JsonWorldSaveGameSerializerTests
         Assert.Equal(profile.Progression.CompletedObjectives, restored.Progression.CompletedObjectives);
         Assert.Equal(profile.Progression.Unlocks.GetAll()[0], restored.Progression.Unlocks.GetAll()[0]);
         Assert.Equal(profile.Progression.CompletedMilestones.GetAll()[0], restored.Progression.CompletedMilestones.GetAll()[0]);
+        Assert.Equal(profile.Achievements.GetAll()[0].AchievementId, restored.Achievements.GetAll()[0].AchievementId);
+        Assert.Equal(profile.Achievements.GetAll()[0].UnlockDate, restored.Achievements.GetAll()[0].UnlockDate);
         Assert.Equal(profile.Statistics.TotalDiscoveriesUnlocked, restored.Statistics.TotalDiscoveriesUnlocked);
     }
 

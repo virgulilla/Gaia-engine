@@ -33,6 +33,7 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string LevelLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/LevelLabel";
     private const string UnlockCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/UnlockCountLabel";
     private const string MilestoneCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/MilestoneCountLabel";
+    private const string AchievementCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/AchievementCountLabel";
 
     private GaiaEngineApplication? application;
     private GaiaEngineRuntime? runtime;
@@ -60,6 +61,7 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Label? levelLabel;
     private Label? unlockCountLabel;
     private Label? milestoneCountLabel;
+    private Label? achievementCountLabel;
     private double tickAccumulator;
 
     /// <summary>
@@ -96,6 +98,7 @@ public sealed partial class GaiaEngineBootstrap : Node
         levelLabel = GetNode<Label>(LevelLabelPath);
         unlockCountLabel = GetNode<Label>(UnlockCountLabelPath);
         milestoneCountLabel = GetNode<Label>(MilestoneCountLabelPath);
+        achievementCountLabel = GetNode<Label>(AchievementCountLabelPath);
 
         UpdateSimulationStatusText();
         GD.Print($"Gaia Engine initialized with tick rate {runtime.EngineConfiguration.TickRate}.");
@@ -150,7 +153,8 @@ public sealed partial class GaiaEngineBootstrap : Node
             || objectiveCountLabel is null
             || levelLabel is null
             || unlockCountLabel is null
-            || milestoneCountLabel is null)
+            || milestoneCountLabel is null
+            || achievementCountLabel is null)
         {
             return;
         }
@@ -195,5 +199,6 @@ public sealed partial class GaiaEngineBootstrap : Node
         levelLabel.Text = $"Level: {runtime.PlayerProfile.Progression.UnlockLevel}";
         unlockCountLabel.Text = $"Unlocks: {runtime.PlayerProfile.Progression.Unlocks.Count}";
         milestoneCountLabel.Text = $"Milestones: {runtime.PlayerProfile.Progression.CompletedMilestones.Count}";
+        achievementCountLabel.Text = $"Achievements: {runtime.PlayerProfile.Achievements.Count}";
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using GaiaEngine.Gameplay.Achievements;
 using GaiaEngine.Gameplay.Objectives;
 
 namespace GaiaEngine.Gameplay.Player;
@@ -15,6 +16,7 @@ public sealed record PlayerProfile
     /// <param name="knowledge">The accumulated permanent player knowledge.</param>
     /// <param name="objectives">The persistent objective state owned by the player profile.</param>
     /// <param name="progression">The persistent player progression state.</param>
+    /// <param name="achievements">The persistent achievement state owned by the player profile.</param>
     /// <param name="statistics">The deterministic player activity statistics.</param>
     /// <exception cref="ArgumentNullException">Thrown when any argument is <see langword="null"/>.</exception>
     public PlayerProfile(
@@ -22,12 +24,14 @@ public sealed record PlayerProfile
         PlayerKnowledge knowledge,
         ObjectiveCollection objectives,
         PlayerProgression progression,
+        AchievementCollection achievements,
         PlayerStatistics statistics)
     {
         Identity = identity ?? throw new ArgumentNullException(nameof(identity));
         Knowledge = knowledge ?? throw new ArgumentNullException(nameof(knowledge));
         Objectives = objectives ?? throw new ArgumentNullException(nameof(objectives));
         Progression = progression ?? throw new ArgumentNullException(nameof(progression));
+        Achievements = achievements ?? throw new ArgumentNullException(nameof(achievements));
         Statistics = statistics ?? throw new ArgumentNullException(nameof(statistics));
     }
 
@@ -50,6 +54,11 @@ public sealed record PlayerProfile
     /// Gets the persistent player progression state.
     /// </summary>
     public PlayerProgression Progression { get; }
+
+    /// <summary>
+    /// Gets the persistent achievement state owned by the player profile.
+    /// </summary>
+    public AchievementCollection Achievements { get; }
 
     /// <summary>
     /// Gets the deterministic player activity statistics.
