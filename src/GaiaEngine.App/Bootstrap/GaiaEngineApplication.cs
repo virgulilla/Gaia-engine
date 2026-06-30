@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using GaiaEngine.App.Configuration;
 using GaiaEngine.Domain.Genetics;
 using GaiaEngine.Simulation.Diagnostics;
@@ -6,6 +7,8 @@ using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
+using GaiaEngine.Gameplay.Discovery;
+using GaiaEngine.Gameplay.Player;
 using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.AI.Decision;
 using GaiaEngine.Simulation.AI.Execution;
@@ -209,7 +212,25 @@ public sealed class GaiaEngineApplication
             bootstrapOrganismState.Organisms,
             bootstrapOrganismState.Genomes,
             bootstrapOrganismState.Species);
+        DiscoveryRuleSet discoveryRuleSet = DefaultDiscoveryRuleSetFactory.Create(bootstrapOrganismState.World, bootstrapOrganismState.Species);
+        DeterministicDiscoverySystem discoverySystem = new(discoveryRuleSet);
+        PlayerProfile initialProfile = new(
+            new PlayerIdentity("player-001", "Local Observer", bootstrapOrganismState.World.Metadata.CreationDate),
+            new PlayerKnowledge(DiscoveryCollection.Empty),
+            new PlayerProgression(0, 0, 0),
+            new PlayerStatistics(0, 0));
+        List<DiscoverySignal> initialSignals = new();
+        foreach (DiscoverySignal signal in DiscoveryObservationSnapshotFactory.CreateSignals(bootstrapOrganismState.World, bootstrapOrganismState.Species))
+        {
+            initialSignals.Add(signal);
+        }
 
-        return new GaiaEngineRuntime(engineConfiguration, simulationConfiguration, simulationSession);
+        PlayerProfile discoveredProfile = discoverySystem.Evaluate(
+            initialProfile,
+            bootstrapOrganismState.World.Id,
+            bootstrapOrganismState.World.TimeState.CurrentTick,
+            initialSignals.AsReadOnly()).Profile;
+
+        return new GaiaEngineRuntime(engineConfiguration, simulationConfiguration, simulationSession, discoverySystem, discoveredProfile);
     }
 }

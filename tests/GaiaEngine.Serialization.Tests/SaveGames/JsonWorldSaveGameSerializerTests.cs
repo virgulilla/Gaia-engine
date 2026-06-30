@@ -8,7 +8,10 @@ using GaiaEngine.Domain.World;
 using GaiaEngine.Foundation.Configuration;
 using GaiaEngine.Foundation.Determinism;
 using GaiaEngine.Foundation.Versioning;
+using GaiaEngine.Gameplay.Discovery;
+using GaiaEngine.Gameplay.Player;
 using GaiaEngine.Simulation.Actions;
+using GaiaEngine.Serialization.Profiles;
 using GaiaEngine.Serialization.SaveGames;
 using Xunit;
 
@@ -60,6 +63,39 @@ public sealed class JsonWorldSaveGameSerializerTests
         Assert.Single(restored.ActionRequests.GetAll());
         Assert.Equal(saveGame.ActionRequests.GetAll()[0].ActionId, restored.ActionRequests.GetAll()[0].ActionId);
         Assert.Equal(saveGame.ActionRequests.GetAll()[0].ActionType, restored.ActionRequests.GetAll()[0].ActionType);
+    }
+
+    [Fact]
+    public void PlayerProfileSerializer_ShouldRoundTripThePlayerProfile()
+    {
+        JsonPlayerProfileSerializer serializer = new();
+        PlayerProfile profile = new(
+            new PlayerIdentity("player-001", "Oscar", "2026-06-30"),
+            new PlayerKnowledge(
+                new DiscoveryCollection(
+                    new[]
+                    {
+                        new DiscoveryEntry(
+                            "species.herbivore.a",
+                            DiscoveryCategory.Species,
+                            "Herbivore A",
+                            "Observed a new herbivore species.",
+                            unlockTick: 40,
+                            WorldId.FromSequence(new EntitySequence(1)),
+                            "player-001"),
+                    })),
+            new PlayerProgression(10, 1, 0),
+            new PlayerStatistics(1, 0));
+
+        string payload = serializer.Serialize(profile);
+        PlayerProfile restored = serializer.Deserialize(payload);
+
+        Assert.Equal(profile.Identity.PlayerId, restored.Identity.PlayerId);
+        Assert.Equal(profile.Identity.ProfileName, restored.Identity.ProfileName);
+        Assert.Equal(profile.Knowledge.Discoveries.GetAll()[0].DiscoveryId, restored.Knowledge.Discoveries.GetAll()[0].DiscoveryId);
+        Assert.Equal(profile.Knowledge.Discoveries.GetAll()[0].WorldId, restored.Knowledge.Discoveries.GetAll()[0].WorldId);
+        Assert.Equal(profile.Progression.Experience, restored.Progression.Experience);
+        Assert.Equal(profile.Statistics.TotalDiscoveriesUnlocked, restored.Statistics.TotalDiscoveriesUnlocked);
     }
 
     [Fact]

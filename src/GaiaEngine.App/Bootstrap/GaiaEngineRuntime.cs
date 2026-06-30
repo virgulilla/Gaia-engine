@@ -1,10 +1,14 @@
 using System;
+using System.Collections.Generic;
 using GaiaEngine.Domain.AI;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.App.Configuration;
 using GaiaEngine.Domain.Genetics;
 using GaiaEngine.Domain.World;
+using GaiaEngine.Gameplay.Discovery;
+using GaiaEngine.Gameplay.Player;
 using GaiaEngine.Simulation.Actions;
+using GaiaEngine.Simulation.Pipeline;
 using GaiaEngine.Simulation.Runtime;
 
 namespace GaiaEngine.App.Bootstrap;
@@ -26,12 +30,18 @@ public sealed class GaiaEngineRuntime
     public GaiaEngineRuntime(
         EngineConfiguration engineConfiguration,
         SimulationConfiguration simulationConfiguration,
-        ISimulationSession simulationSession)
+        ISimulationSession simulationSession,
+        IDiscoverySystem discoverySystem,
+        PlayerProfile playerProfile)
     {
         EngineConfiguration = engineConfiguration ?? throw new ArgumentNullException(nameof(engineConfiguration));
         SimulationConfiguration = simulationConfiguration ?? throw new ArgumentNullException(nameof(simulationConfiguration));
         SimulationSession = simulationSession ?? throw new ArgumentNullException(nameof(simulationSession));
+        this.discoverySystem = discoverySystem ?? throw new ArgumentNullException(nameof(discoverySystem));
+        PlayerProfile = playerProfile ?? throw new ArgumentNullException(nameof(playerProfile));
     }
+
+    private readonly IDiscoverySystem discoverySystem;
 
     /// <summary>
     /// Gets the loaded engine configuration.
@@ -77,4 +87,60 @@ public sealed class GaiaEngineRuntime
     /// Gets the initialized common action request state.
     /// </summary>
     public SimulationActionRequestCollection ActionRequests => SimulationSession.CurrentActionRequests;
+
+    /// <summary>
+    /// Gets the current player profile owned by the host gameplay layer.
+    /// </summary>
+    public PlayerProfile PlayerProfile { get; private set; }
+
+    /// <summary>
+    /// Advances one deterministic simulation tick and updates gameplay discoveries from the resulting observations.
+    /// </summary>
+    /// <returns>The deterministic simulation tick result.</returns>
+    public SimulationTickResult AdvanceTick()
+    {
+        SimulationTickResult result = SimulationSession.AdvanceTick();
+        PlayerProfile = EvaluateDiscoveries(PlayerProfile, result.World, result.Species, result.TimeState.CurrentTick, result.EventPublicationResult.PublishedEvents);
+        return result;
+    }
+
+    /// <summary>
+    /// Counts the unlocked discoveries owned by the current player profile for the supplied category.
+    /// </summary>
+    /// <param name="category">The category to count.</param>
+    /// <returns>The number of unlocked discoveries in the supplied category.</returns>
+    public int CountDiscoveries(DiscoveryCategory category)
+    {
+        int count = 0;
+        foreach (DiscoveryEntry entry in PlayerProfile.Knowledge.Discoveries.GetAll())
+        {
+            if (entry.Category == category)
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private PlayerProfile EvaluateDiscoveries(
+        PlayerProfile profile,
+        GaiaEngine.Domain.World.World world,
+        SpeciesCollection species,
+        long tick,
+        IReadOnlyList<GaiaEngine.Engine.Events.IEvent> events)
+    {
+        List<DiscoverySignal> signals = new();
+        foreach (DiscoverySignal signal in DiscoveryObservationSnapshotFactory.CreateSignals(world, species))
+        {
+            signals.Add(signal);
+        }
+
+        foreach (DiscoverySignal signal in SimulationDiscoverySignalFactory.CreateSignals(events))
+        {
+            signals.Add(signal);
+        }
+
+        return discoverySystem.Evaluate(profile, world.Id, tick, signals.AsReadOnly()).Profile;
+    }
 }

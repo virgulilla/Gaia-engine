@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>GaiaEngine.Serialization</AssemblyName>
-    <RootNamespace>GaiaEngine.Serialization</RootNamespace>
+    <AssemblyName>GaiaEngine.Gameplay</AssemblyName>
+    <RootNamespace>GaiaEngine.Gameplay</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\GaiaEngine.Foundation\GaiaEngine.Foundation.csproj" />
     <ProjectReference Include="..\GaiaEngine.Domain\GaiaEngine.Domain.csproj" />
-    <ProjectReference Include="..\GaiaEngine.Gameplay\GaiaEngine.Gameplay.csproj" />
+    <ProjectReference Include="..\GaiaEngine.Engine\GaiaEngine.Engine.csproj" />
     <ProjectReference Include="..\GaiaEngine.Simulation\GaiaEngine.Simulation.csproj" />
   </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@ using GaiaEngine.App.Configuration;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Foundation.Configuration;
 using GaiaEngine.Foundation.Versioning;
+using GaiaEngine.Gameplay.Discovery;
 using Xunit;
 
 namespace GaiaEngine.App.Tests.Bootstrap;
@@ -39,8 +40,11 @@ public sealed class GaiaEngineApplicationTests
         Assert.True(first.Genomes.TryGet(first.Organisms.GetAll()[0].GenomeId, out _));
         Assert.Empty(first.ActionRequests.GetAll());
         Assert.Single(first.World.GetChunks()[0].OrganismIds);
+        Assert.Equal("Local Observer", first.PlayerProfile.Identity.ProfileName);
+        Assert.True(first.PlayerProfile.Knowledge.Discoveries.Count > 0);
+        Assert.True(first.CountDiscoveries(DiscoveryCategory.Biomes) > 0);
         Assert.Empty(first.SimulationSession.CurrentActionRequests.GetAll());
-        Assert.Empty(first.SimulationSession.AdvanceTick().MovementRequests.GetAll());
+        Assert.Empty(first.AdvanceTick().MovementRequests.GetAll());
         Assert.Empty(first.SimulationSession.CurrentFeedingRequests.GetAll());
         Assert.Empty(first.SimulationSession.CurrentHydrationRequests.GetAll());
     }

@@ -1,4 +1,5 @@
 using GaiaEngine.App.Bootstrap;
+using GaiaEngine.Gameplay.Discovery;
 using Godot;
 
 namespace GaiaEngine.Godot.Bootstrap;
@@ -13,6 +14,12 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string SeasonLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/SeasonLabel";
     private const string YearLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/YearLabel";
     private const string TickRateLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/TickRateLabel";
+    private const string PlayerLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/PlayerLabel";
+    private const string DiscoveryCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/DiscoveryCountLabel";
+    private const string SpeciesDiscoveryLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/SpeciesDiscoveryLabel";
+    private const string BiomeDiscoveryLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/BiomeDiscoveryLabel";
+    private const string ResourceDiscoveryLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/ResourceDiscoveryLabel";
+    private const string BehaviourDiscoveryLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/BehaviourDiscoveryLabel";
 
     private GaiaEngineApplication? application;
     private GaiaEngineRuntime? runtime;
@@ -21,6 +28,12 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Label? seasonLabel;
     private Label? yearLabel;
     private Label? tickRateLabel;
+    private Label? playerLabel;
+    private Label? discoveryCountLabel;
+    private Label? speciesDiscoveryLabel;
+    private Label? biomeDiscoveryLabel;
+    private Label? resourceDiscoveryLabel;
+    private Label? behaviourDiscoveryLabel;
     private double tickAccumulator;
 
     /// <summary>
@@ -38,6 +51,12 @@ public sealed partial class GaiaEngineBootstrap : Node
         seasonLabel = GetNode<Label>(SeasonLabelPath);
         yearLabel = GetNode<Label>(YearLabelPath);
         tickRateLabel = GetNode<Label>(TickRateLabelPath);
+        playerLabel = GetNode<Label>(PlayerLabelPath);
+        discoveryCountLabel = GetNode<Label>(DiscoveryCountLabelPath);
+        speciesDiscoveryLabel = GetNode<Label>(SpeciesDiscoveryLabelPath);
+        biomeDiscoveryLabel = GetNode<Label>(BiomeDiscoveryLabelPath);
+        resourceDiscoveryLabel = GetNode<Label>(ResourceDiscoveryLabelPath);
+        behaviourDiscoveryLabel = GetNode<Label>(BehaviourDiscoveryLabelPath);
 
         UpdateSimulationStatusText();
         GD.Print($"Gaia Engine initialized with tick rate {runtime.EngineConfiguration.TickRate}.");
@@ -59,7 +78,7 @@ public sealed partial class GaiaEngineBootstrap : Node
 
         while (tickAccumulator >= secondsPerTick)
         {
-            runtime.SimulationSession.AdvanceTick();
+            runtime.AdvanceTick();
             tickAccumulator -= secondsPerTick;
         }
 
@@ -73,7 +92,13 @@ public sealed partial class GaiaEngineBootstrap : Node
             || dayLabel is null
             || seasonLabel is null
             || yearLabel is null
-            || tickRateLabel is null)
+            || tickRateLabel is null
+            || playerLabel is null
+            || discoveryCountLabel is null
+            || speciesDiscoveryLabel is null
+            || biomeDiscoveryLabel is null
+            || resourceDiscoveryLabel is null
+            || behaviourDiscoveryLabel is null)
         {
             return;
         }
@@ -83,5 +108,11 @@ public sealed partial class GaiaEngineBootstrap : Node
         seasonLabel.Text = $"Season: {runtime.SimulationSession.CurrentTimeState.CurrentSeason}";
         yearLabel.Text = $"Year: {runtime.SimulationSession.CurrentTimeState.CurrentYear}";
         tickRateLabel.Text = $"Tick Rate: {runtime.EngineConfiguration.TickRate}";
+        playerLabel.Text = $"Player: {runtime.PlayerProfile.Identity.ProfileName}";
+        discoveryCountLabel.Text = $"Discoveries: {runtime.PlayerProfile.Knowledge.Discoveries.Count}";
+        speciesDiscoveryLabel.Text = $"Species: {runtime.CountDiscoveries(DiscoveryCategory.Species)}";
+        biomeDiscoveryLabel.Text = $"Biomes: {runtime.CountDiscoveries(DiscoveryCategory.Biomes)}";
+        resourceDiscoveryLabel.Text = $"Resources: {runtime.CountDiscoveries(DiscoveryCategory.Resources)}";
+        behaviourDiscoveryLabel.Text = $"Behaviours: {runtime.CountDiscoveries(DiscoveryCategory.Behaviours)}";
     }
 }

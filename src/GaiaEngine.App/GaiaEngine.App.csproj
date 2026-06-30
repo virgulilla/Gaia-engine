@@ -7,6 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="..\GaiaEngine.Foundation\GaiaEngine.Foundation.csproj" />
     <ProjectReference Include="..\GaiaEngine.Domain\GaiaEngine.Domain.csproj" />
+    <ProjectReference Include="..\GaiaEngine.Gameplay\GaiaEngine.Gameplay.csproj" />
     <ProjectReference Include="..\GaiaEngine.Simulation\GaiaEngine.Simulation.csproj" />
   </ItemGroup>
 </Project>

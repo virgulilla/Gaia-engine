@@ -10,8 +10,8 @@ script = ExtResource("1")
 [node name="SimulationStatusPanel" type="PanelContainer" parent="DiagnosticsLayer"]
 offset_left = 16.0
 offset_top = 16.0
-offset_right = 276.0
-offset_bottom = 156.0
+offset_right = 320.0
+offset_bottom = 290.0
 
 [node name="SimulationStatusMargin" type="MarginContainer" parent="DiagnosticsLayer/SimulationStatusPanel"]
 theme_override_constants/margin_left = 12
@@ -38,3 +38,21 @@ text = "Year: 0"
 
 [node name="TickRateLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
 text = "Tick Rate: 0"
+
+[node name="PlayerLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Player: Local Observer"
+
+[node name="DiscoveryCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Discoveries: 0"
+
+[node name="SpeciesDiscoveryLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Species: 0"
+
+[node name="BiomeDiscoveryLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Biomes: 0"
+
+[node name="ResourceDiscoveryLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Resources: 0"
+
+[node name="BehaviourDiscoveryLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Behaviours: 0"
