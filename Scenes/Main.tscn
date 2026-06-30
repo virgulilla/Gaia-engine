@@ -86,3 +86,12 @@ text = "Encyclopedia: 0"
 
 [node name="ObjectiveCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
 text = "Objectives: 0 / 0"
+
+[node name="LevelLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Level: 0"
+
+[node name="UnlockCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Unlocks: 0"
+
+[node name="MilestoneCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Milestones: 0"

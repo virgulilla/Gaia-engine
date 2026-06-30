@@ -6,6 +6,7 @@ using GaiaEngine.Gameplay.Discovery;
 using GaiaEngine.Gameplay.Encyclopedia;
 using GaiaEngine.Gameplay.Objectives;
 using GaiaEngine.Gameplay.Player;
+using GaiaEngine.Gameplay.Progression;
 using GaiaEngine.Serialization.Profiles.Documents;
 
 namespace GaiaEngine.Serialization.Profiles;
@@ -165,6 +166,8 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
                 Discoveries = profile.Progression.Discoveries,
                 UnlockLevel = profile.Progression.UnlockLevel,
                 CompletedObjectives = profile.Progression.CompletedObjectives,
+                Unlocks = new List<string>(profile.Progression.Unlocks.GetAll()),
+                CompletedMilestones = new List<string>(profile.Progression.CompletedMilestones.GetAll()),
             },
             Statistics = new PlayerStatisticsDocument
             {
@@ -274,7 +277,9 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
                 document.Progression.Experience,
                 document.Progression.Discoveries,
                 document.Progression.UnlockLevel,
-                document.Progression.CompletedObjectives),
+                document.Progression.CompletedObjectives,
+                new ProgressionUnlockCollection(document.Progression.Unlocks.AsReadOnly()),
+                new ProgressionMilestoneCollection(document.Progression.CompletedMilestones.AsReadOnly())),
             new PlayerStatistics(document.Statistics.TotalDiscoveriesUnlocked, document.Statistics.DuplicateDiscoveryObservations));
     }
 }

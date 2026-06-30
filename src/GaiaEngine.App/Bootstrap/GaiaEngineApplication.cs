@@ -11,6 +11,7 @@ using GaiaEngine.Gameplay.Discovery;
 using GaiaEngine.Gameplay.Encyclopedia;
 using GaiaEngine.Gameplay.Objectives;
 using GaiaEngine.Gameplay.Player;
+using GaiaEngine.Gameplay.Progression;
 using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.AI.Decision;
 using GaiaEngine.Simulation.AI.Execution;
@@ -218,11 +219,18 @@ public sealed class GaiaEngineApplication
         DeterministicEncyclopediaSystem encyclopediaSystem = new();
         DeterministicDiscoverySystem discoverySystem = new(discoveryRuleSet, encyclopediaSystem);
         DeterministicObjectiveSystem objectiveSystem = new(DefaultObjectiveCatalogFactory.Create());
+        DeterministicProgressionSystem progressionSystem = new(DefaultProgressionCatalogFactory.Create());
         PlayerProfile initialProfile = new(
             new PlayerIdentity("player-001", "Local Observer", bootstrapOrganismState.World.Metadata.CreationDate),
             new PlayerKnowledge(DiscoveryCollection.Empty, EncyclopediaCollection.Empty),
             ObjectiveCollection.Empty,
-            new PlayerProgression(0, 0, 0, 0),
+            new PlayerProgression(
+                0,
+                0,
+                0,
+                0,
+                ProgressionUnlockCollection.Empty,
+                ProgressionMilestoneCollection.Empty),
             new PlayerStatistics(0, 0));
         List<DiscoverySignal> initialSignals = new();
         foreach (DiscoverySignal signal in DiscoveryObservationSnapshotFactory.CreateSignals(bootstrapOrganismState.World, bootstrapOrganismState.Species))
@@ -239,7 +247,15 @@ public sealed class GaiaEngineApplication
             discoveredProfile,
             bootstrapOrganismState.World.TimeState.CurrentTick,
             Array.Empty<ObjectiveSignal>()).Profile;
+        PlayerProfile progressionReadyProfile = progressionSystem.Evaluate(objectiveReadyProfile).Profile;
 
-        return new GaiaEngineRuntime(engineConfiguration, simulationConfiguration, simulationSession, discoverySystem, objectiveSystem, objectiveReadyProfile);
+        return new GaiaEngineRuntime(
+            engineConfiguration,
+            simulationConfiguration,
+            simulationSession,
+            discoverySystem,
+            objectiveSystem,
+            progressionSystem,
+            progressionReadyProfile);
     }
 }

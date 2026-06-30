@@ -12,6 +12,7 @@ using GaiaEngine.Gameplay.Discovery;
 using GaiaEngine.Gameplay.Encyclopedia;
 using GaiaEngine.Gameplay.Objectives;
 using GaiaEngine.Gameplay.Player;
+using GaiaEngine.Gameplay.Progression;
 using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Serialization.Profiles;
 using GaiaEngine.Serialization.SaveGames;
@@ -126,7 +127,21 @@ public sealed class JsonWorldSaveGameSerializerTests
                         new ObjectiveRewardDefinition(25, Array.Empty<string>()),
                         ObjectiveStatus.Completed),
                 }),
-            new PlayerProgression(10, 1, 0, 1),
+            new PlayerProgression(
+                10,
+                1,
+                0,
+                1,
+                new ProgressionUnlockCollection(
+                    new[]
+                    {
+                        "analysis.organism-inspector",
+                    }),
+                new ProgressionMilestoneCollection(
+                    new[]
+                    {
+                        "milestone.first-discovery",
+                    })),
             new PlayerStatistics(1, 0));
 
         string payload = serializer.Serialize(profile);
@@ -141,6 +156,8 @@ public sealed class JsonWorldSaveGameSerializerTests
         Assert.Equal(profile.Objectives.GetAll()[0].Status, restored.Objectives.GetAll()[0].Status);
         Assert.Equal(profile.Progression.Experience, restored.Progression.Experience);
         Assert.Equal(profile.Progression.CompletedObjectives, restored.Progression.CompletedObjectives);
+        Assert.Equal(profile.Progression.Unlocks.GetAll()[0], restored.Progression.Unlocks.GetAll()[0]);
+        Assert.Equal(profile.Progression.CompletedMilestones.GetAll()[0], restored.Progression.CompletedMilestones.GetAll()[0]);
         Assert.Equal(profile.Statistics.TotalDiscoveriesUnlocked, restored.Statistics.TotalDiscoveriesUnlocked);
     }
 

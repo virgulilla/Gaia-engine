@@ -30,6 +30,9 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string ExperienceLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/ExperienceLabel";
     private const string EncyclopediaCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/EncyclopediaCountLabel";
     private const string ObjectiveCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/ObjectiveCountLabel";
+    private const string LevelLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/LevelLabel";
+    private const string UnlockCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/UnlockCountLabel";
+    private const string MilestoneCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/MilestoneCountLabel";
 
     private GaiaEngineApplication? application;
     private GaiaEngineRuntime? runtime;
@@ -54,6 +57,9 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Label? experienceLabel;
     private Label? encyclopediaCountLabel;
     private Label? objectiveCountLabel;
+    private Label? levelLabel;
+    private Label? unlockCountLabel;
+    private Label? milestoneCountLabel;
     private double tickAccumulator;
 
     /// <summary>
@@ -87,6 +93,9 @@ public sealed partial class GaiaEngineBootstrap : Node
         experienceLabel = GetNode<Label>(ExperienceLabelPath);
         encyclopediaCountLabel = GetNode<Label>(EncyclopediaCountLabelPath);
         objectiveCountLabel = GetNode<Label>(ObjectiveCountLabelPath);
+        levelLabel = GetNode<Label>(LevelLabelPath);
+        unlockCountLabel = GetNode<Label>(UnlockCountLabelPath);
+        milestoneCountLabel = GetNode<Label>(MilestoneCountLabelPath);
 
         UpdateSimulationStatusText();
         GD.Print($"Gaia Engine initialized with tick rate {runtime.EngineConfiguration.TickRate}.");
@@ -138,7 +147,10 @@ public sealed partial class GaiaEngineBootstrap : Node
             || biomeLabel is null
             || experienceLabel is null
             || encyclopediaCountLabel is null
-            || objectiveCountLabel is null)
+            || objectiveCountLabel is null
+            || levelLabel is null
+            || unlockCountLabel is null
+            || milestoneCountLabel is null)
         {
             return;
         }
@@ -180,5 +192,8 @@ public sealed partial class GaiaEngineBootstrap : Node
         experienceLabel.Text = $"XP: {runtime.PlayerProfile.Progression.Experience}";
         encyclopediaCountLabel.Text = $"Encyclopedia: {runtime.PlayerProfile.Knowledge.Encyclopedia.Count}";
         objectiveCountLabel.Text = $"Objectives: {runtime.PlayerProfile.Progression.CompletedObjectives} / {runtime.PlayerProfile.Objectives.Count}";
+        levelLabel.Text = $"Level: {runtime.PlayerProfile.Progression.UnlockLevel}";
+        unlockCountLabel.Text = $"Unlocks: {runtime.PlayerProfile.Progression.Unlocks.Count}";
+        milestoneCountLabel.Text = $"Milestones: {runtime.PlayerProfile.Progression.CompletedMilestones.Count}";
     }
 }
