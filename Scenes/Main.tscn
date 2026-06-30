@@ -337,27 +337,79 @@ offset_right = 312.0
 offset_bottom = 200.0
 theme_override_constants/separation = 8
 
-[node name="NotificationCard" type="PanelContainer" parent="HudLayer/HudRoot/NotificationArea"]
+[node name="NotificationCard1" type="PanelContainer" parent="HudLayer/HudRoot/NotificationArea"]
 layout_mode = 2
 theme_override_styles/panel = SubResource("4")
 
-[node name="NotificationMargin" type="MarginContainer" parent="HudLayer/HudRoot/NotificationArea/NotificationCard"]
+[node name="NotificationMargin1" type="MarginContainer" parent="HudLayer/HudRoot/NotificationArea/NotificationCard1"]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 14
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 14
 
-[node name="NotificationColumn" type="VBoxContainer" parent="HudLayer/HudRoot/NotificationArea/NotificationCard/NotificationMargin"]
+[node name="NotificationColumn1" type="VBoxContainer" parent="HudLayer/HudRoot/NotificationArea/NotificationCard1/NotificationMargin1"]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="NotificationTitleLabel" type="Label" parent="HudLayer/HudRoot/NotificationArea/NotificationCard/NotificationMargin/NotificationColumn"]
+[node name="NotificationTitleLabel1" type="Label" parent="HudLayer/HudRoot/NotificationArea/NotificationCard1/NotificationMargin1/NotificationColumn1"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Observation Mode"
 
-[node name="NotificationBodyLabel" type="Label" parent="HudLayer/HudRoot/NotificationArea/NotificationCard/NotificationMargin/NotificationColumn"]
+[node name="NotificationBodyLabel1" type="Label" parent="HudLayer/HudRoot/NotificationArea/NotificationCard1/NotificationMargin1/NotificationColumn1"]
 layout_mode = 2
 autowrap_mode = 3
 text = "The simulation is running. Interactive tools and contextual inspection will arrive in later UI steps."
+
+[node name="NotificationCard2" type="PanelContainer" parent="HudLayer/HudRoot/NotificationArea"]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("4")
+
+[node name="NotificationMargin2" type="MarginContainer" parent="HudLayer/HudRoot/NotificationArea/NotificationCard2"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="NotificationColumn2" type="VBoxContainer" parent="HudLayer/HudRoot/NotificationArea/NotificationCard2/NotificationMargin2"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="NotificationTitleLabel2" type="Label" parent="HudLayer/HudRoot/NotificationArea/NotificationCard2/NotificationMargin2/NotificationColumn2"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = ""
+
+[node name="NotificationBodyLabel2" type="Label" parent="HudLayer/HudRoot/NotificationArea/NotificationCard2/NotificationMargin2/NotificationColumn2"]
+layout_mode = 2
+autowrap_mode = 3
+text = ""
+
+[node name="NotificationCard3" type="PanelContainer" parent="HudLayer/HudRoot/NotificationArea"]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("4")
+
+[node name="NotificationMargin3" type="MarginContainer" parent="HudLayer/HudRoot/NotificationArea/NotificationCard3"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="NotificationColumn3" type="VBoxContainer" parent="HudLayer/HudRoot/NotificationArea/NotificationCard3/NotificationMargin3"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="NotificationTitleLabel3" type="Label" parent="HudLayer/HudRoot/NotificationArea/NotificationCard3/NotificationMargin3/NotificationColumn3"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = ""
+
+[node name="NotificationBodyLabel3" type="Label" parent="HudLayer/HudRoot/NotificationArea/NotificationCard3/NotificationMargin3/NotificationColumn3"]
+layout_mode = 2
+autowrap_mode = 3
+text = ""
