@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using GaiaEngine.App.Bootstrap;
 using GaiaEngine.Gameplay.Achievements;
 using GaiaEngine.Gameplay.Discovery;
 using GaiaEngine.Gameplay.Objectives;
 using GaiaEngine.Godot.UI.Notifications;
+using GaiaEngine.Simulation.Diagnostics;
+using GaiaEngine.Simulation.Pipeline;
 using Godot;
 
 namespace GaiaEngine.Godot.Bootstrap;
@@ -20,8 +23,10 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string InspectButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/InspectButton";
     private const string TimeControlsButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/TimeControlsButton";
     private const string StepTickButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/StepTickButton";
+    private const string StatisticsButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/StatisticsButton";
     private const string LeftPanelPath = "HudLayer/HudRoot/LeftPanel";
     private const string ContextPanelPath = "HudLayer/HudRoot/ContextPanel";
+    private const string StatisticsOverlayPath = "HudLayer/HudRoot/StatisticsOverlay";
     private const string SelectionHintLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionHintLabel";
     private const string SelectionTypeLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionTypeLabel";
     private const string SelectionPrimaryLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionPrimaryLabel";
@@ -47,6 +52,12 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string ContextLine2LabelPath = "HudLayer/HudRoot/ContextPanel/ContextPanelMargin/ContextPanelColumn/ContextLine2Label";
     private const string ContextLine3LabelPath = "HudLayer/HudRoot/ContextPanel/ContextPanelMargin/ContextPanelColumn/ContextLine3Label";
     private const string ContextLine4LabelPath = "HudLayer/HudRoot/ContextPanel/ContextPanelMargin/ContextPanelColumn/ContextLine4Label";
+    private const string StatisticsStatusLabelPath = "HudLayer/HudRoot/StatisticsOverlay/StatisticsOverlayMargin/StatisticsOverlayColumn/StatisticsStatusLabel";
+    private const string StatisticsPopulationLabelPath = "HudLayer/HudRoot/StatisticsOverlay/StatisticsOverlayMargin/StatisticsOverlayColumn/StatisticsPopulationLabel";
+    private const string StatisticsClimateLabelPath = "HudLayer/HudRoot/StatisticsOverlay/StatisticsOverlayMargin/StatisticsOverlayColumn/StatisticsClimateLabel";
+    private const string StatisticsDiscoveryLabelPath = "HudLayer/HudRoot/StatisticsOverlay/StatisticsOverlayMargin/StatisticsOverlayColumn/StatisticsDiscoveryLabel";
+    private const string StatisticsPerformanceLabelPath = "HudLayer/HudRoot/StatisticsOverlay/StatisticsOverlayMargin/StatisticsOverlayColumn/StatisticsPerformanceLabel";
+    private const string StatisticsHistoryLabelPath = "HudLayer/HudRoot/StatisticsOverlay/StatisticsOverlayMargin/StatisticsOverlayColumn/StatisticsHistoryLabel";
     private const string NotificationCard1Path = "HudLayer/HudRoot/NotificationArea/NotificationCard1";
     private const string NotificationCard2Path = "HudLayer/HudRoot/NotificationArea/NotificationCard2";
     private const string NotificationCard3Path = "HudLayer/HudRoot/NotificationArea/NotificationCard3";
@@ -65,8 +76,10 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Button? inspectButton;
     private Button? timeControlsButton;
     private Button? stepTickButton;
+    private Button? statisticsButton;
     private PanelContainer? leftPanel;
     private PanelContainer? contextPanel;
+    private PanelContainer? statisticsOverlay;
     private Label? selectionHintLabel;
     private Label? selectionTypeLabel;
     private Label? selectionPrimaryLabel;
@@ -92,16 +105,26 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Label? contextLine2Label;
     private Label? contextLine3Label;
     private Label? contextLine4Label;
+    private Label? statisticsStatusLabel;
+    private Label? statisticsPopulationLabel;
+    private Label? statisticsClimateLabel;
+    private Label? statisticsDiscoveryLabel;
+    private Label? statisticsPerformanceLabel;
+    private Label? statisticsHistoryLabel;
     private PanelContainer[]? notificationCards;
     private Label[]? notificationTitleLabels;
     private Label[]? notificationBodyLabels;
     private HudNotificationQueue? notificationQueue;
     private double tickAccumulator;
     private HudViewSnapshot? lastSnapshot;
+    private StatisticsViewSnapshot? lastStatisticsSnapshot;
     private RuntimeObservationSnapshot? lastObservedState;
     private FocusOverrideKind focusOverrideKind;
     private GaiaEngine.Domain.Identifiers.OrganismId? focusedOrganismId;
     private bool isSimulationPaused;
+    private bool isStatisticsOverlayVisible;
+    private SimulationTickDiagnostics? lastDiagnostics;
+    private readonly List<StatisticsHistorySample> statisticsHistory = new();
 
     /// <summary>
     /// Initializes the application when the root scene enters the tree.
@@ -119,8 +142,10 @@ public sealed partial class GaiaEngineBootstrap : Node
         inspectButton = GetNode<Button>(InspectButtonPath);
         timeControlsButton = GetNode<Button>(TimeControlsButtonPath);
         stepTickButton = GetNode<Button>(StepTickButtonPath);
+        statisticsButton = GetNode<Button>(StatisticsButtonPath);
         leftPanel = GetNode<PanelContainer>(LeftPanelPath);
         contextPanel = GetNode<PanelContainer>(ContextPanelPath);
+        statisticsOverlay = GetNode<PanelContainer>(StatisticsOverlayPath);
         selectionHintLabel = GetNode<Label>(SelectionHintLabelPath);
         selectionTypeLabel = GetNode<Label>(SelectionTypeLabelPath);
         selectionPrimaryLabel = GetNode<Label>(SelectionPrimaryLabelPath);
@@ -146,6 +171,12 @@ public sealed partial class GaiaEngineBootstrap : Node
         contextLine2Label = GetNode<Label>(ContextLine2LabelPath);
         contextLine3Label = GetNode<Label>(ContextLine3LabelPath);
         contextLine4Label = GetNode<Label>(ContextLine4LabelPath);
+        statisticsStatusLabel = GetNode<Label>(StatisticsStatusLabelPath);
+        statisticsPopulationLabel = GetNode<Label>(StatisticsPopulationLabelPath);
+        statisticsClimateLabel = GetNode<Label>(StatisticsClimateLabelPath);
+        statisticsDiscoveryLabel = GetNode<Label>(StatisticsDiscoveryLabelPath);
+        statisticsPerformanceLabel = GetNode<Label>(StatisticsPerformanceLabelPath);
+        statisticsHistoryLabel = GetNode<Label>(StatisticsHistoryLabelPath);
         notificationCards =
         [
             GetNode<PanelContainer>(NotificationCard1Path),
@@ -180,8 +211,10 @@ public sealed partial class GaiaEngineBootstrap : Node
         inspectButton.Pressed += OnInspectPressed;
         timeControlsButton.Pressed += OnTimeControlsPressed;
         stepTickButton.Pressed += OnStepTickPressed;
+        statisticsButton.Pressed += OnStatisticsPressed;
 
         UpdateSimulationStatusText();
+        UpdateStatisticsOverlay();
         UpdateNotificationWidgets();
         GD.Print($"Gaia Engine initialized with tick rate {runtime.EngineConfiguration.TickRate}.");
     }
@@ -210,6 +243,7 @@ public sealed partial class GaiaEngineBootstrap : Node
 
         notificationQueue.Advance(delta);
         UpdateSimulationStatusText();
+        UpdateStatisticsOverlay();
         UpdateNotificationWidgets();
     }
 
@@ -222,6 +256,7 @@ public sealed partial class GaiaEngineBootstrap : Node
             || inspectButton is null
             || timeControlsButton is null
             || stepTickButton is null
+            || statisticsButton is null
             || leftPanel is null
             || contextPanel is null
             || selectionHintLabel is null
@@ -254,6 +289,8 @@ public sealed partial class GaiaEngineBootstrap : Node
         inspectButton.Disabled = aliveOrganisms == 0;
         timeControlsButton.Text = isSimulationPaused ? "Resume" : "Pause";
         stepTickButton.Disabled = !isSimulationPaused;
+        statisticsButton.Disabled = false;
+        statisticsButton.Text = isStatisticsOverlayVisible ? "Close Stats" : "Statistics";
         GaiaEngine.Domain.World.Chunk primaryChunk = runtime.World.GetChunks()[0];
         HudViewSnapshot snapshot = new(
             runtime.World.Metadata.WorldName,
@@ -330,6 +367,59 @@ public sealed partial class GaiaEngineBootstrap : Node
             contextLine3Label.Text = snapshot.ContextLine3;
             contextLine4Label.Text = snapshot.ContextLine4;
         }
+    }
+
+    private void UpdateStatisticsOverlay()
+    {
+        if (runtime is null
+            || statisticsOverlay is null
+            || statisticsStatusLabel is null
+            || statisticsPopulationLabel is null
+            || statisticsClimateLabel is null
+            || statisticsDiscoveryLabel is null
+            || statisticsPerformanceLabel is null
+            || statisticsHistoryLabel is null)
+        {
+            return;
+        }
+
+        GaiaEngine.Domain.World.Chunk primaryChunk = runtime.World.GetChunks()[0];
+        int extinctSpecies = CountExtinctSpecies();
+        bool populationGraphsUnlocked = runtime.PlayerProfile.Progression.Unlocks.Contains("statistics.population-graphs");
+        string statusText = populationGraphsUnlocked
+            ? "Statistics overlay is active. Advanced sampled history is unlocked for this profile."
+            : "Statistics overlay is active. Advanced sampled history unlocks with Population Graphs at progression level 2.";
+        string populationText =
+            $"Population Summary\nTotal organisms: {runtime.Organisms.Count}\nAlive organisms: {CountAliveOrganisms()}\nSpecies tracked: {runtime.Species.Count}\nExtinct species: {extinctSpecies}";
+        string climateText =
+            $"Climate Summary\nBiome: {primaryChunk.Biome.Name}\nWeather: {primaryChunk.Climate.WeatherState}\nTemperature: {primaryChunk.Climate.Temperature.CurrentTemperature} C\nHumidity: {primaryChunk.Climate.Humidity.RelativeHumidity}%";
+        string discoveryText =
+            $"Discovery Progress\nDiscoveries: {runtime.PlayerProfile.Knowledge.Discoveries.Count}\nEncyclopedia entries: {runtime.PlayerProfile.Knowledge.Encyclopedia.Count}\nCompleted objectives: {runtime.PlayerProfile.Progression.CompletedObjectives}\nAchievements: {runtime.PlayerProfile.Achievements.Count}\nUnlock level: {runtime.PlayerProfile.Progression.UnlockLevel}";
+        string performanceText = BuildPerformanceText();
+        string historyText = BuildStatisticsHistoryText(populationGraphsUnlocked);
+
+        StatisticsViewSnapshot snapshot = new(
+            isStatisticsOverlayVisible,
+            statusText,
+            populationText,
+            climateText,
+            discoveryText,
+            performanceText,
+            historyText);
+
+        if (snapshot == lastStatisticsSnapshot)
+        {
+            return;
+        }
+
+        lastStatisticsSnapshot = snapshot;
+        statisticsOverlay.Visible = snapshot.IsVisible;
+        statisticsStatusLabel.Text = snapshot.Status;
+        statisticsPopulationLabel.Text = snapshot.Population;
+        statisticsClimateLabel.Text = snapshot.Climate;
+        statisticsDiscoveryLabel.Text = snapshot.Discovery;
+        statisticsPerformanceLabel.Text = snapshot.Performance;
+        statisticsHistoryLabel.Text = snapshot.History;
     }
 
     private IReadOnlyList<HudNotificationEntry> BuildNotificationsFromObservedChanges()
@@ -807,6 +897,25 @@ public sealed partial class GaiaEngineBootstrap : Node
         return memoryEntries;
     }
 
+    private int CountExtinctSpecies()
+    {
+        if (runtime is null)
+        {
+            return 0;
+        }
+
+        int extinctSpecies = 0;
+        foreach (GaiaEngine.Domain.Genetics.Species species in runtime.Species.GetAll())
+        {
+            if (species.IsExtinct)
+            {
+                extinctSpecies++;
+            }
+        }
+
+        return extinctSpecies;
+    }
+
     private ObservationSelection ResolveObservationSelection()
     {
         if (runtime is null)
@@ -1050,6 +1159,11 @@ public sealed partial class GaiaEngineBootstrap : Node
         AdvanceSimulationTick();
     }
 
+    private void OnStatisticsPressed()
+    {
+        isStatisticsOverlayVisible = !isStatisticsOverlayVisible;
+    }
+
     private void AdvanceSimulationTick()
     {
         if (runtime is null || notificationQueue is null)
@@ -1057,9 +1171,116 @@ public sealed partial class GaiaEngineBootstrap : Node
             return;
         }
 
-        runtime.AdvanceTick();
+        SimulationTickResult result = runtime.AdvanceTick();
+        CaptureStatisticsSample(result);
         IReadOnlyList<HudNotificationEntry> entries = BuildNotificationsFromObservedChanges();
         notificationQueue.EnqueueRange(entries);
+    }
+
+    private void CaptureStatisticsSample(SimulationTickResult result)
+    {
+        if (runtime is null || result.Diagnostics is null)
+        {
+            return;
+        }
+
+        lastDiagnostics = result.Diagnostics;
+        StatisticsHistorySample sample = new(
+            result.Diagnostics.Tick,
+            result.Diagnostics.Day,
+            result.Diagnostics.Season,
+            result.Diagnostics.Year,
+            runtime.Organisms.Count,
+            CountAliveOrganisms(),
+            runtime.Species.Count,
+            CountExtinctSpecies(),
+            runtime.World.GetChunks()[0].Climate.WeatherState.ToString(),
+            runtime.World.GetChunks()[0].Climate.Temperature.CurrentTemperature,
+            runtime.World.GetChunks()[0].Climate.Humidity.RelativeHumidity,
+            runtime.PlayerProfile.Knowledge.Discoveries.Count,
+            runtime.PlayerProfile.Knowledge.Encyclopedia.Count,
+            runtime.PlayerProfile.Progression.CompletedObjectives,
+            runtime.PlayerProfile.Achievements.Count,
+            result.Diagnostics.PublishedEventCount,
+            result.Diagnostics.ProcessedEventCount,
+            result.Diagnostics.ExecutedPhaseCount,
+            result.Diagnostics.ScheduledSystemCount);
+        if (statisticsHistory.Count >= 8)
+        {
+            statisticsHistory.RemoveAt(0);
+        }
+
+        statisticsHistory.Add(sample);
+    }
+
+    private string BuildPerformanceText()
+    {
+        if (lastDiagnostics is null)
+        {
+            return "Performance Snapshot\nWaiting for the first scheduled statistics sample at tick 100.";
+        }
+
+        return
+            $"Performance Snapshot\nLast sampled tick: {lastDiagnostics.Tick}\nExecuted phases: {lastDiagnostics.ExecutedPhaseCount}\nScheduled systems: {lastDiagnostics.ScheduledSystemCount}\nPublished events: {lastDiagnostics.PublishedEventCount}\nProcessed events: {lastDiagnostics.ProcessedEventCount}";
+    }
+
+    private string BuildStatisticsHistoryText(bool populationGraphsUnlocked)
+    {
+        if (!populationGraphsUnlocked)
+        {
+            return "Sampled History\nPopulation graph history is locked until the corresponding progression unlock is earned.";
+        }
+
+        if (statisticsHistory.Count == 0)
+        {
+            return "Sampled History\nNo scheduled statistics samples are available yet.";
+        }
+
+        StringBuilder builder = new("Sampled History\n");
+        foreach (StatisticsHistorySample sample in statisticsHistory)
+        {
+            builder.Append("Tick ")
+                .Append(sample.Tick)
+                .Append(" | Day ")
+                .Append(sample.Day)
+                .Append(" | ")
+                .Append(sample.Season)
+                .Append(" Y")
+                .Append(sample.Year)
+                .Append(" | Alive ")
+                .Append(sample.AlivePopulation)
+                .Append('/')
+                .Append(sample.TotalPopulation)
+                .Append(" | Species ")
+                .Append(sample.SpeciesCount)
+                .Append(" | Extinct ")
+                .Append(sample.ExtinctSpecies)
+                .Append(" | ")
+                .Append(sample.Weather)
+                .Append(" ")
+                .Append(sample.Temperature)
+                .Append(" C")
+                .Append(" | Humidity ")
+                .Append(sample.Humidity)
+                .Append('%')
+                .Append(" | Discoveries ")
+                .Append(sample.Discoveries)
+                .Append(" | Encyclopedia ")
+                .Append(sample.EncyclopediaEntries)
+                .Append(" | Objectives ")
+                .Append(sample.CompletedObjectives)
+                .Append(" | Achievements ")
+                .Append(sample.Achievements)
+                .Append(" | Events ")
+                .Append(sample.PublishedEvents)
+                .Append('/')
+                .Append(sample.ProcessedEvents)
+                .Append(" | Systems ")
+                .Append(sample.ScheduledSystems)
+                .AppendLine();
+        }
+
+        return builder.ToString().TrimEnd();
     }
 
     private sealed record HudViewSnapshot(
@@ -1092,6 +1313,36 @@ public sealed partial class GaiaEngineBootstrap : Node
         string ContextLine2,
         string ContextLine3,
         string ContextLine4);
+
+    private sealed record StatisticsViewSnapshot(
+        bool IsVisible,
+        string Status,
+        string Population,
+        string Climate,
+        string Discovery,
+        string Performance,
+        string History);
+
+    private sealed record StatisticsHistorySample(
+        long Tick,
+        int Day,
+        string Season,
+        int Year,
+        int TotalPopulation,
+        int AlivePopulation,
+        int SpeciesCount,
+        int ExtinctSpecies,
+        string Weather,
+        int Temperature,
+        int Humidity,
+        int Discoveries,
+        int EncyclopediaEntries,
+        int CompletedObjectives,
+        int Achievements,
+        int PublishedEvents,
+        int ProcessedEvents,
+        int ExecutedPhases,
+        int ScheduledSystems);
 
     private sealed record ObservationSelection(
         bool IsVisible,
