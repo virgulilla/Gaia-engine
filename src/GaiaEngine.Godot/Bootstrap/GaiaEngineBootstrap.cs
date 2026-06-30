@@ -18,6 +18,8 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string TimeSummaryLabelPath = "HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow/TimeSummaryLabel";
     private const string TickRateLabelPath = "HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow/TickRateChip/TickRateChipMargin/TickRateLabel";
     private const string InspectButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/InspectButton";
+    private const string TimeControlsButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/TimeControlsButton";
+    private const string StepTickButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/StepTickButton";
     private const string LeftPanelPath = "HudLayer/HudRoot/LeftPanel";
     private const string ContextPanelPath = "HudLayer/HudRoot/ContextPanel";
     private const string SelectionHintLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionHintLabel";
@@ -61,6 +63,8 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Label? timeSummaryLabel;
     private Label? tickRateLabel;
     private Button? inspectButton;
+    private Button? timeControlsButton;
+    private Button? stepTickButton;
     private PanelContainer? leftPanel;
     private PanelContainer? contextPanel;
     private Label? selectionHintLabel;
@@ -97,6 +101,7 @@ public sealed partial class GaiaEngineBootstrap : Node
     private RuntimeObservationSnapshot? lastObservedState;
     private FocusOverrideKind focusOverrideKind;
     private GaiaEngine.Domain.Identifiers.OrganismId? focusedOrganismId;
+    private bool isSimulationPaused;
 
     /// <summary>
     /// Initializes the application when the root scene enters the tree.
@@ -112,6 +117,8 @@ public sealed partial class GaiaEngineBootstrap : Node
         timeSummaryLabel = GetNode<Label>(TimeSummaryLabelPath);
         tickRateLabel = GetNode<Label>(TickRateLabelPath);
         inspectButton = GetNode<Button>(InspectButtonPath);
+        timeControlsButton = GetNode<Button>(TimeControlsButtonPath);
+        stepTickButton = GetNode<Button>(StepTickButtonPath);
         leftPanel = GetNode<PanelContainer>(LeftPanelPath);
         contextPanel = GetNode<PanelContainer>(ContextPanelPath);
         selectionHintLabel = GetNode<Label>(SelectionHintLabelPath);
@@ -171,6 +178,8 @@ public sealed partial class GaiaEngineBootstrap : Node
                 actionLabel: null));
         inspectButton.Disabled = false;
         inspectButton.Pressed += OnInspectPressed;
+        timeControlsButton.Pressed += OnTimeControlsPressed;
+        stepTickButton.Pressed += OnStepTickPressed;
 
         UpdateSimulationStatusText();
         UpdateNotificationWidgets();
@@ -188,21 +197,15 @@ public sealed partial class GaiaEngineBootstrap : Node
             return;
         }
 
-        double secondsPerTick = 1d / runtime.EngineConfiguration.TickRate;
-        tickAccumulator += delta;
-        bool advancedSimulation = false;
-
-        while (tickAccumulator >= secondsPerTick)
+        if (!isSimulationPaused)
         {
-            runtime.AdvanceTick();
-            tickAccumulator -= secondsPerTick;
-            advancedSimulation = true;
-        }
-
-        if (advancedSimulation)
-        {
-            IReadOnlyList<HudNotificationEntry> entries = BuildNotificationsFromObservedChanges();
-            notificationQueue.EnqueueRange(entries);
+            double secondsPerTick = 1d / runtime.EngineConfiguration.TickRate;
+            tickAccumulator += delta;
+            while (tickAccumulator >= secondsPerTick)
+            {
+                AdvanceSimulationTick();
+                tickAccumulator -= secondsPerTick;
+            }
         }
 
         notificationQueue.Advance(delta);
@@ -217,6 +220,8 @@ public sealed partial class GaiaEngineBootstrap : Node
             || timeSummaryLabel is null
             || tickRateLabel is null
             || inspectButton is null
+            || timeControlsButton is null
+            || stepTickButton is null
             || leftPanel is null
             || contextPanel is null
             || selectionHintLabel is null
@@ -247,11 +252,13 @@ public sealed partial class GaiaEngineBootstrap : Node
         int aliveOrganisms = CountAliveOrganisms();
         int memoryEntries = CountMemoryEntries();
         inspectButton.Disabled = aliveOrganisms == 0;
+        timeControlsButton.Text = isSimulationPaused ? "Resume" : "Pause";
+        stepTickButton.Disabled = !isSimulationPaused;
         GaiaEngine.Domain.World.Chunk primaryChunk = runtime.World.GetChunks()[0];
         HudViewSnapshot snapshot = new(
             runtime.World.Metadata.WorldName,
-            $"Day {runtime.SimulationSession.CurrentTimeState.CurrentDay} - {runtime.SimulationSession.CurrentTimeState.CurrentSeason} - Year {runtime.SimulationSession.CurrentTimeState.CurrentYear} - Tick {runtime.SimulationSession.CurrentTimeState.CurrentTick}",
-            $"Tick Rate: {runtime.EngineConfiguration.TickRate}",
+            $"Day {runtime.SimulationSession.CurrentTimeState.CurrentDay} - {runtime.SimulationSession.CurrentTimeState.CurrentSeason} - Year {runtime.SimulationSession.CurrentTimeState.CurrentYear} - Tick {runtime.SimulationSession.CurrentTimeState.CurrentTick} - {(isSimulationPaused ? "Paused" : "Running")}",
+            $"Tick Rate: {runtime.EngineConfiguration.TickRate} ({(isSimulationPaused ? "Paused" : "Live")})",
             $"Population: {runtime.Organisms.Count}",
             $"Alive: {aliveOrganisms}",
             $"Species: {runtime.Species.Count}",
@@ -1022,6 +1029,37 @@ public sealed partial class GaiaEngineBootstrap : Node
 
         focusOverrideKind = FocusOverrideKind.Chunk;
         focusedOrganismId = null;
+    }
+
+    private void OnTimeControlsPressed()
+    {
+        isSimulationPaused = !isSimulationPaused;
+        if (!isSimulationPaused)
+        {
+            tickAccumulator = 0d;
+        }
+    }
+
+    private void OnStepTickPressed()
+    {
+        if (runtime is null || !isSimulationPaused)
+        {
+            return;
+        }
+
+        AdvanceSimulationTick();
+    }
+
+    private void AdvanceSimulationTick()
+    {
+        if (runtime is null || notificationQueue is null)
+        {
+            return;
+        }
+
+        runtime.AdvanceTick();
+        IReadOnlyList<HudNotificationEntry> entries = BuildNotificationsFromObservedChanges();
+        notificationQueue.EnqueueRange(entries);
     }
 
     private sealed record HudViewSnapshot(

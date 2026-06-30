@@ -342,8 +342,13 @@ text = "Inspect"
 [node name="TimeControlsButton" type="Button" parent="HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow"]
 layout_mode = 2
 custom_minimum_size = Vector2(96, 40)
+text = "Pause"
+
+[node name="StepTickButton" type="Button" parent="HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(88, 40)
 disabled = true
-text = "Time"
+text = "Step"
 
 [node name="EncyclopediaButton" type="Button" parent="HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow"]
 layout_mode = 2
