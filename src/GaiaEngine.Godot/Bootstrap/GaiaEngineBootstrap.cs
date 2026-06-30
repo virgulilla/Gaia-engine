@@ -20,6 +20,14 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string BiomeDiscoveryLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/BiomeDiscoveryLabel";
     private const string ResourceDiscoveryLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/ResourceDiscoveryLabel";
     private const string BehaviourDiscoveryLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/BehaviourDiscoveryLabel";
+    private const string OrganismCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/OrganismCountLabel";
+    private const string AliveOrganismCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/AliveOrganismCountLabel";
+    private const string SpeciesCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/SpeciesCountLabel";
+    private const string MemoryCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/MemoryCountLabel";
+    private const string ActionCountLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/ActionCountLabel";
+    private const string WeatherLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/WeatherLabel";
+    private const string BiomeLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/BiomeLabel";
+    private const string ExperienceLabelPath = "DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows/ExperienceLabel";
 
     private GaiaEngineApplication? application;
     private GaiaEngineRuntime? runtime;
@@ -34,6 +42,14 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Label? biomeDiscoveryLabel;
     private Label? resourceDiscoveryLabel;
     private Label? behaviourDiscoveryLabel;
+    private Label? organismCountLabel;
+    private Label? aliveOrganismCountLabel;
+    private Label? speciesCountLabel;
+    private Label? memoryCountLabel;
+    private Label? actionCountLabel;
+    private Label? weatherLabel;
+    private Label? biomeLabel;
+    private Label? experienceLabel;
     private double tickAccumulator;
 
     /// <summary>
@@ -57,6 +73,14 @@ public sealed partial class GaiaEngineBootstrap : Node
         biomeDiscoveryLabel = GetNode<Label>(BiomeDiscoveryLabelPath);
         resourceDiscoveryLabel = GetNode<Label>(ResourceDiscoveryLabelPath);
         behaviourDiscoveryLabel = GetNode<Label>(BehaviourDiscoveryLabelPath);
+        organismCountLabel = GetNode<Label>(OrganismCountLabelPath);
+        aliveOrganismCountLabel = GetNode<Label>(AliveOrganismCountLabelPath);
+        speciesCountLabel = GetNode<Label>(SpeciesCountLabelPath);
+        memoryCountLabel = GetNode<Label>(MemoryCountLabelPath);
+        actionCountLabel = GetNode<Label>(ActionCountLabelPath);
+        weatherLabel = GetNode<Label>(WeatherLabelPath);
+        biomeLabel = GetNode<Label>(BiomeLabelPath);
+        experienceLabel = GetNode<Label>(ExperienceLabelPath);
 
         UpdateSimulationStatusText();
         GD.Print($"Gaia Engine initialized with tick rate {runtime.EngineConfiguration.TickRate}.");
@@ -98,11 +122,35 @@ public sealed partial class GaiaEngineBootstrap : Node
             || speciesDiscoveryLabel is null
             || biomeDiscoveryLabel is null
             || resourceDiscoveryLabel is null
-            || behaviourDiscoveryLabel is null)
+            || behaviourDiscoveryLabel is null
+            || organismCountLabel is null
+            || aliveOrganismCountLabel is null
+            || speciesCountLabel is null
+            || memoryCountLabel is null
+            || actionCountLabel is null
+            || weatherLabel is null
+            || biomeLabel is null
+            || experienceLabel is null)
         {
             return;
         }
 
+        int aliveOrganisms = 0;
+        foreach (var organism in runtime.Organisms.GetAll())
+        {
+            if (organism.Lifecycle.IsAlive)
+            {
+                aliveOrganisms++;
+            }
+        }
+
+        int memoryEntries = 0;
+        foreach (var memory in runtime.Memories.GetAll())
+        {
+            memoryEntries += memory.Count;
+        }
+
+        var primaryChunk = runtime.World.GetChunks()[0];
         tickLabel.Text = $"Tick: {runtime.SimulationSession.CurrentTimeState.CurrentTick}";
         dayLabel.Text = $"Day: {runtime.SimulationSession.CurrentTimeState.CurrentDay}";
         seasonLabel.Text = $"Season: {runtime.SimulationSession.CurrentTimeState.CurrentSeason}";
@@ -114,5 +162,13 @@ public sealed partial class GaiaEngineBootstrap : Node
         biomeDiscoveryLabel.Text = $"Biomes: {runtime.CountDiscoveries(DiscoveryCategory.Biomes)}";
         resourceDiscoveryLabel.Text = $"Resources: {runtime.CountDiscoveries(DiscoveryCategory.Resources)}";
         behaviourDiscoveryLabel.Text = $"Behaviours: {runtime.CountDiscoveries(DiscoveryCategory.Behaviours)}";
+        organismCountLabel.Text = $"Organisms: {runtime.Organisms.Count}";
+        aliveOrganismCountLabel.Text = $"Alive: {aliveOrganisms}";
+        speciesCountLabel.Text = $"Species Total: {runtime.Species.Count}";
+        memoryCountLabel.Text = $"Memory Entries: {memoryEntries}";
+        actionCountLabel.Text = $"Actions: {runtime.ActionRequests.Count}";
+        weatherLabel.Text = $"Weather: {primaryChunk.Climate.WeatherState}";
+        biomeLabel.Text = $"Biome: {primaryChunk.Biome.Name}";
+        experienceLabel.Text = $"XP: {runtime.PlayerProfile.Progression.Experience}";
     }
 }

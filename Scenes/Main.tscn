@@ -10,8 +10,8 @@ script = ExtResource("1")
 [node name="SimulationStatusPanel" type="PanelContainer" parent="DiagnosticsLayer"]
 offset_left = 16.0
 offset_top = 16.0
-offset_right = 320.0
-offset_bottom = 290.0
+offset_right = 360.0
+offset_bottom = 470.0
 
 [node name="SimulationStatusMargin" type="MarginContainer" parent="DiagnosticsLayer/SimulationStatusPanel"]
 theme_override_constants/margin_left = 12
@@ -56,3 +56,27 @@ text = "Resources: 0"
 
 [node name="BehaviourDiscoveryLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
 text = "Behaviours: 0"
+
+[node name="OrganismCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Organisms: 0"
+
+[node name="AliveOrganismCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Alive: 0"
+
+[node name="SpeciesCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Species Total: 0"
+
+[node name="MemoryCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Memory Entries: 0"
+
+[node name="ActionCountLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Actions: 0"
+
+[node name="WeatherLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Weather: Clear"
+
+[node name="BiomeLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "Biome: Unknown"
+
+[node name="ExperienceLabel" type="Label" parent="DiagnosticsLayer/SimulationStatusPanel/SimulationStatusMargin/SimulationStatusRows"]
+text = "XP: 0"
