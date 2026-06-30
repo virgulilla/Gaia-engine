@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GaiaEngine.Domain.AI;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
@@ -26,7 +27,7 @@ public sealed class DeterministicUtilityEvaluationSystemTests
         OrganismCollection organisms = new(new[] { organism });
         PerceptionResult perception = perceptionSystem.Evaluate(world, organisms, organism.Id);
 
-        UtilityEvaluationResult result = utilitySystem.Evaluate(world, organisms, perception, organism.Id);
+        UtilityEvaluationResult result = utilitySystem.Evaluate(world, organisms, MemoryCollection.Empty, perception, organism.Id);
 
         Assert.Equal(SimulationActionType.Eat, result.Candidates[0].ActionType);
         Assert.True(result.Candidates[0].IsValid);
@@ -43,7 +44,7 @@ public sealed class DeterministicUtilityEvaluationSystemTests
         OrganismCollection organisms = new(new[] { organism });
         PerceptionResult perception = perceptionSystem.Evaluate(world, organisms, organism.Id);
 
-        UtilityEvaluationResult result = utilitySystem.Evaluate(world, organisms, perception, organism.Id);
+        UtilityEvaluationResult result = utilitySystem.Evaluate(world, organisms, MemoryCollection.Empty, perception, organism.Id);
         UtilityActionEvaluation eat = FindCandidate(result, SimulationActionType.Eat);
 
         Assert.False(eat.IsValid);
@@ -60,7 +61,43 @@ public sealed class DeterministicUtilityEvaluationSystemTests
         OrganismCollection organisms = new(new[] { organism });
         PerceptionResult perception = perceptionSystem.Evaluate(world, organisms, organism.Id);
 
-        UtilityEvaluationResult result = utilitySystem.Evaluate(world, organisms, perception, organism.Id);
+        UtilityEvaluationResult result = utilitySystem.Evaluate(world, organisms, MemoryCollection.Empty, perception, organism.Id);
+        UtilityActionEvaluation move = FindCandidate(result, SimulationActionType.Move);
+
+        Assert.True(move.IsValid);
+        Assert.Equal(ChunkId.FromSequence(new EntitySequence(3)).ToString(), move.Target.TargetId);
+        Assert.True(move.UtilityScore > 0);
+    }
+
+    [Fact]
+    public void Evaluate_ShouldRecommendMoveUsingRememberedResourceWhenPerceptionCannotSeeIt()
+    {
+        DeterministicPerceptionSystem perceptionSystem = new(new PerceptionSettings(visionRange: 0, hearingRange: 0, smellRange: 0, touchRange: 0, minimumConfidence: 250), new DeterministicSpatialQueryService());
+        DeterministicUtilityEvaluationSystem utilitySystem = CreateUtilitySystem();
+        GaiaEngine.Domain.World.World world = CreateWorld(currentVegetationAmount: 0, currentWaterAmount: 0, adjacentVegetationAmount: 300, adjacentWaterAmount: 0);
+        Organism organism = CreateOrganism(hunger: 850, hydration: 100);
+        OrganismCollection organisms = new(new[] { organism });
+        MemoryCollection memories = new(
+            new[]
+            {
+                new OrganismMemory(
+                    organism.Id,
+                    new[]
+                    {
+                        new MemoryEntry(
+                            ResourceId.FromSequence(new EntitySequence(31)).Value,
+                            MemoryCategory.Resource,
+                            new ChunkCoordinates(1, 0),
+                            confidence: 700,
+                            creationTick: 10,
+                            lastUpdateTick: 35,
+                            expirationTick: 140,
+                            estimatedAvailability: 800),
+                    }),
+            });
+        PerceptionResult perception = perceptionSystem.Evaluate(world, organisms, organism.Id);
+
+        UtilityEvaluationResult result = utilitySystem.Evaluate(world, organisms, memories, perception, organism.Id);
         UtilityActionEvaluation move = FindCandidate(result, SimulationActionType.Move);
 
         Assert.True(move.IsValid);

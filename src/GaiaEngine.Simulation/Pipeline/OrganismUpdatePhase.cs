@@ -89,6 +89,7 @@ public sealed class OrganismUpdatePhase : ISimulationTickPhase
                 BehaviourExecutionResult behaviourResult = autonomousBehaviourSystem.Update(
                     context.CurrentWorld,
                     context.CurrentOrganisms,
+                    context.CurrentMemories,
                     context.CurrentActionRequests);
                 context.ApplyActionRequests(behaviourResult.ActionRequests);
 

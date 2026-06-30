@@ -1,3 +1,4 @@
+using GaiaEngine.Domain.AI;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
@@ -15,12 +16,14 @@ public interface IUtilityEvaluationSystem
     /// </summary>
     /// <param name="world">The current world state.</param>
     /// <param name="organisms">The current organism state.</param>
+    /// <param name="memories">The current memory state.</param>
     /// <param name="perception">The current perception output for the evaluated organism.</param>
     /// <param name="organismId">The evaluated organism identifier.</param>
     /// <returns>The deterministic utility evaluation result.</returns>
     public UtilityEvaluationResult Evaluate(
         GaiaEngine.Domain.World.World world,
         OrganismCollection organisms,
+        MemoryCollection memories,
         PerceptionResult perception,
         OrganismId organismId);
 }

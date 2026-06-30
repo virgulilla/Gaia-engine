@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GaiaEngine.Domain.AI;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.AI.Decision;
@@ -43,18 +44,21 @@ public sealed class DeterministicAutonomousBehaviourSystem : IAutonomousBehaviou
     /// </summary>
     /// <param name="world">The current world state.</param>
     /// <param name="organisms">The current organism state.</param>
+    /// <param name="memories">The current memory state.</param>
     /// <param name="actionRequests">The current action request collection.</param>
     /// <returns>The updated deterministic behaviour execution result.</returns>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="world"/>, <paramref name="organisms"/>, or <paramref name="actionRequests"/> is <see langword="null"/>.
+    /// Thrown when <paramref name="world"/>, <paramref name="organisms"/>, <paramref name="memories"/>, or <paramref name="actionRequests"/> is <see langword="null"/>.
     /// </exception>
     public BehaviourExecutionResult Update(
         GaiaEngine.Domain.World.World world,
         OrganismCollection organisms,
+        MemoryCollection memories,
         SimulationActionRequestCollection actionRequests)
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(organisms);
+        ArgumentNullException.ThrowIfNull(memories);
         ArgumentNullException.ThrowIfNull(actionRequests);
 
         List<SelectedDecision> decisions = new();
@@ -66,7 +70,7 @@ public sealed class DeterministicAutonomousBehaviourSystem : IAutonomousBehaviou
             }
 
             PerceptionResult perception = perceptionSystem.Evaluate(world, organisms, organism.Id);
-            UtilityEvaluationResult utilityResult = utilityEvaluationSystem.Evaluate(world, organisms, perception, organism.Id);
+            UtilityEvaluationResult utilityResult = utilityEvaluationSystem.Evaluate(world, organisms, memories, perception, organism.Id);
             SelectedDecision decision = decisionMakingSystem.Select(world, organisms, utilityResult, organism.Id);
             decisions.Add(decision);
         }

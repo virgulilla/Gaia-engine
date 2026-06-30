@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GaiaEngine.Domain.AI;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
@@ -38,6 +39,7 @@ public sealed class DeterministicUtilityEvaluationSystem : IUtilityEvaluationSys
     /// </summary>
     /// <param name="world">The current world state.</param>
     /// <param name="organisms">The current organism state.</param>
+    /// <param name="memories">The current memory state.</param>
     /// <param name="perception">The current perception output for the evaluated organism.</param>
     /// <param name="organismId">The evaluated organism identifier.</param>
     /// <returns>The deterministic utility evaluation result.</returns>
@@ -50,11 +52,13 @@ public sealed class DeterministicUtilityEvaluationSystem : IUtilityEvaluationSys
     public UtilityEvaluationResult Evaluate(
         GaiaEngine.Domain.World.World world,
         OrganismCollection organisms,
+        MemoryCollection memories,
         PerceptionResult perception,
         OrganismId organismId)
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(organisms);
+        ArgumentNullException.ThrowIfNull(memories);
         ArgumentNullException.ThrowIfNull(perception);
 
         if (perception.ObserverId != organismId)
@@ -68,9 +72,11 @@ public sealed class DeterministicUtilityEvaluationSystem : IUtilityEvaluationSys
         }
 
         Chunk currentChunk = ResolveChunkById(world, organism!.CurrentChunkId);
+        OrganismMemory? organismMemory = null;
+        memories.TryGet(organismId, out organismMemory);
         UtilityActionEvaluation eat = EvaluateEat(world, perception, organism, currentChunk);
         UtilityActionEvaluation drink = EvaluateDrink(world, perception, organism, currentChunk);
-        UtilityActionEvaluation move = EvaluateMove(world, perception, organism, currentChunk, eat.IsValid, drink.IsValid);
+        UtilityActionEvaluation move = EvaluateMove(world, perception, organismMemory, organism, currentChunk, eat.IsValid, drink.IsValid);
 
         List<UtilityActionEvaluation> candidates = new() { eat, drink, move };
         candidates.Sort(static (left, right) => CompareCandidates(left, right));
@@ -123,7 +129,7 @@ public sealed class DeterministicUtilityEvaluationSystem : IUtilityEvaluationSys
             isValid: true);
     }
 
-    private UtilityActionEvaluation EvaluateMove(GaiaEngine.Domain.World.World world, PerceptionResult perception, Organism organism, Chunk currentChunk, bool canEatHere, bool canDrinkHere)
+    private UtilityActionEvaluation EvaluateMove(GaiaEngine.Domain.World.World world, PerceptionResult perception, OrganismMemory? memory, Organism organism, Chunk currentChunk, bool canEatHere, bool canDrinkHere)
     {
         MoveTargetCandidate? bestTarget = null;
 
@@ -159,6 +165,37 @@ public sealed class DeterministicUtilityEvaluationSystem : IUtilityEvaluationSys
                 int score = CombineFactors(baseScore, waterResource!.Availability, observation.Confidence);
                 score = Math.Max(0, score - 150);
                 TryPromoteMoveCandidate(ref bestTarget, waterChunk, score);
+            }
+        }
+
+        if (memory is not null)
+        {
+            foreach (MemoryEntry entry in memory.GetAll())
+            {
+                if (entry.Category != MemoryCategory.Resource)
+                {
+                    continue;
+                }
+
+                if (TryResolveRememberedResourceChunk(world, entry, ResourceType.Vegetation, out Chunk? foodChunk, out int foodAvailability)
+                    && foodChunk!.Id != currentChunk.Id)
+                {
+                    int urgency = canEatHere ? organism.Needs.Hunger / 4 : organism.Needs.Hunger;
+                    int baseScore = curveEvaluator.Evaluate(urgency, settings.MoveCurve);
+                    int score = CombineFactors(baseScore, foodAvailability, entry.Confidence);
+                    score = Math.Max(0, score - 300);
+                    TryPromoteMoveCandidate(ref bestTarget, foodChunk, score);
+                }
+
+                if (TryResolveRememberedResourceChunk(world, entry, ResourceType.FreshWater, out Chunk? waterChunk, out int waterAvailability)
+                    && waterChunk!.Id != currentChunk.Id)
+                {
+                    int urgency = canDrinkHere ? organism.Needs.Hydration / 4 : organism.Needs.Hydration;
+                    int baseScore = curveEvaluator.Evaluate(urgency, settings.MoveCurve);
+                    int score = CombineFactors(baseScore, waterAvailability, entry.Confidence);
+                    score = Math.Max(0, score - 300);
+                    TryPromoteMoveCandidate(ref bestTarget, waterChunk, score);
+                }
             }
         }
 
@@ -303,6 +340,54 @@ public sealed class DeterministicUtilityEvaluationSystem : IUtilityEvaluationSys
             observedChunk = chunk;
             resource = resolvedResource;
             return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryResolveRememberedResourceChunk(
+        GaiaEngine.Domain.World.World world,
+        MemoryEntry entry,
+        ResourceType resourceType,
+        out Chunk? rememberedChunk,
+        out int availability)
+    {
+        rememberedChunk = null;
+        availability = 0;
+
+        foreach (Chunk chunk in world.GetChunks())
+        {
+            if (chunk.Metadata.Coordinates != entry.Position)
+            {
+                continue;
+            }
+
+            if (resourceType == ResourceType.FreshWater && chunk.Id.Value == entry.Identifier)
+            {
+                int waterAvailability = Math.Min(1000, chunk.Water.SurfaceWater.WaterLevel);
+                if (waterAvailability < 1)
+                {
+                    return false;
+                }
+
+                rememberedChunk = chunk;
+                availability = waterAvailability;
+                return true;
+            }
+
+            foreach (ResourceState resource in chunk.Resources.GetAll())
+            {
+                if (resource.ResourceId.Value != entry.Identifier || resource.Type != resourceType || resource.CurrentAmount < 1)
+                {
+                    continue;
+                }
+
+                rememberedChunk = chunk;
+                availability = resource.Availability;
+                return true;
+            }
+
+            return false;
         }
 
         return false;

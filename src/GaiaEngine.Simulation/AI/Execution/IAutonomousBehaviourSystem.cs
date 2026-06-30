@@ -1,3 +1,4 @@
+using GaiaEngine.Domain.AI;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Simulation.Actions;
 
@@ -13,10 +14,12 @@ public interface IAutonomousBehaviourSystem
     /// </summary>
     /// <param name="world">The current world state.</param>
     /// <param name="organisms">The current organism state.</param>
+    /// <param name="memories">The current memory state.</param>
     /// <param name="actionRequests">The current action request collection.</param>
     /// <returns>The updated deterministic behaviour execution result.</returns>
     public BehaviourExecutionResult Update(
         GaiaEngine.Domain.World.World world,
         OrganismCollection organisms,
+        MemoryCollection memories,
         SimulationActionRequestCollection actionRequests);
 }

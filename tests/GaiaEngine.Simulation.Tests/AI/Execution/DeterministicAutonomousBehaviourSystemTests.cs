@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GaiaEngine.Domain.AI;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Domain.Organisms;
 using GaiaEngine.Domain.World;
@@ -31,7 +32,7 @@ public sealed class DeterministicAutonomousBehaviourSystemTests
                 CreateOrganism(102, hunger: 900, hydration: 900, isAlive: false),
             });
 
-        BehaviourExecutionResult result = system.Update(world, organisms, SimulationActionRequestCollection.Empty);
+        BehaviourExecutionResult result = system.Update(world, organisms, MemoryCollection.Empty, SimulationActionRequestCollection.Empty);
 
         Assert.Equal(2, result.ActionRequests.Count);
         Assert.Contains(result.ActionRequests.GetAll(), request => request.OrganismId == OrganismId.FromSequence(new EntitySequence(100)) && request.ActionType == SimulationActionType.Eat);
