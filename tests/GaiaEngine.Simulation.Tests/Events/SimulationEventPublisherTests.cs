@@ -1,6 +1,7 @@
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Domain.World;
 using GaiaEngine.Engine.Events;
+using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.Events;
 using GaiaEngine.Simulation.Time;
 using Xunit;
@@ -32,5 +33,28 @@ public sealed class SimulationEventPublisherTests
         Assert.IsType<NewYearSimulationEvent>(publicationResult.PublishedEvents[2]);
         Assert.Equal(3, eventBus.PendingEventCount);
         Assert.Equal(new EntitySequence(10), publicationResult.PublishedEvents[0].EventId.Sequence);
+    }
+
+    [Fact]
+    public void PublishActionEvents_ShouldCreateOrderedLifecycleEventsAndAdvanceSequence()
+    {
+        EventBus eventBus = new();
+        SimulationEventPublisher publisher = new(eventBus, new DeterministicEntityIdGenerator());
+        ActionEventDescriptor descriptor = new(
+            ActionId.FromSequence(new EntitySequence(20)),
+            OrganismId.FromSequence(new EntitySequence(100)),
+            SimulationActionType.Eat,
+            new SimulationActionTarget(ActionTargetKind.Chunk, ChunkId.FromSequence(new EntitySequence(2)).ToString()));
+
+        SimulationEventPublicationResult started = publisher.PublishActionStartedEvents(new[] { descriptor }, 40, 10);
+        SimulationEventPublicationResult completed = publisher.PublishActionCompletedEvents(new[] { descriptor }, 40, started.NextEventSequence);
+        SimulationEventPublicationResult failed = publisher.PublishActionFailedEvents(new[] { descriptor }, 40, completed.NextEventSequence);
+        SimulationEventPublicationResult cancelled = publisher.PublishActionCancelledEvents(new[] { descriptor }, 40, failed.NextEventSequence);
+
+        Assert.IsType<ActionStartedSimulationEvent>(started.PublishedEvents[0]);
+        Assert.IsType<ActionCompletedSimulationEvent>(completed.PublishedEvents[0]);
+        Assert.IsType<ActionFailedSimulationEvent>(failed.PublishedEvents[0]);
+        Assert.IsType<ActionCancelledSimulationEvent>(cancelled.PublishedEvents[0]);
+        Assert.Equal(14UL, cancelled.NextEventSequence);
     }
 }

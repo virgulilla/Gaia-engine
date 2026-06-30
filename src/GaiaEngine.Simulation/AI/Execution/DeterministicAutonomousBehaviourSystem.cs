@@ -44,11 +44,11 @@ public sealed class DeterministicAutonomousBehaviourSystem : IAutonomousBehaviou
     /// <param name="world">The current world state.</param>
     /// <param name="organisms">The current organism state.</param>
     /// <param name="actionRequests">The current action request collection.</param>
-    /// <returns>The updated deterministic action request collection.</returns>
+    /// <returns>The updated deterministic behaviour execution result.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="world"/>, <paramref name="organisms"/>, or <paramref name="actionRequests"/> is <see langword="null"/>.
     /// </exception>
-    public SimulationActionRequestCollection Update(
+    public BehaviourExecutionResult Update(
         GaiaEngine.Domain.World.World world,
         OrganismCollection organisms,
         SimulationActionRequestCollection actionRequests)
@@ -71,7 +71,6 @@ public sealed class DeterministicAutonomousBehaviourSystem : IAutonomousBehaviou
             decisions.Add(decision);
         }
 
-        BehaviourExecutionResult executionResult = behaviourExecutionSystem.Execute(actionRequests, decisions.AsReadOnly());
-        return executionResult.ActionRequests;
+        return behaviourExecutionSystem.Execute(actionRequests, decisions.AsReadOnly());
     }
 }

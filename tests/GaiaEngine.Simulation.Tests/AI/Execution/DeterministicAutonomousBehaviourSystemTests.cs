@@ -31,12 +31,13 @@ public sealed class DeterministicAutonomousBehaviourSystemTests
                 CreateOrganism(102, hunger: 900, hydration: 900, isAlive: false),
             });
 
-        SimulationActionRequestCollection result = system.Update(world, organisms, SimulationActionRequestCollection.Empty);
+        BehaviourExecutionResult result = system.Update(world, organisms, SimulationActionRequestCollection.Empty);
 
-        Assert.Equal(2, result.Count);
-        Assert.Contains(result.GetAll(), request => request.OrganismId == OrganismId.FromSequence(new EntitySequence(100)) && request.ActionType == SimulationActionType.Eat);
-        Assert.Contains(result.GetAll(), request => request.OrganismId == OrganismId.FromSequence(new EntitySequence(101)) && request.ActionType == SimulationActionType.Drink);
-        Assert.DoesNotContain(result.GetAll(), request => request.OrganismId == OrganismId.FromSequence(new EntitySequence(102)));
+        Assert.Equal(2, result.ActionRequests.Count);
+        Assert.Contains(result.ActionRequests.GetAll(), request => request.OrganismId == OrganismId.FromSequence(new EntitySequence(100)) && request.ActionType == SimulationActionType.Eat);
+        Assert.Contains(result.ActionRequests.GetAll(), request => request.OrganismId == OrganismId.FromSequence(new EntitySequence(101)) && request.ActionType == SimulationActionType.Drink);
+        Assert.DoesNotContain(result.ActionRequests.GetAll(), request => request.OrganismId == OrganismId.FromSequence(new EntitySequence(102)));
+        Assert.Equal(2, result.StartedActions.Count);
     }
 
     private static DeterministicAutonomousBehaviourSystem CreateSystem()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using GaiaEngine.Domain.Identifiers;
 using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.AI.Decision;
+using GaiaEngine.Simulation.Events;
 
 namespace GaiaEngine.Simulation.AI.Execution;
 
@@ -28,6 +29,8 @@ public sealed class DeterministicBehaviourExecutionSystem : IBehaviourExecutionS
         ArgumentNullException.ThrowIfNull(decisions);
 
         Dictionary<OrganismId, SimulationActionRequest> activeRequestsByOrganism = new();
+        List<ActionEventDescriptor> startedActions = new();
+        List<ActionEventDescriptor> cancelledActions = new();
         foreach (SimulationActionRequest request in currentActionRequests.GetAll())
         {
             if (IsTerminal(request.Status))
@@ -58,13 +61,20 @@ public sealed class DeterministicBehaviourExecutionSystem : IBehaviourExecutionS
                 {
                     continue;
                 }
+
+                cancelledActions.Add(ToDescriptor(activeRequest));
             }
 
-            activeRequestsByOrganism[decision.OrganismId] = CreateRequest(decision);
+            SimulationActionRequest createdRequest = CreateRequest(decision);
+            activeRequestsByOrganism[decision.OrganismId] = createdRequest;
+            startedActions.Add(ToDescriptor(createdRequest));
         }
 
         List<SimulationActionRequest> requests = new(activeRequestsByOrganism.Values);
-        return new BehaviourExecutionResult(new SimulationActionRequestCollection(requests.AsReadOnly()));
+        return new BehaviourExecutionResult(
+            new SimulationActionRequestCollection(requests.AsReadOnly()),
+            startedActions.AsReadOnly(),
+            cancelledActions.AsReadOnly());
     }
 
     private static bool IsEquivalent(SimulationActionRequest request, SelectedDecision decision)
@@ -107,5 +117,10 @@ public sealed class DeterministicBehaviourExecutionSystem : IBehaviourExecutionS
         return status == ActionExecutionState.Completed
             || status == ActionExecutionState.Cancelled
             || status == ActionExecutionState.Failed;
+    }
+
+    private static ActionEventDescriptor ToDescriptor(SimulationActionRequest request)
+    {
+        return new ActionEventDescriptor(request.ActionId, request.OrganismId, request.ActionType, request.Target);
     }
 }

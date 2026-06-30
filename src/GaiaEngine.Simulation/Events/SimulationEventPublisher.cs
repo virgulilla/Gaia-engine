@@ -60,6 +60,42 @@ public sealed class SimulationEventPublisher : ISimulationEventPublisher
         return new SimulationEventPublicationResult(currentSequence, publishedEvents.AsReadOnly());
     }
 
+    /// <summary>
+    /// Publishes action-started events.
+    /// </summary>
+    public SimulationEventPublicationResult PublishActionStartedEvents(IReadOnlyList<ActionEventDescriptor> actions, long tick, ulong nextEventSequence)
+    {
+        return PublishActionEvents(actions, tick, nextEventSequence, static (eventId, currentTick, descriptor) =>
+            new ActionStartedSimulationEvent(eventId, currentTick, currentTick, descriptor.ActionId, descriptor.OrganismId, descriptor.ActionType, descriptor.Target));
+    }
+
+    /// <summary>
+    /// Publishes action-completed events.
+    /// </summary>
+    public SimulationEventPublicationResult PublishActionCompletedEvents(IReadOnlyList<ActionEventDescriptor> actions, long tick, ulong nextEventSequence)
+    {
+        return PublishActionEvents(actions, tick, nextEventSequence, static (eventId, currentTick, descriptor) =>
+            new ActionCompletedSimulationEvent(eventId, currentTick, currentTick, descriptor.ActionId, descriptor.OrganismId, descriptor.ActionType, descriptor.Target));
+    }
+
+    /// <summary>
+    /// Publishes action-failed events.
+    /// </summary>
+    public SimulationEventPublicationResult PublishActionFailedEvents(IReadOnlyList<ActionEventDescriptor> actions, long tick, ulong nextEventSequence)
+    {
+        return PublishActionEvents(actions, tick, nextEventSequence, static (eventId, currentTick, descriptor) =>
+            new ActionFailedSimulationEvent(eventId, currentTick, currentTick, descriptor.ActionId, descriptor.OrganismId, descriptor.ActionType, descriptor.Target));
+    }
+
+    /// <summary>
+    /// Publishes action-cancelled events.
+    /// </summary>
+    public SimulationEventPublicationResult PublishActionCancelledEvents(IReadOnlyList<ActionEventDescriptor> actions, long tick, ulong nextEventSequence)
+    {
+        return PublishActionEvents(actions, tick, nextEventSequence, static (eventId, currentTick, descriptor) =>
+            new ActionCancelledSimulationEvent(eventId, currentTick, currentTick, descriptor.ActionId, descriptor.OrganismId, descriptor.ActionType, descriptor.Target));
+    }
+
     private IEvent CreateTimeEvent(TemporalTransition transition, ulong sequence)
     {
         EventId eventId = idGenerator.CreateEventId(
@@ -93,5 +129,44 @@ public sealed class SimulationEventPublisher : ISimulationEventPublisher
                 transition.TimeState.CurrentYear),
             _ => throw new ArgumentOutOfRangeException(nameof(transition), "The supplied temporal transition kind is not supported."),
         };
+    }
+
+    private SimulationEventPublicationResult PublishActionEvents(
+        IReadOnlyList<ActionEventDescriptor> actions,
+        long tick,
+        ulong nextEventSequence,
+        Func<EventId, long, ActionEventDescriptor, IEvent> factory)
+    {
+        ArgumentNullException.ThrowIfNull(actions);
+        ArgumentNullException.ThrowIfNull(factory);
+
+        if (tick < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(tick), "The event tick must be zero or greater.");
+        }
+
+        if (nextEventSequence == 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(nextEventSequence), "The next event sequence value must be greater than zero.");
+        }
+
+        List<IEvent> publishedEvents = new(actions.Count);
+        ulong currentSequence = nextEventSequence;
+        foreach (ActionEventDescriptor action in actions)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+
+            EventId eventId = idGenerator.CreateEventId(
+                new IdentifierGenerationContext(
+                    new WorldSeed(0),
+                    tick,
+                    new EntitySequence(currentSequence)));
+            IEvent eventInstance = factory(eventId, tick, action);
+            eventBus.Publish(eventInstance);
+            publishedEvents.Add(eventInstance);
+            currentSequence++;
+        }
+
+        return new SimulationEventPublicationResult(currentSequence, publishedEvents.AsReadOnly());
     }
 }

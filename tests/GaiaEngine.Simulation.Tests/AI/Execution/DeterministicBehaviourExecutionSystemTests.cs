@@ -24,6 +24,8 @@ public sealed class DeterministicBehaviourExecutionSystemTests
         Assert.Equal(SimulationActionType.Eat, request.ActionType);
         Assert.Equal(100, request.Priority);
         Assert.Equal(ActionExecutionState.Waiting, request.Status);
+        Assert.Single(result.StartedActions);
+        Assert.Empty(result.CancelledActions);
     }
 
     [Fact]
@@ -51,6 +53,8 @@ public sealed class DeterministicBehaviourExecutionSystemTests
         SimulationActionRequest request = Assert.Single(result.ActionRequests.GetAll());
         Assert.Equal(existingRequest.ActionId, request.ActionId);
         Assert.Equal(ActionExecutionState.Running, request.Status);
+        Assert.Empty(result.StartedActions);
+        Assert.Empty(result.CancelledActions);
     }
 
     [Fact]
@@ -78,6 +82,8 @@ public sealed class DeterministicBehaviourExecutionSystemTests
         SimulationActionRequest request = Assert.Single(result.ActionRequests.GetAll());
         Assert.Equal(ActionId.FromSequence(new EntitySequence(20)), request.ActionId);
         Assert.Equal(SimulationActionType.Eat, request.ActionType);
+        Assert.Single(result.StartedActions);
+        Assert.Single(result.CancelledActions);
     }
 
     [Fact]
@@ -105,6 +111,7 @@ public sealed class DeterministicBehaviourExecutionSystemTests
         SimulationActionRequest request = Assert.Single(result.ActionRequests.GetAll());
         Assert.Equal(existingRequest.ActionId, request.ActionId);
         Assert.Equal(SimulationActionType.Eat, request.ActionType);
+        Assert.Empty(result.CancelledActions);
     }
 
     [Fact]
@@ -120,6 +127,7 @@ public sealed class DeterministicBehaviourExecutionSystemTests
             });
 
         Assert.Empty(result.ActionRequests.GetAll());
+        Assert.Empty(result.StartedActions);
     }
 
     private static SelectedDecision CreateDecision(ulong actionSequence, ulong organismSequence, SimulationActionType actionType, string targetId, int utilityScore, int duration, bool isIdleFallback)

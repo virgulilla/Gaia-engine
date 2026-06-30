@@ -209,6 +209,30 @@ public sealed class SimulationTickContext
     }
 
     /// <summary>
+    /// Appends additional deterministic published events produced later in the current tick.
+    /// </summary>
+    /// <param name="result">The additional event publication result to append.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="result"/> is <see langword="null"/>.</exception>
+    public void AppendEventPublicationResult(SimulationEventPublicationResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+
+        List<IEvent> mergedEvents = new(EventPublicationResult.PublishedEvents.Count + result.PublishedEvents.Count);
+        foreach (IEvent publishedEvent in EventPublicationResult.PublishedEvents)
+        {
+            mergedEvents.Add(publishedEvent);
+        }
+
+        foreach (IEvent publishedEvent in result.PublishedEvents)
+        {
+            mergedEvents.Add(publishedEvent);
+        }
+
+        EventPublicationResult = new SimulationEventPublicationResult(result.NextEventSequence, mergedEvents.AsReadOnly());
+        NextEventSequence = result.NextEventSequence;
+    }
+
+    /// <summary>
     /// Applies the deterministic event dispatch result produced during the current tick.
     /// </summary>
     /// <param name="result">The event dispatch result to apply.</param>

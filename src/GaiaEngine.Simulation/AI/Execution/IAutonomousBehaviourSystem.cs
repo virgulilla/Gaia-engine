@@ -14,8 +14,8 @@ public interface IAutonomousBehaviourSystem
     /// <param name="world">The current world state.</param>
     /// <param name="organisms">The current organism state.</param>
     /// <param name="actionRequests">The current action request collection.</param>
-    /// <returns>The updated deterministic action request collection.</returns>
-    public SimulationActionRequestCollection Update(
+    /// <returns>The updated deterministic behaviour execution result.</returns>
+    public BehaviourExecutionResult Update(
         GaiaEngine.Domain.World.World world,
         OrganismCollection organisms,
         SimulationActionRequestCollection actionRequests);

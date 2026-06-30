@@ -1,6 +1,7 @@
 using System;
 using GaiaEngine.Simulation.AI.Execution;
 using GaiaEngine.Simulation.Diagnostics;
+using GaiaEngine.Simulation.Events;
 using GaiaEngine.Simulation.Genetics;
 using GaiaEngine.Simulation.Organisms;
 
@@ -15,6 +16,7 @@ public sealed class OrganismUpdatePhase : ISimulationTickPhase
     private readonly ISpeciesRecognitionSystem speciesRecognitionSystem;
     private readonly ISpeciesLifecycleSystem speciesLifecycleSystem;
     private readonly IAutonomousBehaviourSystem autonomousBehaviourSystem;
+    private readonly ISimulationEventPublisher eventPublisher;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OrganismUpdatePhase"/> class.
@@ -23,17 +25,20 @@ public sealed class OrganismUpdatePhase : ISimulationTickPhase
     /// <param name="speciesRecognitionSystem">The species recognition system executed during this phase.</param>
     /// <param name="speciesLifecycleSystem">The species lifecycle system executed during this phase.</param>
     /// <param name="autonomousBehaviourSystem">The autonomous behaviour system executed during this phase.</param>
+    /// <param name="eventPublisher">The simulation event publisher used for action lifecycle events.</param>
     /// <exception cref="ArgumentNullException">Thrown when any dependency is <see langword="null"/>.</exception>
     public OrganismUpdatePhase(
         IOrganismUpdateSystem organismUpdateSystem,
         ISpeciesRecognitionSystem speciesRecognitionSystem,
         ISpeciesLifecycleSystem speciesLifecycleSystem,
-        IAutonomousBehaviourSystem autonomousBehaviourSystem)
+        IAutonomousBehaviourSystem autonomousBehaviourSystem,
+        ISimulationEventPublisher eventPublisher)
     {
         this.organismUpdateSystem = organismUpdateSystem ?? throw new ArgumentNullException(nameof(organismUpdateSystem));
         this.speciesRecognitionSystem = speciesRecognitionSystem ?? throw new ArgumentNullException(nameof(speciesRecognitionSystem));
         this.speciesLifecycleSystem = speciesLifecycleSystem ?? throw new ArgumentNullException(nameof(speciesLifecycleSystem));
         this.autonomousBehaviourSystem = autonomousBehaviourSystem ?? throw new ArgumentNullException(nameof(autonomousBehaviourSystem));
+        this.eventPublisher = eventPublisher ?? throw new ArgumentNullException(nameof(eventPublisher));
     }
 
     /// <summary>
@@ -71,11 +76,29 @@ public sealed class OrganismUpdatePhase : ISimulationTickPhase
 
             if (scheduledSystem.SystemName == SimulationSystemNames.AI)
             {
-                context.ApplyActionRequests(
-                    autonomousBehaviourSystem.Update(
-                        context.CurrentWorld,
-                        context.CurrentOrganisms,
-                        context.CurrentActionRequests));
+                BehaviourExecutionResult behaviourResult = autonomousBehaviourSystem.Update(
+                    context.CurrentWorld,
+                    context.CurrentOrganisms,
+                    context.CurrentActionRequests);
+                context.ApplyActionRequests(behaviourResult.ActionRequests);
+
+                if (behaviourResult.CancelledActions.Count > 0)
+                {
+                    context.AppendEventPublicationResult(
+                        eventPublisher.PublishActionCancelledEvents(
+                            behaviourResult.CancelledActions,
+                            context.CurrentTimeState.CurrentTick,
+                            context.NextEventSequence));
+                }
+
+                if (behaviourResult.StartedActions.Count > 0)
+                {
+                    context.AppendEventPublicationResult(
+                        eventPublisher.PublishActionStartedEvents(
+                            behaviourResult.StartedActions,
+                            context.CurrentTimeState.CurrentTick,
+                            context.NextEventSequence));
+                }
             }
         }
     }
