@@ -368,6 +368,204 @@ layout_mode = 2
 autowrap_mode = 3
 text = "Sampled History"
 
+[node name="EncyclopediaOverlay" type="PanelContainer" parent="HudLayer/HudRoot"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -500.0
+offset_top = -260.0
+offset_right = 500.0
+offset_bottom = 260.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("2")
+
+[node name="EncyclopediaOverlayMargin" type="MarginContainer" parent="HudLayer/HudRoot/EncyclopediaOverlay"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="EncyclopediaOverlayColumn" type="VBoxContainer" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="EncyclopediaHeaderRow" type="HBoxContainer" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="EncyclopediaTitleLabel" type="Label" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaHeaderRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(170, 0)
+theme_override_font_sizes/font_size = 22
+text = "Encyclopedia"
+
+[node name="EncyclopediaSearchBar" type="LineEdit" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaHeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Search entries"
+
+[node name="EncyclopediaFilterButton" type="Button" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaHeaderRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 40)
+text = "Filter: All"
+
+[node name="EncyclopediaSortButton" type="Button" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaHeaderRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(150, 40)
+text = "Sort: A-Z"
+
+[node name="EncyclopediaCompareButton" type="Button" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaHeaderRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(140, 40)
+text = "Compare"
+
+[node name="EncyclopediaBodyRow" type="HBoxContainer" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="EncyclopediaNavigationPanel" type="PanelContainer" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(160, 0)
+theme_override_styles/panel = SubResource("4")
+
+[node name="EncyclopediaNavigationMargin" type="MarginContainer" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="EncyclopediaNavigationColumn" type="VBoxContainer" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="NavigationTitleLabel" type="Label" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Categories"
+
+[node name="SpeciesCategoryButton" type="Button" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn"]
+layout_mode = 2
+text = "Species"
+
+[node name="TraitsCategoryButton" type="Button" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn"]
+layout_mode = 2
+text = "Traits"
+
+[node name="BiomesCategoryButton" type="Button" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn"]
+layout_mode = 2
+text = "Biomes"
+
+[node name="ResourcesCategoryButton" type="Button" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn"]
+layout_mode = 2
+text = "Resources"
+
+[node name="ClimateCategoryButton" type="Button" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn"]
+layout_mode = 2
+text = "Climate"
+
+[node name="BehavioursCategoryButton" type="Button" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn"]
+layout_mode = 2
+text = "Behaviours"
+
+[node name="EvolutionCategoryButton" type="Button" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn"]
+layout_mode = 2
+text = "Evolution"
+
+[node name="WorldHistoryCategoryButton" type="Button" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn"]
+layout_mode = 2
+text = "World History"
+
+[node name="EncyclopediaEntryPanel" type="PanelContainer" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("1")
+
+[node name="EncyclopediaEntryMargin" type="MarginContainer" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaEntryPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="EncyclopediaEntryColumn" type="VBoxContainer" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaEntryPanel/EncyclopediaEntryMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EntryListStatusLabel" type="Label" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaEntryPanel/EncyclopediaEntryMargin/EncyclopediaEntryColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = "Entries"
+
+[node name="EncyclopediaEntryList" type="ItemList" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaEntryPanel/EncyclopediaEntryMargin/EncyclopediaEntryColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+allow_reselect = true
+same_column_width = true
+
+[node name="EncyclopediaDetailsPanel" type="PanelContainer" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("1")
+
+[node name="EncyclopediaDetailsMargin" type="MarginContainer" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="EncyclopediaDetailsColumn" type="VBoxContainer" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EntryDetailsTitleLabel" type="Label" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Entry Details"
+
+[node name="EntryDetailsStatusLabel" type="Label" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = "No entry selected."
+
+[node name="EntryDetailsBodyLabel" type="Label" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = ""
+
+[node name="EntryDetailsStatisticsLabel" type="Label" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = ""
+
+[node name="RelatedEntriesTitleLabel" type="Label" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn"]
+layout_mode = 2
+text = "Related Entries"
+
+[node name="RelatedEntriesList" type="ItemList" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 90)
+allow_reselect = true
+same_column_width = true
+
+[node name="ComparisonSummaryLabel" type="Label" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = "Comparison is inactive."
+
+[node name="ProgressSummaryLabel" type="Label" parent="HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = "Progress Summary"
+
 [node name="BottomToolbar" type="PanelContainer" parent="HudLayer/HudRoot"]
 layout_mode = 1
 anchors_preset = 12
@@ -415,7 +613,6 @@ text = "Step"
 [node name="EncyclopediaButton" type="Button" parent="HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow"]
 layout_mode = 2
 custom_minimum_size = Vector2(112, 40)
-disabled = true
 text = "Encyclopedia"
 
 [node name="StatisticsButton" type="Button" parent="HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow"]

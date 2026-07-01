@@ -4,6 +4,7 @@ using System.Text;
 using GaiaEngine.App.Bootstrap;
 using GaiaEngine.Gameplay.Achievements;
 using GaiaEngine.Gameplay.Discovery;
+using GaiaEngine.Gameplay.Encyclopedia;
 using GaiaEngine.Gameplay.Objectives;
 using GaiaEngine.Godot.UI.Notifications;
 using GaiaEngine.Simulation.Diagnostics;
@@ -23,10 +24,12 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string InspectButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/InspectButton";
     private const string TimeControlsButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/TimeControlsButton";
     private const string StepTickButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/StepTickButton";
+    private const string EncyclopediaButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/EncyclopediaButton";
     private const string StatisticsButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/StatisticsButton";
     private const string LeftPanelPath = "HudLayer/HudRoot/LeftPanel";
     private const string ContextPanelPath = "HudLayer/HudRoot/ContextPanel";
     private const string StatisticsOverlayPath = "HudLayer/HudRoot/StatisticsOverlay";
+    private const string EncyclopediaOverlayPath = "HudLayer/HudRoot/EncyclopediaOverlay";
     private const string SelectionHintLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionHintLabel";
     private const string SelectionTypeLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionTypeLabel";
     private const string SelectionPrimaryLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionPrimaryLabel";
@@ -58,6 +61,26 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string StatisticsDiscoveryLabelPath = "HudLayer/HudRoot/StatisticsOverlay/StatisticsOverlayMargin/StatisticsOverlayColumn/StatisticsDiscoveryLabel";
     private const string StatisticsPerformanceLabelPath = "HudLayer/HudRoot/StatisticsOverlay/StatisticsOverlayMargin/StatisticsOverlayColumn/StatisticsPerformanceLabel";
     private const string StatisticsHistoryLabelPath = "HudLayer/HudRoot/StatisticsOverlay/StatisticsOverlayMargin/StatisticsOverlayColumn/StatisticsHistoryLabel";
+    private const string EncyclopediaSearchBarPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaHeaderRow/EncyclopediaSearchBar";
+    private const string EncyclopediaFilterButtonPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaHeaderRow/EncyclopediaFilterButton";
+    private const string EncyclopediaSortButtonPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaHeaderRow/EncyclopediaSortButton";
+    private const string EncyclopediaCompareButtonPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaHeaderRow/EncyclopediaCompareButton";
+    private const string SpeciesCategoryButtonPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn/SpeciesCategoryButton";
+    private const string TraitsCategoryButtonPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn/TraitsCategoryButton";
+    private const string BiomesCategoryButtonPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn/BiomesCategoryButton";
+    private const string ResourcesCategoryButtonPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn/ResourcesCategoryButton";
+    private const string ClimateCategoryButtonPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn/ClimateCategoryButton";
+    private const string BehavioursCategoryButtonPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn/BehavioursCategoryButton";
+    private const string EvolutionCategoryButtonPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn/EvolutionCategoryButton";
+    private const string WorldHistoryCategoryButtonPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaNavigationPanel/EncyclopediaNavigationMargin/EncyclopediaNavigationColumn/WorldHistoryCategoryButton";
+    private const string EntryListStatusLabelPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaEntryPanel/EncyclopediaEntryMargin/EncyclopediaEntryColumn/EntryListStatusLabel";
+    private const string EncyclopediaEntryListPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaEntryPanel/EncyclopediaEntryMargin/EncyclopediaEntryColumn/EncyclopediaEntryList";
+    private const string EntryDetailsStatusLabelPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn/EntryDetailsStatusLabel";
+    private const string EntryDetailsBodyLabelPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn/EntryDetailsBodyLabel";
+    private const string EntryDetailsStatisticsLabelPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn/EntryDetailsStatisticsLabel";
+    private const string RelatedEntriesListPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn/RelatedEntriesList";
+    private const string ComparisonSummaryLabelPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn/ComparisonSummaryLabel";
+    private const string ProgressSummaryLabelPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn/ProgressSummaryLabel";
     private const string NotificationCard1Path = "HudLayer/HudRoot/NotificationArea/NotificationCard1";
     private const string NotificationCard2Path = "HudLayer/HudRoot/NotificationArea/NotificationCard2";
     private const string NotificationCard3Path = "HudLayer/HudRoot/NotificationArea/NotificationCard3";
@@ -76,10 +99,15 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Button? inspectButton;
     private Button? timeControlsButton;
     private Button? stepTickButton;
+    private Button? encyclopediaButton;
     private Button? statisticsButton;
+    private Button? encyclopediaFilterButton;
+    private Button? encyclopediaSortButton;
+    private Button? encyclopediaCompareButton;
     private PanelContainer? leftPanel;
     private PanelContainer? contextPanel;
     private PanelContainer? statisticsOverlay;
+    private PanelContainer? encyclopediaOverlay;
     private Label? selectionHintLabel;
     private Label? selectionTypeLabel;
     private Label? selectionPrimaryLabel;
@@ -111,6 +139,16 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Label? statisticsDiscoveryLabel;
     private Label? statisticsPerformanceLabel;
     private Label? statisticsHistoryLabel;
+    private Label? entryListStatusLabel;
+    private Label? entryDetailsStatusLabel;
+    private Label? entryDetailsBodyLabel;
+    private Label? entryDetailsStatisticsLabel;
+    private Label? comparisonSummaryLabel;
+    private Label? progressSummaryLabel;
+    private LineEdit? encyclopediaSearchBar;
+    private ItemList? encyclopediaEntryList;
+    private ItemList? relatedEntriesList;
+    private Button[]? encyclopediaCategoryButtons;
     private PanelContainer[]? notificationCards;
     private Label[]? notificationTitleLabels;
     private Label[]? notificationBodyLabels;
@@ -118,13 +156,21 @@ public sealed partial class GaiaEngineBootstrap : Node
     private double tickAccumulator;
     private HudViewSnapshot? lastSnapshot;
     private StatisticsViewSnapshot? lastStatisticsSnapshot;
+    private EncyclopediaViewSnapshot? lastEncyclopediaSnapshot;
     private RuntimeObservationSnapshot? lastObservedState;
     private FocusOverrideKind focusOverrideKind;
     private GaiaEngine.Domain.Identifiers.OrganismId? focusedOrganismId;
     private bool isSimulationPaused;
     private bool isStatisticsOverlayVisible;
+    private bool isEncyclopediaOverlayVisible;
     private SimulationTickDiagnostics? lastDiagnostics;
     private readonly List<StatisticsHistorySample> statisticsHistory = new();
+    private EncyclopediaCategory selectedEncyclopediaCategory = EncyclopediaCategory.Species;
+    private EncyclopediaFilterMode encyclopediaFilterMode;
+    private EncyclopediaSortMode encyclopediaSortMode;
+    private string encyclopediaSearchText = string.Empty;
+    private string? selectedEncyclopediaEntryId;
+    private string? compareEncyclopediaEntryId;
 
     /// <summary>
     /// Initializes the application when the root scene enters the tree.
@@ -142,10 +188,15 @@ public sealed partial class GaiaEngineBootstrap : Node
         inspectButton = GetNode<Button>(InspectButtonPath);
         timeControlsButton = GetNode<Button>(TimeControlsButtonPath);
         stepTickButton = GetNode<Button>(StepTickButtonPath);
+        encyclopediaButton = GetNode<Button>(EncyclopediaButtonPath);
         statisticsButton = GetNode<Button>(StatisticsButtonPath);
+        encyclopediaFilterButton = GetNode<Button>(EncyclopediaFilterButtonPath);
+        encyclopediaSortButton = GetNode<Button>(EncyclopediaSortButtonPath);
+        encyclopediaCompareButton = GetNode<Button>(EncyclopediaCompareButtonPath);
         leftPanel = GetNode<PanelContainer>(LeftPanelPath);
         contextPanel = GetNode<PanelContainer>(ContextPanelPath);
         statisticsOverlay = GetNode<PanelContainer>(StatisticsOverlayPath);
+        encyclopediaOverlay = GetNode<PanelContainer>(EncyclopediaOverlayPath);
         selectionHintLabel = GetNode<Label>(SelectionHintLabelPath);
         selectionTypeLabel = GetNode<Label>(SelectionTypeLabelPath);
         selectionPrimaryLabel = GetNode<Label>(SelectionPrimaryLabelPath);
@@ -177,6 +228,26 @@ public sealed partial class GaiaEngineBootstrap : Node
         statisticsDiscoveryLabel = GetNode<Label>(StatisticsDiscoveryLabelPath);
         statisticsPerformanceLabel = GetNode<Label>(StatisticsPerformanceLabelPath);
         statisticsHistoryLabel = GetNode<Label>(StatisticsHistoryLabelPath);
+        entryListStatusLabel = GetNode<Label>(EntryListStatusLabelPath);
+        entryDetailsStatusLabel = GetNode<Label>(EntryDetailsStatusLabelPath);
+        entryDetailsBodyLabel = GetNode<Label>(EntryDetailsBodyLabelPath);
+        entryDetailsStatisticsLabel = GetNode<Label>(EntryDetailsStatisticsLabelPath);
+        comparisonSummaryLabel = GetNode<Label>(ComparisonSummaryLabelPath);
+        progressSummaryLabel = GetNode<Label>(ProgressSummaryLabelPath);
+        encyclopediaSearchBar = GetNode<LineEdit>(EncyclopediaSearchBarPath);
+        encyclopediaEntryList = GetNode<ItemList>(EncyclopediaEntryListPath);
+        relatedEntriesList = GetNode<ItemList>(RelatedEntriesListPath);
+        encyclopediaCategoryButtons =
+        [
+            GetNode<Button>(SpeciesCategoryButtonPath),
+            GetNode<Button>(TraitsCategoryButtonPath),
+            GetNode<Button>(BiomesCategoryButtonPath),
+            GetNode<Button>(ResourcesCategoryButtonPath),
+            GetNode<Button>(ClimateCategoryButtonPath),
+            GetNode<Button>(BehavioursCategoryButtonPath),
+            GetNode<Button>(EvolutionCategoryButtonPath),
+            GetNode<Button>(WorldHistoryCategoryButtonPath),
+        ];
         notificationCards =
         [
             GetNode<PanelContainer>(NotificationCard1Path),
@@ -211,10 +282,19 @@ public sealed partial class GaiaEngineBootstrap : Node
         inspectButton.Pressed += OnInspectPressed;
         timeControlsButton.Pressed += OnTimeControlsPressed;
         stepTickButton.Pressed += OnStepTickPressed;
+        encyclopediaButton.Pressed += OnEncyclopediaPressed;
         statisticsButton.Pressed += OnStatisticsPressed;
+        encyclopediaFilterButton.Pressed += OnEncyclopediaFilterPressed;
+        encyclopediaSortButton.Pressed += OnEncyclopediaSortPressed;
+        encyclopediaCompareButton.Pressed += OnEncyclopediaComparePressed;
+        encyclopediaSearchBar.TextChanged += OnEncyclopediaSearchTextChanged;
+        encyclopediaEntryList.ItemSelected += OnEncyclopediaEntrySelected;
+        relatedEntriesList.ItemSelected += OnRelatedEntrySelected;
+        WireCategoryButtons();
 
         UpdateSimulationStatusText();
         UpdateStatisticsOverlay();
+        UpdateEncyclopediaOverlay();
         UpdateNotificationWidgets();
         GD.Print($"Gaia Engine initialized with tick rate {runtime.EngineConfiguration.TickRate}.");
     }
@@ -244,6 +324,7 @@ public sealed partial class GaiaEngineBootstrap : Node
         notificationQueue.Advance(delta);
         UpdateSimulationStatusText();
         UpdateStatisticsOverlay();
+        UpdateEncyclopediaOverlay();
         UpdateNotificationWidgets();
     }
 
@@ -256,6 +337,7 @@ public sealed partial class GaiaEngineBootstrap : Node
             || inspectButton is null
             || timeControlsButton is null
             || stepTickButton is null
+            || encyclopediaButton is null
             || statisticsButton is null
             || leftPanel is null
             || contextPanel is null
@@ -289,6 +371,8 @@ public sealed partial class GaiaEngineBootstrap : Node
         inspectButton.Disabled = aliveOrganisms == 0;
         timeControlsButton.Text = isSimulationPaused ? "Resume" : "Pause";
         stepTickButton.Disabled = !isSimulationPaused;
+        encyclopediaButton.Disabled = runtime.PlayerProfile.Knowledge.Encyclopedia.Count == 0;
+        encyclopediaButton.Text = isEncyclopediaOverlayVisible ? "Close Archive" : "Encyclopedia";
         statisticsButton.Disabled = false;
         statisticsButton.Text = isStatisticsOverlayVisible ? "Close Stats" : "Statistics";
         GaiaEngine.Domain.World.Chunk primaryChunk = runtime.World.GetChunks()[0];
@@ -420,6 +504,483 @@ public sealed partial class GaiaEngineBootstrap : Node
         statisticsDiscoveryLabel.Text = snapshot.Discovery;
         statisticsPerformanceLabel.Text = snapshot.Performance;
         statisticsHistoryLabel.Text = snapshot.History;
+    }
+
+    private void UpdateEncyclopediaOverlay()
+    {
+        if (runtime is null
+            || encyclopediaOverlay is null
+            || encyclopediaFilterButton is null
+            || encyclopediaSortButton is null
+            || encyclopediaCompareButton is null
+            || encyclopediaSearchBar is null
+            || encyclopediaEntryList is null
+            || relatedEntriesList is null
+            || entryListStatusLabel is null
+            || entryDetailsStatusLabel is null
+            || entryDetailsBodyLabel is null
+            || entryDetailsStatisticsLabel is null
+            || comparisonSummaryLabel is null
+            || progressSummaryLabel is null
+            || encyclopediaCategoryButtons is null)
+        {
+            return;
+        }
+
+        encyclopediaOverlay.Visible = isEncyclopediaOverlayVisible;
+        encyclopediaSearchBar.Editable = true;
+        encyclopediaFilterButton.Text = $"Filter: {GetFilterModeLabel(encyclopediaFilterMode)}";
+        encyclopediaSortButton.Text = $"Sort: {GetSortModeLabel(encyclopediaSortMode)}";
+
+        IReadOnlyList<EncyclopediaEntry> filteredEntries = GetFilteredEncyclopediaEntries();
+        EnsureSelectedEncyclopediaEntry(filteredEntries);
+        EncyclopediaEntry? selectedEntry = TryResolveEncyclopediaEntry(selectedEncyclopediaEntryId);
+        EncyclopediaEntry? compareEntry = TryResolveEncyclopediaEntry(compareEncyclopediaEntryId);
+
+        UpdateCategoryButtons();
+        UpdateEntryListStatus(filteredEntries);
+        UpdateEntryListItems(filteredEntries);
+        UpdateRelatedEntryItems(selectedEntry);
+
+        string detailStatus = selectedEntry is null
+            ? "No encyclopedia entry is selected."
+            : $"{selectedEntry.Title} ({GetCategoryLabel(selectedEntry.Category)})\nDiscovery Tick: {selectedEntry.DiscoveryDate}\nState: {selectedEntry.UnlockState}";
+        string detailBody = selectedEntry?.Description ?? "Choose one entry from the filtered list to inspect its archived knowledge.";
+        string detailStatistics = BuildEntryStatisticsText(selectedEntry);
+        string comparisonText = BuildComparisonText(selectedEntry, compareEntry);
+        string progressText = BuildEncyclopediaProgressText();
+        string[] activeEntryIds = BuildEntryIdList(filteredEntries);
+        string[] relatedEntryIds = selectedEntry is null ? Array.Empty<string>() : BuildRelatedEntryIdList(selectedEntry);
+
+        EncyclopediaViewSnapshot snapshot = new(
+            isEncyclopediaOverlayVisible,
+            encyclopediaFilterButton.Text,
+            encyclopediaSortButton.Text,
+            selectedEncyclopediaCategory,
+            encyclopediaSearchText,
+            selectedEntry?.EntryId,
+            compareEntry?.EntryId,
+            entryListStatusLabel.Text,
+            detailStatus,
+            detailBody,
+            detailStatistics,
+            comparisonText,
+            progressText,
+            activeEntryIds,
+            relatedEntryIds);
+
+        if (snapshot == lastEncyclopediaSnapshot)
+        {
+            return;
+        }
+
+        lastEncyclopediaSnapshot = snapshot;
+        entryDetailsStatusLabel.Text = snapshot.DetailsStatus;
+        entryDetailsBodyLabel.Text = snapshot.DetailsBody;
+        entryDetailsStatisticsLabel.Text = snapshot.DetailsStatistics;
+        comparisonSummaryLabel.Text = snapshot.ComparisonSummary;
+        progressSummaryLabel.Text = snapshot.ProgressSummary;
+        encyclopediaCompareButton.Text = compareEntry is null ? "Compare" : "Clear Compare";
+    }
+
+    private void WireCategoryButtons()
+    {
+        if (encyclopediaCategoryButtons is null)
+        {
+            return;
+        }
+
+        EncyclopediaCategory[] categories =
+        [
+            EncyclopediaCategory.Species,
+            EncyclopediaCategory.Traits,
+            EncyclopediaCategory.Biomes,
+            EncyclopediaCategory.Resources,
+            EncyclopediaCategory.Climate,
+            EncyclopediaCategory.Behaviours,
+            EncyclopediaCategory.Evolution,
+            EncyclopediaCategory.WorldHistory,
+        ];
+        for (int index = 0; index < encyclopediaCategoryButtons.Length && index < categories.Length; index++)
+        {
+            EncyclopediaCategory category = categories[index];
+            encyclopediaCategoryButtons[index].Pressed += () => OnEncyclopediaCategoryPressed(category);
+        }
+    }
+
+    private void UpdateCategoryButtons()
+    {
+        if (encyclopediaCategoryButtons is null)
+        {
+            return;
+        }
+
+        EncyclopediaCategory[] categories =
+        [
+            EncyclopediaCategory.Species,
+            EncyclopediaCategory.Traits,
+            EncyclopediaCategory.Biomes,
+            EncyclopediaCategory.Resources,
+            EncyclopediaCategory.Climate,
+            EncyclopediaCategory.Behaviours,
+            EncyclopediaCategory.Evolution,
+            EncyclopediaCategory.WorldHistory,
+        ];
+        for (int index = 0; index < encyclopediaCategoryButtons.Length && index < categories.Length; index++)
+        {
+            Button button = encyclopediaCategoryButtons[index];
+            bool isSelected = categories[index] == selectedEncyclopediaCategory;
+            button.Disabled = isSelected;
+            button.Text = isSelected ? $"> {GetCategoryLabel(categories[index])}" : GetCategoryLabel(categories[index]);
+        }
+    }
+
+    private void UpdateEntryListStatus(IReadOnlyList<EncyclopediaEntry> filteredEntries)
+    {
+        if (entryListStatusLabel is null)
+        {
+            return;
+        }
+
+        entryListStatusLabel.Text =
+            $"{GetCategoryLabel(selectedEncyclopediaCategory)} Entries\nVisible results: {filteredEntries.Count}\nSearch: {(string.IsNullOrWhiteSpace(encyclopediaSearchText) ? "none" : encyclopediaSearchText)}";
+    }
+
+    private void UpdateEntryListItems(IReadOnlyList<EncyclopediaEntry> filteredEntries)
+    {
+        if (encyclopediaEntryList is null)
+        {
+            return;
+        }
+
+        encyclopediaEntryList.Clear();
+        int selectedIndex = -1;
+        for (int index = 0; index < filteredEntries.Count; index++)
+        {
+            EncyclopediaEntry entry = filteredEntries[index];
+            encyclopediaEntryList.AddItem($"{entry.Title} [{entry.DiscoveryDate}]");
+            if (entry.EntryId == selectedEncyclopediaEntryId)
+            {
+                selectedIndex = index;
+            }
+        }
+
+        if (selectedIndex >= 0)
+        {
+            encyclopediaEntryList.Select(selectedIndex);
+        }
+    }
+
+    private void UpdateRelatedEntryItems(EncyclopediaEntry? selectedEntry)
+    {
+        if (relatedEntriesList is null)
+        {
+            return;
+        }
+
+        relatedEntriesList.Clear();
+        if (selectedEntry is null)
+        {
+            return;
+        }
+
+        IReadOnlyList<string> relatedEntries = selectedEntry.GetRelatedEntries();
+        if (relatedEntries.Count == 0)
+        {
+            relatedEntriesList.AddItem("No related entries yet");
+            return;
+        }
+
+        foreach (string relatedEntryId in relatedEntries)
+        {
+            EncyclopediaEntry? relatedEntry = TryResolveEncyclopediaEntry(relatedEntryId);
+            relatedEntriesList.AddItem(relatedEntry?.Title ?? relatedEntryId);
+        }
+    }
+
+    private IReadOnlyList<EncyclopediaEntry> GetFilteredEncyclopediaEntries()
+    {
+        if (runtime is null)
+        {
+            return Array.Empty<EncyclopediaEntry>();
+        }
+
+        List<EncyclopediaEntry> filteredEntries = new();
+        foreach (EncyclopediaEntry entry in runtime.PlayerProfile.Knowledge.Encyclopedia.GetAll())
+        {
+            if (entry.Category != selectedEncyclopediaCategory)
+            {
+                continue;
+            }
+
+            if (!MatchesSearch(entry) || !MatchesFilter(entry))
+            {
+                continue;
+            }
+
+            filteredEntries.Add(entry);
+        }
+
+        filteredEntries.Sort(CompareEncyclopediaEntries);
+        return filteredEntries.AsReadOnly();
+    }
+
+    private void EnsureSelectedEncyclopediaEntry(IReadOnlyList<EncyclopediaEntry> filteredEntries)
+    {
+        if (filteredEntries.Count == 0)
+        {
+            selectedEncyclopediaEntryId = null;
+            if (compareEncyclopediaEntryId is not null && TryResolveEncyclopediaEntry(compareEncyclopediaEntryId)?.Category == selectedEncyclopediaCategory)
+            {
+                compareEncyclopediaEntryId = null;
+            }
+
+            return;
+        }
+
+        foreach (EncyclopediaEntry entry in filteredEntries)
+        {
+            if (entry.EntryId == selectedEncyclopediaEntryId)
+            {
+                return;
+            }
+        }
+
+        selectedEncyclopediaEntryId = filteredEntries[0].EntryId;
+    }
+
+    private bool MatchesSearch(EncyclopediaEntry entry)
+    {
+        if (string.IsNullOrWhiteSpace(encyclopediaSearchText))
+        {
+            return true;
+        }
+
+        return entry.Title.Contains(encyclopediaSearchText, StringComparison.OrdinalIgnoreCase)
+            || entry.Description.Contains(encyclopediaSearchText, StringComparison.OrdinalIgnoreCase)
+            || entry.EntryId.Contains(encyclopediaSearchText, StringComparison.OrdinalIgnoreCase)
+            || GetCategoryLabel(entry.Category).Contains(encyclopediaSearchText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool MatchesFilter(EncyclopediaEntry entry)
+    {
+        return encyclopediaFilterMode switch
+        {
+            EncyclopediaFilterMode.All => true,
+            EncyclopediaFilterMode.Discovered => entry.UnlockState == EncyclopediaUnlockState.Discovered || entry.UnlockState == EncyclopediaUnlockState.Complete,
+            EncyclopediaFilterMode.Incomplete => entry.UnlockState != EncyclopediaUnlockState.Complete,
+            EncyclopediaFilterMode.RecentlyUpdated => IsRecentlyUpdated(entry),
+            _ => true,
+        };
+    }
+
+    private static bool IsRecentlyUpdated(EncyclopediaEntry entry)
+    {
+        return int.TryParse(entry.DiscoveryDate, out int discoveryTick) && discoveryTick >= 0 && discoveryTick >= 50;
+    }
+
+    private int CompareEncyclopediaEntries(EncyclopediaEntry left, EncyclopediaEntry right)
+    {
+        return encyclopediaSortMode switch
+        {
+            EncyclopediaSortMode.Alphabetical => string.CompareOrdinal(left.Title, right.Title),
+            EncyclopediaSortMode.DiscoveryDate => CompareNumericText(left.DiscoveryDate, right.DiscoveryDate),
+            EncyclopediaSortMode.ObservationCount => GetStatisticValue(right, "TimesObserved").CompareTo(GetStatisticValue(left, "TimesObserved")),
+            EncyclopediaSortMode.CompletionPercentage => GetCompletionPercentage(right).CompareTo(GetCompletionPercentage(left)),
+            _ => string.CompareOrdinal(left.Title, right.Title),
+        };
+    }
+
+    private static int CompareNumericText(string left, string right)
+    {
+        bool leftParsed = int.TryParse(left, out int leftValue);
+        bool rightParsed = int.TryParse(right, out int rightValue);
+        if (leftParsed && rightParsed)
+        {
+            return leftValue.CompareTo(rightValue);
+        }
+
+        return string.CompareOrdinal(left, right);
+    }
+
+    private EncyclopediaEntry? TryResolveEncyclopediaEntry(string? entryId)
+    {
+        if (runtime is null || string.IsNullOrWhiteSpace(entryId))
+        {
+            return null;
+        }
+
+        foreach (EncyclopediaEntry entry in runtime.PlayerProfile.Knowledge.Encyclopedia.GetAll())
+        {
+            if (entry.EntryId == entryId)
+            {
+                return entry;
+            }
+        }
+
+        return null;
+    }
+
+    private static int GetStatisticValue(EncyclopediaEntry entry, string key)
+    {
+        foreach (EncyclopediaStatistic statistic in entry.GetStatistics())
+        {
+            if (statistic.Key == key)
+            {
+                return statistic.Value;
+            }
+        }
+
+        return 0;
+    }
+
+    private static int GetCompletionPercentage(EncyclopediaEntry entry)
+    {
+        return entry.UnlockState switch
+        {
+            EncyclopediaUnlockState.Hidden => 0,
+            EncyclopediaUnlockState.Discovered => 50,
+            EncyclopediaUnlockState.Complete => 100,
+            _ => 0,
+        };
+    }
+
+    private string BuildEntryStatisticsText(EncyclopediaEntry? entry)
+    {
+        if (entry is null)
+        {
+            return "Statistics\nNo entry statistics are available without a selection.";
+        }
+
+        StringBuilder builder = new("Statistics\n");
+        foreach (EncyclopediaStatistic statistic in entry.GetStatistics())
+        {
+            builder.Append(HumanizeIdentifier(statistic.Key))
+                .Append(": ")
+                .Append(statistic.Value)
+                .AppendLine();
+        }
+
+        builder.Append("Completion: ").Append(GetCompletionPercentage(entry)).Append('%');
+        return builder.ToString().TrimEnd();
+    }
+
+    private string BuildComparisonText(EncyclopediaEntry? selectedEntry, EncyclopediaEntry? compareEntry)
+    {
+        if (selectedEntry is null)
+        {
+            return "Comparison is inactive. Select one entry to start.";
+        }
+
+        if (compareEntry is null)
+        {
+            return "Comparison is inactive. Press Compare to pin the current entry, then choose another entry from the same category.";
+        }
+
+        if (compareEntry.EntryId == selectedEntry.EntryId)
+        {
+            return $"Comparison anchor set to {compareEntry.Title}. Select another entry in {GetCategoryLabel(compareEntry.Category)} to compare.";
+        }
+
+        if (compareEntry.Category != selectedEntry.Category)
+        {
+            return "Comparison requires two entries from the same category.";
+        }
+
+        return
+            $"Comparison\n{compareEntry.Title} vs {selectedEntry.Title}\nDiscovery ticks: {compareEntry.DiscoveryDate} / {selectedEntry.DiscoveryDate}\nTimes observed: {GetStatisticValue(compareEntry, "TimesObserved")} / {GetStatisticValue(selectedEntry, "TimesObserved")}\nWorlds found: {GetStatisticValue(compareEntry, "WorldsFound")} / {GetStatisticValue(selectedEntry, "WorldsFound")}\nCompletion: {GetCompletionPercentage(compareEntry)}% / {GetCompletionPercentage(selectedEntry)}%";
+    }
+
+    private string BuildEncyclopediaProgressText()
+    {
+        if (runtime is null)
+        {
+            return "Progress Summary\nNo encyclopedia data is available.";
+        }
+
+        StringBuilder builder = new("Progress Summary\n");
+        foreach (EncyclopediaCategory category in Enum.GetValues<EncyclopediaCategory>())
+        {
+            int count = 0;
+            foreach (EncyclopediaEntry entry in runtime.PlayerProfile.Knowledge.Encyclopedia.GetAll())
+            {
+                if (entry.Category == category)
+                {
+                    count++;
+                }
+            }
+
+            builder.Append(GetCategoryLabel(category))
+                .Append(": ")
+                .Append(count)
+                .AppendLine();
+        }
+
+        builder.Append("Total entries: ").Append(runtime.PlayerProfile.Knowledge.Encyclopedia.Count);
+        return builder.ToString().TrimEnd();
+    }
+
+    private static string[] BuildEntryIdList(IReadOnlyList<EncyclopediaEntry> entries)
+    {
+        string[] identifiers = new string[entries.Count];
+        for (int index = 0; index < entries.Count; index++)
+        {
+            identifiers[index] = entries[index].EntryId;
+        }
+
+        return identifiers;
+    }
+
+    private static string[] BuildRelatedEntryIdList(EncyclopediaEntry entry)
+    {
+        IReadOnlyList<string> relatedEntries = entry.GetRelatedEntries();
+        string[] identifiers = new string[relatedEntries.Count];
+        for (int index = 0; index < relatedEntries.Count; index++)
+        {
+            identifiers[index] = relatedEntries[index];
+        }
+
+        return identifiers;
+    }
+
+    private static string GetCategoryLabel(EncyclopediaCategory category)
+    {
+        return category switch
+        {
+            EncyclopediaCategory.Species => "Species",
+            EncyclopediaCategory.Traits => "Traits",
+            EncyclopediaCategory.Biomes => "Biomes",
+            EncyclopediaCategory.Resources => "Resources",
+            EncyclopediaCategory.Climate => "Climate",
+            EncyclopediaCategory.Behaviours => "Behaviours",
+            EncyclopediaCategory.Evolution => "Evolution",
+            EncyclopediaCategory.WorldHistory => "World History",
+            _ => "Unknown",
+        };
+    }
+
+    private static string GetFilterModeLabel(EncyclopediaFilterMode mode)
+    {
+        return mode switch
+        {
+            EncyclopediaFilterMode.All => "All",
+            EncyclopediaFilterMode.Discovered => "Discovered",
+            EncyclopediaFilterMode.Incomplete => "Incomplete",
+            EncyclopediaFilterMode.RecentlyUpdated => "Recent",
+            _ => "All",
+        };
+    }
+
+    private static string GetSortModeLabel(EncyclopediaSortMode mode)
+    {
+        return mode switch
+        {
+            EncyclopediaSortMode.Alphabetical => "A-Z",
+            EncyclopediaSortMode.DiscoveryDate => "Discovery",
+            EncyclopediaSortMode.ObservationCount => "Observed",
+            EncyclopediaSortMode.CompletionPercentage => "Completion",
+            _ => "A-Z",
+        };
     }
 
     private IReadOnlyList<HudNotificationEntry> BuildNotificationsFromObservedChanges()
@@ -1159,9 +1720,109 @@ public sealed partial class GaiaEngineBootstrap : Node
         AdvanceSimulationTick();
     }
 
+    private void OnEncyclopediaPressed()
+    {
+        if (runtime is null || runtime.PlayerProfile.Knowledge.Encyclopedia.Count == 0)
+        {
+            return;
+        }
+
+        isEncyclopediaOverlayVisible = !isEncyclopediaOverlayVisible;
+        if (isEncyclopediaOverlayVisible)
+        {
+            isStatisticsOverlayVisible = false;
+        }
+    }
+
+    private void OnEncyclopediaFilterPressed()
+    {
+        encyclopediaFilterMode = encyclopediaFilterMode switch
+        {
+            EncyclopediaFilterMode.All => EncyclopediaFilterMode.Discovered,
+            EncyclopediaFilterMode.Discovered => EncyclopediaFilterMode.Incomplete,
+            EncyclopediaFilterMode.Incomplete => EncyclopediaFilterMode.RecentlyUpdated,
+            _ => EncyclopediaFilterMode.All,
+        };
+    }
+
+    private void OnEncyclopediaSortPressed()
+    {
+        encyclopediaSortMode = encyclopediaSortMode switch
+        {
+            EncyclopediaSortMode.Alphabetical => EncyclopediaSortMode.DiscoveryDate,
+            EncyclopediaSortMode.DiscoveryDate => EncyclopediaSortMode.ObservationCount,
+            EncyclopediaSortMode.ObservationCount => EncyclopediaSortMode.CompletionPercentage,
+            _ => EncyclopediaSortMode.Alphabetical,
+        };
+    }
+
+    private void OnEncyclopediaComparePressed()
+    {
+        EncyclopediaEntry? selectedEntry = TryResolveEncyclopediaEntry(selectedEncyclopediaEntryId);
+        if (selectedEntry is null)
+        {
+            compareEncyclopediaEntryId = null;
+            return;
+        }
+
+        compareEncyclopediaEntryId = compareEncyclopediaEntryId is null ? selectedEntry.EntryId : null;
+    }
+
+    private void OnEncyclopediaSearchTextChanged(string text)
+    {
+        encyclopediaSearchText = text ?? string.Empty;
+        selectedEncyclopediaEntryId = null;
+    }
+
+    private void OnEncyclopediaEntrySelected(long index)
+    {
+        IReadOnlyList<EncyclopediaEntry> filteredEntries = GetFilteredEncyclopediaEntries();
+        if (index < 0 || index >= filteredEntries.Count)
+        {
+            return;
+        }
+
+        selectedEncyclopediaEntryId = filteredEntries[(int)index].EntryId;
+    }
+
+    private void OnRelatedEntrySelected(long index)
+    {
+        EncyclopediaEntry? selectedEntry = TryResolveEncyclopediaEntry(selectedEncyclopediaEntryId);
+        if (selectedEntry is null)
+        {
+            return;
+        }
+
+        IReadOnlyList<string> relatedEntries = selectedEntry.GetRelatedEntries();
+        if (index < 0 || index >= relatedEntries.Count)
+        {
+            return;
+        }
+
+        EncyclopediaEntry? relatedEntry = TryResolveEncyclopediaEntry(relatedEntries[(int)index]);
+        if (relatedEntry is null)
+        {
+            return;
+        }
+
+        selectedEncyclopediaCategory = relatedEntry.Category;
+        selectedEncyclopediaEntryId = relatedEntry.EntryId;
+    }
+
+    private void OnEncyclopediaCategoryPressed(EncyclopediaCategory category)
+    {
+        selectedEncyclopediaCategory = category;
+        selectedEncyclopediaEntryId = null;
+        compareEncyclopediaEntryId = null;
+    }
+
     private void OnStatisticsPressed()
     {
         isStatisticsOverlayVisible = !isStatisticsOverlayVisible;
+        if (isStatisticsOverlayVisible)
+        {
+            isEncyclopediaOverlayVisible = false;
+        }
     }
 
     private void AdvanceSimulationTick()
@@ -1323,6 +1984,23 @@ public sealed partial class GaiaEngineBootstrap : Node
         string Performance,
         string History);
 
+    private sealed record EncyclopediaViewSnapshot(
+        bool IsVisible,
+        string FilterLabel,
+        string SortLabel,
+        EncyclopediaCategory Category,
+        string SearchText,
+        string? SelectedEntryId,
+        string? CompareEntryId,
+        string EntryListStatus,
+        string DetailsStatus,
+        string DetailsBody,
+        string DetailsStatistics,
+        string ComparisonSummary,
+        string ProgressSummary,
+        string[] ActiveEntryIds,
+        string[] RelatedEntryIds);
+
     private sealed record StatisticsHistorySample(
         long Tick,
         int Day,
@@ -1343,6 +2021,22 @@ public sealed partial class GaiaEngineBootstrap : Node
         int ProcessedEvents,
         int ExecutedPhases,
         int ScheduledSystems);
+
+    private enum EncyclopediaFilterMode
+    {
+        All = 0,
+        Discovered = 1,
+        Incomplete = 2,
+        RecentlyUpdated = 3,
+    }
+
+    private enum EncyclopediaSortMode
+    {
+        Alphabetical = 0,
+        DiscoveryDate = 1,
+        ObservationCount = 2,
+        CompletionPercentage = 3,
+    }
 
     private sealed record ObservationSelection(
         bool IsVisible,
