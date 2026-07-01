@@ -41,4 +41,9 @@ internal sealed class PlayerProfileDocument
     /// Gets or sets the serialized statistics section.
     /// </summary>
     public PlayerStatisticsDocument? Statistics { get; set; }
+
+    /// <summary>
+    /// Gets or sets the serialized settings section.
+    /// </summary>
+    public PlayerSettingsDocument? Settings { get; set; }
 }

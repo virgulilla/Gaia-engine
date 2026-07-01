@@ -120,7 +120,8 @@ public sealed class DeterministicDiscoverySystem : IDiscoverySystem
                 profile.Progression.Unlocks,
                 profile.Progression.CompletedMilestones),
             profile.Achievements,
-            new PlayerStatistics(totalUnlocked, duplicateObservations));
+            new PlayerStatistics(totalUnlocked, duplicateObservations),
+            profile.Settings);
         return new DiscoveryEvaluationResult(updatedProfile, unlocked.AsReadOnly());
     }
 

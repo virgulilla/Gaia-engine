@@ -75,7 +75,8 @@ public sealed class DeterministicAchievementSystem : IAchievementSystem
             profile.Objectives,
             profile.Progression,
             new AchievementCollection(updatedEntries.AsReadOnly()),
-            profile.Statistics);
+            profile.Statistics,
+            profile.Settings);
         return new AchievementEvaluationResult(updatedProfile, unlockedEntries.AsReadOnly());
     }
 

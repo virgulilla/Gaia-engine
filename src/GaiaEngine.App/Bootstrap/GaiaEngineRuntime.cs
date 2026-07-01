@@ -140,6 +140,25 @@ public sealed class GaiaEngineRuntime
         return count;
     }
 
+    /// <summary>
+    /// Replaces the persistent player settings without affecting deterministic simulation state.
+    /// </summary>
+    /// <param name="settings">The new player settings to store.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="settings"/> is <see langword="null"/>.</exception>
+    public void UpdatePlayerSettings(PlayerSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+
+        PlayerProfile = new PlayerProfile(
+            PlayerProfile.Identity,
+            PlayerProfile.Knowledge,
+            PlayerProfile.Objectives,
+            PlayerProfile.Progression,
+            PlayerProfile.Achievements,
+            PlayerProfile.Statistics,
+            settings);
+    }
+
     private PlayerProfile EvaluateGameplay(
         PlayerProfile profile,
         GaiaEngine.Domain.World.World world,

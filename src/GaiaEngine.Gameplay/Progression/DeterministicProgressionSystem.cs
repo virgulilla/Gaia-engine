@@ -61,7 +61,8 @@ public sealed class DeterministicProgressionSystem : IProgressionSystem
                 new ProgressionUnlockCollection(unlockIds.AsReadOnly()),
                 new ProgressionMilestoneCollection(milestoneIds.AsReadOnly())),
             profile.Achievements,
-            profile.Statistics);
+            profile.Statistics,
+            profile.Settings);
         return new ProgressionEvaluationResult(updatedProfile, newUnlockIds.AsReadOnly(), newMilestoneIds.AsReadOnly());
     }
 

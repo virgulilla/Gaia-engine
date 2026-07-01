@@ -6,6 +6,7 @@ using GaiaEngine.Gameplay.Achievements;
 using GaiaEngine.Gameplay.Discovery;
 using GaiaEngine.Gameplay.Encyclopedia;
 using GaiaEngine.Gameplay.Objectives;
+using GaiaEngine.Gameplay.Player;
 using GaiaEngine.Godot.UI.Notifications;
 using GaiaEngine.Simulation.Diagnostics;
 using GaiaEngine.Simulation.Pipeline;
@@ -18,6 +19,7 @@ namespace GaiaEngine.Godot.Bootstrap;
 /// </summary>
 public sealed partial class GaiaEngineBootstrap : Node
 {
+    private const string HudRootPath = "HudLayer/HudRoot";
     private const string WorldNameLabelPath = "HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow/WorldNameLabel";
     private const string TimeSummaryLabelPath = "HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow/TimeSummaryLabel";
     private const string TickRateLabelPath = "HudLayer/HudRoot/TopBar/TopBarMargin/TopBarRow/TickRateChip/TickRateChipMargin/TickRateLabel";
@@ -26,10 +28,12 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string StepTickButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/StepTickButton";
     private const string EncyclopediaButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/EncyclopediaButton";
     private const string StatisticsButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/StatisticsButton";
+    private const string SettingsButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/SettingsButton";
     private const string LeftPanelPath = "HudLayer/HudRoot/LeftPanel";
     private const string ContextPanelPath = "HudLayer/HudRoot/ContextPanel";
     private const string StatisticsOverlayPath = "HudLayer/HudRoot/StatisticsOverlay";
     private const string EncyclopediaOverlayPath = "HudLayer/HudRoot/EncyclopediaOverlay";
+    private const string SettingsOverlayPath = "HudLayer/HudRoot/SettingsOverlay";
     private const string SelectionHintLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionHintLabel";
     private const string SelectionTypeLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionTypeLabel";
     private const string SelectionPrimaryLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionPrimaryLabel";
@@ -81,6 +85,18 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string RelatedEntriesListPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn/RelatedEntriesList";
     private const string ComparisonSummaryLabelPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn/ComparisonSummaryLabel";
     private const string ProgressSummaryLabelPath = "HudLayer/HudRoot/EncyclopediaOverlay/EncyclopediaOverlayMargin/EncyclopediaOverlayColumn/EncyclopediaBodyRow/EncyclopediaDetailsPanel/EncyclopediaDetailsMargin/EncyclopediaDetailsColumn/ProgressSummaryLabel";
+    private const string AccessibilitySettingsCategoryButtonPath = "HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsNavigationPanel/SettingsNavigationMargin/SettingsNavigationColumn/AccessibilitySettingsCategoryButton";
+    private const string AudioSettingsCategoryButtonPath = "HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsNavigationPanel/SettingsNavigationMargin/SettingsNavigationColumn/AudioSettingsCategoryButton";
+    private const string ControlsSettingsCategoryButtonPath = "HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsNavigationPanel/SettingsNavigationMargin/SettingsNavigationColumn/ControlsSettingsCategoryButton";
+    private const string LanguageSettingsCategoryButtonPath = "HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsNavigationPanel/SettingsNavigationMargin/SettingsNavigationColumn/LanguageSettingsCategoryButton";
+    private const string GraphicsSettingsCategoryButtonPath = "HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsNavigationPanel/SettingsNavigationMargin/SettingsNavigationColumn/GraphicsSettingsCategoryButton";
+    private const string SettingsCategoryTitleLabelPath = "HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn/SettingsCategoryTitleLabel";
+    private const string SettingsCategorySummaryLabelPath = "HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn/SettingsCategorySummaryLabel";
+    private const string SettingsOptionButton1Path = "HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn/SettingsOptionButton1";
+    private const string SettingsOptionButton2Path = "HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn/SettingsOptionButton2";
+    private const string SettingsOptionButton3Path = "HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn/SettingsOptionButton3";
+    private const string SettingsOptionButton4Path = "HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn/SettingsOptionButton4";
+    private const string SettingsFooterLabelPath = "HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn/SettingsFooterLabel";
     private const string NotificationCard1Path = "HudLayer/HudRoot/NotificationArea/NotificationCard1";
     private const string NotificationCard2Path = "HudLayer/HudRoot/NotificationArea/NotificationCard2";
     private const string NotificationCard3Path = "HudLayer/HudRoot/NotificationArea/NotificationCard3";
@@ -93,6 +109,7 @@ public sealed partial class GaiaEngineBootstrap : Node
 
     private GaiaEngineApplication? application;
     private GaiaEngineRuntime? runtime;
+    private Control? hudRoot;
     private Label? worldNameLabel;
     private Label? timeSummaryLabel;
     private Label? tickRateLabel;
@@ -101,13 +118,19 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Button? stepTickButton;
     private Button? encyclopediaButton;
     private Button? statisticsButton;
+    private Button? settingsButton;
     private Button? encyclopediaFilterButton;
     private Button? encyclopediaSortButton;
     private Button? encyclopediaCompareButton;
+    private Button? settingsOptionButton1;
+    private Button? settingsOptionButton2;
+    private Button? settingsOptionButton3;
+    private Button? settingsOptionButton4;
     private PanelContainer? leftPanel;
     private PanelContainer? contextPanel;
     private PanelContainer? statisticsOverlay;
     private PanelContainer? encyclopediaOverlay;
+    private PanelContainer? settingsOverlay;
     private Label? selectionHintLabel;
     private Label? selectionTypeLabel;
     private Label? selectionPrimaryLabel;
@@ -145,10 +168,14 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Label? entryDetailsStatisticsLabel;
     private Label? comparisonSummaryLabel;
     private Label? progressSummaryLabel;
+    private Label? settingsCategoryTitleLabel;
+    private Label? settingsCategorySummaryLabel;
+    private Label? settingsFooterLabel;
     private LineEdit? encyclopediaSearchBar;
     private ItemList? encyclopediaEntryList;
     private ItemList? relatedEntriesList;
     private Button[]? encyclopediaCategoryButtons;
+    private Button[]? settingsCategoryButtons;
     private PanelContainer[]? notificationCards;
     private Label[]? notificationTitleLabels;
     private Label[]? notificationBodyLabels;
@@ -157,12 +184,14 @@ public sealed partial class GaiaEngineBootstrap : Node
     private HudViewSnapshot? lastSnapshot;
     private StatisticsViewSnapshot? lastStatisticsSnapshot;
     private EncyclopediaViewSnapshot? lastEncyclopediaSnapshot;
+    private SettingsViewSnapshot? lastSettingsSnapshot;
     private RuntimeObservationSnapshot? lastObservedState;
     private FocusOverrideKind focusOverrideKind;
     private GaiaEngine.Domain.Identifiers.OrganismId? focusedOrganismId;
     private bool isSimulationPaused;
     private bool isStatisticsOverlayVisible;
     private bool isEncyclopediaOverlayVisible;
+    private bool isSettingsOverlayVisible;
     private SimulationTickDiagnostics? lastDiagnostics;
     private readonly List<StatisticsHistorySample> statisticsHistory = new();
     private EncyclopediaCategory selectedEncyclopediaCategory = EncyclopediaCategory.Species;
@@ -171,6 +200,7 @@ public sealed partial class GaiaEngineBootstrap : Node
     private string encyclopediaSearchText = string.Empty;
     private string? selectedEncyclopediaEntryId;
     private string? compareEncyclopediaEntryId;
+    private SettingsCategory selectedSettingsCategory = SettingsCategory.Accessibility;
 
     /// <summary>
     /// Initializes the application when the root scene enters the tree.
@@ -182,6 +212,7 @@ public sealed partial class GaiaEngineBootstrap : Node
         string worldConfigurationPath = ProjectSettings.GlobalizePath("res://Configuration/World/WorldConfiguration.json");
         application = GaiaEngineCompositionRoot.CreateApplication(engineConfigurationPath, simulationConfigurationPath, worldConfigurationPath);
         runtime = application.Initialize();
+        hudRoot = GetNode<Control>(HudRootPath);
         worldNameLabel = GetNode<Label>(WorldNameLabelPath);
         timeSummaryLabel = GetNode<Label>(TimeSummaryLabelPath);
         tickRateLabel = GetNode<Label>(TickRateLabelPath);
@@ -190,13 +221,19 @@ public sealed partial class GaiaEngineBootstrap : Node
         stepTickButton = GetNode<Button>(StepTickButtonPath);
         encyclopediaButton = GetNode<Button>(EncyclopediaButtonPath);
         statisticsButton = GetNode<Button>(StatisticsButtonPath);
+        settingsButton = GetNode<Button>(SettingsButtonPath);
         encyclopediaFilterButton = GetNode<Button>(EncyclopediaFilterButtonPath);
         encyclopediaSortButton = GetNode<Button>(EncyclopediaSortButtonPath);
         encyclopediaCompareButton = GetNode<Button>(EncyclopediaCompareButtonPath);
+        settingsOptionButton1 = GetNode<Button>(SettingsOptionButton1Path);
+        settingsOptionButton2 = GetNode<Button>(SettingsOptionButton2Path);
+        settingsOptionButton3 = GetNode<Button>(SettingsOptionButton3Path);
+        settingsOptionButton4 = GetNode<Button>(SettingsOptionButton4Path);
         leftPanel = GetNode<PanelContainer>(LeftPanelPath);
         contextPanel = GetNode<PanelContainer>(ContextPanelPath);
         statisticsOverlay = GetNode<PanelContainer>(StatisticsOverlayPath);
         encyclopediaOverlay = GetNode<PanelContainer>(EncyclopediaOverlayPath);
+        settingsOverlay = GetNode<PanelContainer>(SettingsOverlayPath);
         selectionHintLabel = GetNode<Label>(SelectionHintLabelPath);
         selectionTypeLabel = GetNode<Label>(SelectionTypeLabelPath);
         selectionPrimaryLabel = GetNode<Label>(SelectionPrimaryLabelPath);
@@ -234,6 +271,9 @@ public sealed partial class GaiaEngineBootstrap : Node
         entryDetailsStatisticsLabel = GetNode<Label>(EntryDetailsStatisticsLabelPath);
         comparisonSummaryLabel = GetNode<Label>(ComparisonSummaryLabelPath);
         progressSummaryLabel = GetNode<Label>(ProgressSummaryLabelPath);
+        settingsCategoryTitleLabel = GetNode<Label>(SettingsCategoryTitleLabelPath);
+        settingsCategorySummaryLabel = GetNode<Label>(SettingsCategorySummaryLabelPath);
+        settingsFooterLabel = GetNode<Label>(SettingsFooterLabelPath);
         encyclopediaSearchBar = GetNode<LineEdit>(EncyclopediaSearchBarPath);
         encyclopediaEntryList = GetNode<ItemList>(EncyclopediaEntryListPath);
         relatedEntriesList = GetNode<ItemList>(RelatedEntriesListPath);
@@ -247,6 +287,14 @@ public sealed partial class GaiaEngineBootstrap : Node
             GetNode<Button>(BehavioursCategoryButtonPath),
             GetNode<Button>(EvolutionCategoryButtonPath),
             GetNode<Button>(WorldHistoryCategoryButtonPath),
+        ];
+        settingsCategoryButtons =
+        [
+            GetNode<Button>(AccessibilitySettingsCategoryButtonPath),
+            GetNode<Button>(AudioSettingsCategoryButtonPath),
+            GetNode<Button>(ControlsSettingsCategoryButtonPath),
+            GetNode<Button>(LanguageSettingsCategoryButtonPath),
+            GetNode<Button>(GraphicsSettingsCategoryButtonPath),
         ];
         notificationCards =
         [
@@ -284,17 +332,25 @@ public sealed partial class GaiaEngineBootstrap : Node
         stepTickButton.Pressed += OnStepTickPressed;
         encyclopediaButton.Pressed += OnEncyclopediaPressed;
         statisticsButton.Pressed += OnStatisticsPressed;
+        settingsButton.Pressed += OnSettingsPressed;
         encyclopediaFilterButton.Pressed += OnEncyclopediaFilterPressed;
         encyclopediaSortButton.Pressed += OnEncyclopediaSortPressed;
         encyclopediaCompareButton.Pressed += OnEncyclopediaComparePressed;
+        settingsOptionButton1.Pressed += () => OnSettingsOptionPressed(0);
+        settingsOptionButton2.Pressed += () => OnSettingsOptionPressed(1);
+        settingsOptionButton3.Pressed += () => OnSettingsOptionPressed(2);
+        settingsOptionButton4.Pressed += () => OnSettingsOptionPressed(3);
         encyclopediaSearchBar.TextChanged += OnEncyclopediaSearchTextChanged;
         encyclopediaEntryList.ItemSelected += OnEncyclopediaEntrySelected;
         relatedEntriesList.ItemSelected += OnRelatedEntrySelected;
         WireCategoryButtons();
+        WireSettingsCategoryButtons();
+        ApplyPresentationSettings();
 
         UpdateSimulationStatusText();
         UpdateStatisticsOverlay();
         UpdateEncyclopediaOverlay();
+        UpdateSettingsOverlay();
         UpdateNotificationWidgets();
         GD.Print($"Gaia Engine initialized with tick rate {runtime.EngineConfiguration.TickRate}.");
     }
@@ -322,9 +378,11 @@ public sealed partial class GaiaEngineBootstrap : Node
         }
 
         notificationQueue.Advance(delta);
+        ApplyPresentationSettings();
         UpdateSimulationStatusText();
         UpdateStatisticsOverlay();
         UpdateEncyclopediaOverlay();
+        UpdateSettingsOverlay();
         UpdateNotificationWidgets();
     }
 
@@ -339,6 +397,7 @@ public sealed partial class GaiaEngineBootstrap : Node
             || stepTickButton is null
             || encyclopediaButton is null
             || statisticsButton is null
+            || settingsButton is null
             || leftPanel is null
             || contextPanel is null
             || selectionHintLabel is null
@@ -375,6 +434,8 @@ public sealed partial class GaiaEngineBootstrap : Node
         encyclopediaButton.Text = isEncyclopediaOverlayVisible ? "Close Archive" : "Encyclopedia";
         statisticsButton.Disabled = false;
         statisticsButton.Text = isStatisticsOverlayVisible ? "Close Stats" : "Statistics";
+        settingsButton.Disabled = false;
+        settingsButton.Text = isSettingsOverlayVisible ? "Close Settings" : "Settings";
         GaiaEngine.Domain.World.Chunk primaryChunk = runtime.World.GetChunks()[0];
         HudViewSnapshot snapshot = new(
             runtime.World.Metadata.WorldName,
@@ -943,6 +1004,224 @@ public sealed partial class GaiaEngineBootstrap : Node
         return identifiers;
     }
 
+    private void UpdateSettingsOverlay()
+    {
+        if (runtime is null
+            || settingsOverlay is null
+            || settingsCategoryTitleLabel is null
+            || settingsCategorySummaryLabel is null
+            || settingsFooterLabel is null
+            || settingsOptionButton1 is null
+            || settingsOptionButton2 is null
+            || settingsOptionButton3 is null
+            || settingsOptionButton4 is null
+            || settingsCategoryButtons is null)
+        {
+            return;
+        }
+
+        settingsOverlay.Visible = isSettingsOverlayVisible;
+        UpdateSettingsCategoryButtons();
+        string categoryTitle = GetSettingsCategoryLabel(selectedSettingsCategory);
+        string categorySummary = BuildSettingsCategorySummary(runtime.PlayerProfile.Settings, selectedSettingsCategory);
+        string footerText = "Changes affect presentation only and never modify simulation determinism.";
+        string option1Text = GetSettingsOptionLabel(runtime.PlayerProfile.Settings, selectedSettingsCategory, 0);
+        string option2Text = GetSettingsOptionLabel(runtime.PlayerProfile.Settings, selectedSettingsCategory, 1);
+        string option3Text = GetSettingsOptionLabel(runtime.PlayerProfile.Settings, selectedSettingsCategory, 2);
+        string option4Text = GetSettingsOptionLabel(runtime.PlayerProfile.Settings, selectedSettingsCategory, 3);
+
+        SettingsViewSnapshot snapshot = new(
+            isSettingsOverlayVisible,
+            selectedSettingsCategory,
+            categoryTitle,
+            categorySummary,
+            footerText,
+            option1Text,
+            option2Text,
+            option3Text,
+            option4Text);
+
+        if (snapshot == lastSettingsSnapshot)
+        {
+            return;
+        }
+
+        lastSettingsSnapshot = snapshot;
+        settingsCategoryTitleLabel.Text = snapshot.CategoryTitle;
+        settingsCategorySummaryLabel.Text = snapshot.CategorySummary;
+        settingsFooterLabel.Text = snapshot.Footer;
+        settingsOptionButton1.Text = snapshot.Option1;
+        settingsOptionButton2.Text = snapshot.Option2;
+        settingsOptionButton3.Text = snapshot.Option3;
+        settingsOptionButton4.Text = snapshot.Option4;
+    }
+
+    private void WireSettingsCategoryButtons()
+    {
+        if (settingsCategoryButtons is null)
+        {
+            return;
+        }
+
+        SettingsCategory[] categories =
+        [
+            SettingsCategory.Accessibility,
+            SettingsCategory.Audio,
+            SettingsCategory.Controls,
+            SettingsCategory.Language,
+            SettingsCategory.Graphics,
+        ];
+
+        for (int index = 0; index < settingsCategoryButtons.Length && index < categories.Length; index++)
+        {
+            SettingsCategory category = categories[index];
+            settingsCategoryButtons[index].Pressed += () => selectedSettingsCategory = category;
+        }
+    }
+
+    private void UpdateSettingsCategoryButtons()
+    {
+        if (settingsCategoryButtons is null)
+        {
+            return;
+        }
+
+        SettingsCategory[] categories =
+        [
+            SettingsCategory.Accessibility,
+            SettingsCategory.Audio,
+            SettingsCategory.Controls,
+            SettingsCategory.Language,
+            SettingsCategory.Graphics,
+        ];
+
+        for (int index = 0; index < settingsCategoryButtons.Length && index < categories.Length; index++)
+        {
+            bool isSelected = categories[index] == selectedSettingsCategory;
+            settingsCategoryButtons[index].Disabled = isSelected;
+            settingsCategoryButtons[index].Text = isSelected
+                ? $"> {GetSettingsCategoryLabel(categories[index])}"
+                : GetSettingsCategoryLabel(categories[index]);
+        }
+    }
+
+    private void ApplyPresentationSettings()
+    {
+        if (runtime is null || hudRoot is null)
+        {
+            return;
+        }
+
+        PlayerSettings settings = runtime.PlayerProfile.Settings;
+        float brightnessFactor = settings.BrightnessPercent / 100f;
+        float scaleFactor = settings.Accessibility.UiScalePercent / 100f;
+        if (settings.Accessibility.LargeText)
+        {
+            scaleFactor *= 1.15f;
+        }
+
+        Color accessibilityTint = settings.Accessibility.ColorProfile switch
+        {
+            AccessibilityColorProfile.Protanopia => new Color(0.92f, 1.0f, 1.08f, 1f),
+            AccessibilityColorProfile.Deuteranopia => new Color(1.0f, 0.96f, 1.08f, 1f),
+            AccessibilityColorProfile.Tritanopia => new Color(1.06f, 0.98f, 0.92f, 1f),
+            _ => Colors.White,
+        };
+        Color brightnessColor = new(
+            brightnessFactor * accessibilityTint.R,
+            brightnessFactor * accessibilityTint.G,
+            brightnessFactor * accessibilityTint.B,
+            1f);
+
+        hudRoot.Scale = new Vector2(scaleFactor, scaleFactor);
+        hudRoot.Modulate = settings.Accessibility.HighContrastMode ? brightnessColor.Lightened(0.15f) : brightnessColor;
+
+        float minimumButtonHeight = settings.Accessibility.LargeTouchTargets ? 52f : 40f;
+        ApplyButtonSize(inspectButton, minimumButtonHeight);
+        ApplyButtonSize(timeControlsButton, minimumButtonHeight);
+        ApplyButtonSize(stepTickButton, minimumButtonHeight);
+        ApplyButtonSize(encyclopediaButton, minimumButtonHeight);
+        ApplyButtonSize(statisticsButton, minimumButtonHeight);
+        ApplyButtonSize(settingsButton, minimumButtonHeight);
+        ApplyButtonSize(encyclopediaFilterButton, minimumButtonHeight);
+        ApplyButtonSize(encyclopediaSortButton, minimumButtonHeight);
+        ApplyButtonSize(encyclopediaCompareButton, minimumButtonHeight);
+        ApplyButtonSize(settingsOptionButton1, minimumButtonHeight + 2f);
+        ApplyButtonSize(settingsOptionButton2, minimumButtonHeight + 2f);
+        ApplyButtonSize(settingsOptionButton3, minimumButtonHeight + 2f);
+        ApplyButtonSize(settingsOptionButton4, minimumButtonHeight + 2f);
+    }
+
+    private static void ApplyButtonSize(Button? button, float minimumHeight)
+    {
+        if (button is null)
+        {
+            return;
+        }
+
+        Vector2 current = button.CustomMinimumSize;
+        button.CustomMinimumSize = new Vector2(current.X, minimumHeight);
+    }
+
+    private string BuildSettingsCategorySummary(PlayerSettings settings, SettingsCategory category)
+    {
+        return category switch
+        {
+            SettingsCategory.Accessibility => $"UI Scale: {settings.Accessibility.UiScalePercent}%\nHigh Contrast: {OnOff(settings.Accessibility.HighContrastMode)}\nReduced Motion: {OnOff(settings.Accessibility.ReducedMotion)}\nSimplified Notifications: {OnOff(settings.Accessibility.SimplifiedNotifications)}",
+            SettingsCategory.Audio => $"Master Volume: {settings.MasterVolumePercent}%\nMusic Volume: {settings.MusicVolumePercent}%\nEffects Volume: {settings.EffectsVolumePercent}%\nVisual Event Indicators: {OnOff(settings.Accessibility.VisualEventIndicators)}",
+            SettingsCategory.Controls => $"Large Touch Targets: {OnOff(settings.Accessibility.LargeTouchTargets)}\nToggle Instead Of Hold: {OnOff(settings.Accessibility.ToggleInsteadOfHold)}\nHold Duration: {settings.Accessibility.HoldDurationMilliseconds} ms\nController Support: {OnOff(settings.ControllerSupportEnabled)}",
+            SettingsCategory.Language => $"Language: {settings.Language}\nLarge Text: {OnOff(settings.Accessibility.LargeText)}\nSubtitle Size: {settings.Accessibility.SubtitleSizePercent}%\nColor Profile: {settings.Accessibility.ColorProfile}",
+            SettingsCategory.Graphics => $"Brightness: {settings.BrightnessPercent}%\nHigh Contrast: {OnOff(settings.Accessibility.HighContrastMode)}\nColor Profile: {settings.Accessibility.ColorProfile}\nReduced Motion: {OnOff(settings.Accessibility.ReducedMotion)}",
+            _ => string.Empty,
+        };
+    }
+
+    private string GetSettingsOptionLabel(PlayerSettings settings, SettingsCategory category, int optionIndex)
+    {
+        return (category, optionIndex) switch
+        {
+            (SettingsCategory.Accessibility, 0) => $"UI Scale: {settings.Accessibility.UiScalePercent}%",
+            (SettingsCategory.Accessibility, 1) => $"High Contrast: {OnOff(settings.Accessibility.HighContrastMode)}",
+            (SettingsCategory.Accessibility, 2) => $"Color Profile: {settings.Accessibility.ColorProfile}",
+            (SettingsCategory.Accessibility, 3) => $"Reduced Motion: {OnOff(settings.Accessibility.ReducedMotion)}",
+            (SettingsCategory.Audio, 0) => $"Master Volume: {settings.MasterVolumePercent}%",
+            (SettingsCategory.Audio, 1) => $"Music Volume: {settings.MusicVolumePercent}%",
+            (SettingsCategory.Audio, 2) => $"Effects Volume: {settings.EffectsVolumePercent}%",
+            (SettingsCategory.Audio, 3) => $"Visual Indicators: {OnOff(settings.Accessibility.VisualEventIndicators)}",
+            (SettingsCategory.Controls, 0) => $"Large Touch Targets: {OnOff(settings.Accessibility.LargeTouchTargets)}",
+            (SettingsCategory.Controls, 1) => $"Toggle Instead Of Hold: {OnOff(settings.Accessibility.ToggleInsteadOfHold)}",
+            (SettingsCategory.Controls, 2) => $"Hold Duration: {settings.Accessibility.HoldDurationMilliseconds} ms",
+            (SettingsCategory.Controls, 3) => $"Controller Support: {OnOff(settings.ControllerSupportEnabled)}",
+            (SettingsCategory.Language, 0) => $"Language: {settings.Language}",
+            (SettingsCategory.Language, 1) => $"Large Text: {OnOff(settings.Accessibility.LargeText)}",
+            (SettingsCategory.Language, 2) => $"Subtitle Size: {settings.Accessibility.SubtitleSizePercent}%",
+            (SettingsCategory.Language, 3) => $"Simplified Notifications: {OnOff(settings.Accessibility.SimplifiedNotifications)}",
+            (SettingsCategory.Graphics, 0) => $"Brightness: {settings.BrightnessPercent}%",
+            (SettingsCategory.Graphics, 1) => $"High Contrast: {OnOff(settings.Accessibility.HighContrastMode)}",
+            (SettingsCategory.Graphics, 2) => $"Color Profile: {settings.Accessibility.ColorProfile}",
+            (SettingsCategory.Graphics, 3) => $"Reduced Motion: {OnOff(settings.Accessibility.ReducedMotion)}",
+            _ => string.Empty,
+        };
+    }
+
+    private static string GetSettingsCategoryLabel(SettingsCategory category)
+    {
+        return category switch
+        {
+            SettingsCategory.Accessibility => "Accessibility",
+            SettingsCategory.Audio => "Audio",
+            SettingsCategory.Controls => "Controls",
+            SettingsCategory.Language => "Language",
+            SettingsCategory.Graphics => "Graphics",
+            _ => "Settings",
+        };
+    }
+
+    private static string OnOff(bool value)
+    {
+        return value ? "On" : "Off";
+    }
+
     private static string GetCategoryLabel(EncyclopediaCategory category)
     {
         return category switch
@@ -1419,7 +1698,9 @@ public sealed partial class GaiaEngineBootstrap : Node
 
             HudNotificationEntry entry = activeNotifications[index];
             notificationTitleLabels[index].Text = GetNotificationPrefix(entry.Category) + entry.Title;
-            notificationBodyLabels[index].Text = entry.Message;
+            notificationBodyLabels[index].Text = runtime is not null && runtime.PlayerProfile.Settings.Accessibility.SimplifiedNotifications
+                ? string.Empty
+                : entry.Message;
         }
     }
 
@@ -1731,6 +2012,7 @@ public sealed partial class GaiaEngineBootstrap : Node
         if (isEncyclopediaOverlayVisible)
         {
             isStatisticsOverlayVisible = false;
+            isSettingsOverlayVisible = false;
         }
     }
 
@@ -1822,7 +2104,257 @@ public sealed partial class GaiaEngineBootstrap : Node
         if (isStatisticsOverlayVisible)
         {
             isEncyclopediaOverlayVisible = false;
+            isSettingsOverlayVisible = false;
         }
+    }
+
+    private void OnSettingsPressed()
+    {
+        if (runtime is null)
+        {
+            return;
+        }
+
+        isSettingsOverlayVisible = !isSettingsOverlayVisible;
+        if (isSettingsOverlayVisible)
+        {
+            isStatisticsOverlayVisible = false;
+            isEncyclopediaOverlayVisible = false;
+        }
+    }
+
+    private void OnSettingsOptionPressed(int optionIndex)
+    {
+        if (runtime is null)
+        {
+            return;
+        }
+
+        runtime.UpdatePlayerSettings(CreateUpdatedSettings(runtime.PlayerProfile.Settings, selectedSettingsCategory, optionIndex));
+    }
+
+    private PlayerSettings CreateUpdatedSettings(PlayerSettings settings, SettingsCategory category, int optionIndex)
+    {
+        AccessibilitySettings accessibility = settings.Accessibility;
+        AccessibilitySettings updatedAccessibility = accessibility;
+        int brightnessPercent = settings.BrightnessPercent;
+        int masterVolumePercent = settings.MasterVolumePercent;
+        int musicVolumePercent = settings.MusicVolumePercent;
+        int effectsVolumePercent = settings.EffectsVolumePercent;
+        bool controllerSupportEnabled = settings.ControllerSupportEnabled;
+        string language = settings.Language;
+
+        switch (category)
+        {
+            case SettingsCategory.Accessibility:
+                updatedAccessibility = optionIndex switch
+                {
+                    0 => CreateAccessibilitySettings(accessibility, uiScalePercent: CycleUiScale(accessibility.UiScalePercent)),
+                    1 => CreateAccessibilitySettings(accessibility, highContrastMode: !accessibility.HighContrastMode),
+                    2 => CreateAccessibilitySettings(accessibility, colorProfile: CycleColorProfile(accessibility.ColorProfile)),
+                    3 => CreateAccessibilitySettings(accessibility, reducedMotion: !accessibility.ReducedMotion),
+                    _ => accessibility,
+                };
+                break;
+
+            case SettingsCategory.Audio:
+                if (optionIndex == 0)
+                {
+                    masterVolumePercent = CycleVolume(settings.MasterVolumePercent);
+                }
+                else if (optionIndex == 1)
+                {
+                    musicVolumePercent = CycleVolume(settings.MusicVolumePercent);
+                }
+                else if (optionIndex == 2)
+                {
+                    effectsVolumePercent = CycleVolume(settings.EffectsVolumePercent);
+                }
+                else if (optionIndex == 3)
+                {
+                    updatedAccessibility = CreateAccessibilitySettings(accessibility, visualEventIndicators: !accessibility.VisualEventIndicators);
+                }
+
+                break;
+
+            case SettingsCategory.Controls:
+                if (optionIndex == 0)
+                {
+                    updatedAccessibility = CreateAccessibilitySettings(accessibility, largeTouchTargets: !accessibility.LargeTouchTargets);
+                }
+                else if (optionIndex == 1)
+                {
+                    updatedAccessibility = CreateAccessibilitySettings(accessibility, toggleInsteadOfHold: !accessibility.ToggleInsteadOfHold);
+                }
+                else if (optionIndex == 2)
+                {
+                    updatedAccessibility = CreateAccessibilitySettings(accessibility, holdDurationMilliseconds: CycleHoldDuration(accessibility.HoldDurationMilliseconds));
+                }
+                else if (optionIndex == 3)
+                {
+                    controllerSupportEnabled = !settings.ControllerSupportEnabled;
+                }
+
+                break;
+
+            case SettingsCategory.Language:
+                if (optionIndex == 0)
+                {
+                    language = CycleLanguage(settings.Language);
+                }
+                else if (optionIndex == 1)
+                {
+                    updatedAccessibility = CreateAccessibilitySettings(accessibility, largeText: !accessibility.LargeText);
+                }
+                else if (optionIndex == 2)
+                {
+                    updatedAccessibility = CreateAccessibilitySettings(accessibility, subtitleSizePercent: CycleSubtitleScale(accessibility.SubtitleSizePercent));
+                }
+                else if (optionIndex == 3)
+                {
+                    updatedAccessibility = CreateAccessibilitySettings(accessibility, simplifiedNotifications: !accessibility.SimplifiedNotifications);
+                }
+
+                break;
+
+            case SettingsCategory.Graphics:
+                if (optionIndex == 0)
+                {
+                    brightnessPercent = CycleBrightness(settings.BrightnessPercent);
+                }
+                else if (optionIndex == 1)
+                {
+                    updatedAccessibility = CreateAccessibilitySettings(accessibility, highContrastMode: !accessibility.HighContrastMode);
+                }
+                else if (optionIndex == 2)
+                {
+                    updatedAccessibility = CreateAccessibilitySettings(accessibility, colorProfile: CycleColorProfile(accessibility.ColorProfile));
+                }
+                else if (optionIndex == 3)
+                {
+                    updatedAccessibility = CreateAccessibilitySettings(accessibility, reducedMotion: !accessibility.ReducedMotion);
+                }
+
+                break;
+        }
+
+        return new PlayerSettings(
+            language,
+            updatedAccessibility,
+            brightnessPercent,
+            masterVolumePercent,
+            musicVolumePercent,
+            effectsVolumePercent,
+            controllerSupportEnabled);
+    }
+
+    private static AccessibilitySettings CreateAccessibilitySettings(
+        AccessibilitySettings source,
+        bool? highContrastMode = null,
+        bool? largeText = null,
+        int? uiScalePercent = null,
+        AccessibilityColorProfile? colorProfile = null,
+        bool? reducedMotion = null,
+        int? subtitleSizePercent = null,
+        bool? simplifiedNotifications = null,
+        bool? visualEventIndicators = null,
+        bool? largeTouchTargets = null,
+        bool? toggleInsteadOfHold = null,
+        int? holdDurationMilliseconds = null)
+    {
+        return new AccessibilitySettings(
+            highContrastMode ?? source.HighContrastMode,
+            largeText ?? source.LargeText,
+            uiScalePercent ?? source.UiScalePercent,
+            colorProfile ?? source.ColorProfile,
+            reducedMotion ?? source.ReducedMotion,
+            subtitleSizePercent ?? source.SubtitleSizePercent,
+            simplifiedNotifications ?? source.SimplifiedNotifications,
+            visualEventIndicators ?? source.VisualEventIndicators,
+            largeTouchTargets ?? source.LargeTouchTargets,
+            toggleInsteadOfHold ?? source.ToggleInsteadOfHold,
+            holdDurationMilliseconds ?? source.HoldDurationMilliseconds);
+    }
+
+    private static int CycleUiScale(int currentScale)
+    {
+        return currentScale switch
+        {
+            75 => 100,
+            100 => 125,
+            125 => 150,
+            150 => 200,
+            _ => 75,
+        };
+    }
+
+    private static int CycleSubtitleScale(int currentScale)
+    {
+        return currentScale switch
+        {
+            75 => 100,
+            100 => 125,
+            125 => 150,
+            150 => 200,
+            _ => 75,
+        };
+    }
+
+    private static int CycleVolume(int currentVolume)
+    {
+        return currentVolume switch
+        {
+            0 => 25,
+            25 => 50,
+            50 => 75,
+            75 => 100,
+            _ => 0,
+        };
+    }
+
+    private static int CycleBrightness(int currentBrightness)
+    {
+        return currentBrightness switch
+        {
+            50 => 75,
+            75 => 100,
+            100 => 125,
+            125 => 150,
+            _ => 50,
+        };
+    }
+
+    private static int CycleHoldDuration(int currentDuration)
+    {
+        return currentDuration switch
+        {
+            0 => 250,
+            250 => 500,
+            500 => 750,
+            750 => 1000,
+            _ => 0,
+        };
+    }
+
+    private static string CycleLanguage(string currentLanguage)
+    {
+        return currentLanguage switch
+        {
+            "en" => "es",
+            "es" => "fr",
+            _ => "en",
+        };
+    }
+
+    private static AccessibilityColorProfile CycleColorProfile(AccessibilityColorProfile currentProfile)
+    {
+        return currentProfile switch
+        {
+            AccessibilityColorProfile.None => AccessibilityColorProfile.Protanopia,
+            AccessibilityColorProfile.Protanopia => AccessibilityColorProfile.Deuteranopia,
+            AccessibilityColorProfile.Deuteranopia => AccessibilityColorProfile.Tritanopia,
+            _ => AccessibilityColorProfile.None,
+        };
     }
 
     private void AdvanceSimulationTick()
@@ -2001,6 +2533,17 @@ public sealed partial class GaiaEngineBootstrap : Node
         string[] ActiveEntryIds,
         string[] RelatedEntryIds);
 
+    private sealed record SettingsViewSnapshot(
+        bool IsVisible,
+        SettingsCategory Category,
+        string CategoryTitle,
+        string CategorySummary,
+        string Footer,
+        string Option1,
+        string Option2,
+        string Option3,
+        string Option4);
+
     private sealed record StatisticsHistorySample(
         long Tick,
         int Day,
@@ -2021,6 +2564,15 @@ public sealed partial class GaiaEngineBootstrap : Node
         int ProcessedEvents,
         int ExecutedPhases,
         int ScheduledSystems);
+
+    private enum SettingsCategory
+    {
+        Accessibility = 0,
+        Audio = 1,
+        Controls = 2,
+        Language = 3,
+        Graphics = 4,
+    }
 
     private enum EncyclopediaFilterMode
     {

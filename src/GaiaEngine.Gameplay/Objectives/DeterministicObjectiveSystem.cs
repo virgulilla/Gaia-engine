@@ -87,7 +87,8 @@ public sealed class DeterministicObjectiveSystem : IObjectiveSystem
                 profile.Progression.Unlocks,
                 profile.Progression.CompletedMilestones),
             profile.Achievements,
-            profile.Statistics);
+            profile.Statistics,
+            profile.Settings);
         return new ObjectiveEvaluationResult(updatedProfile, completedObjectives.AsReadOnly());
     }
 

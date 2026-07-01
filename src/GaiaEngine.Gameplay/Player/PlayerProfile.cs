@@ -18,6 +18,7 @@ public sealed record PlayerProfile
     /// <param name="progression">The persistent player progression state.</param>
     /// <param name="achievements">The persistent achievement state owned by the player profile.</param>
     /// <param name="statistics">The deterministic player activity statistics.</param>
+    /// <param name="settings">The persistent player settings.</param>
     /// <exception cref="ArgumentNullException">Thrown when any argument is <see langword="null"/>.</exception>
     public PlayerProfile(
         PlayerIdentity identity,
@@ -25,7 +26,8 @@ public sealed record PlayerProfile
         ObjectiveCollection objectives,
         PlayerProgression progression,
         AchievementCollection achievements,
-        PlayerStatistics statistics)
+        PlayerStatistics statistics,
+        PlayerSettings settings)
     {
         Identity = identity ?? throw new ArgumentNullException(nameof(identity));
         Knowledge = knowledge ?? throw new ArgumentNullException(nameof(knowledge));
@@ -33,6 +35,7 @@ public sealed record PlayerProfile
         Progression = progression ?? throw new ArgumentNullException(nameof(progression));
         Achievements = achievements ?? throw new ArgumentNullException(nameof(achievements));
         Statistics = statistics ?? throw new ArgumentNullException(nameof(statistics));
+        Settings = settings ?? throw new ArgumentNullException(nameof(settings));
     }
 
     /// <summary>
@@ -64,4 +67,9 @@ public sealed record PlayerProfile
     /// Gets the deterministic player activity statistics.
     /// </summary>
     public PlayerStatistics Statistics { get; }
+
+    /// <summary>
+    /// Gets the persistent player settings.
+    /// </summary>
+    public PlayerSettings Settings { get; }
 }

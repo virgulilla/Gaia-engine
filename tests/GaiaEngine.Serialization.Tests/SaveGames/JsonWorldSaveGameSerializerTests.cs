@@ -160,7 +160,26 @@ public sealed class JsonWorldSaveGameSerializerTests
                         hidden: false,
                         unlockDate: "2026-06-30"),
                 }),
-            new PlayerStatistics(1, 0));
+            new PlayerStatistics(1, 0),
+            new PlayerSettings(
+                "es",
+                new AccessibilitySettings(
+                    highContrastMode: true,
+                    largeText: true,
+                    uiScalePercent: 125,
+                    colorProfile: AccessibilityColorProfile.Deuteranopia,
+                    reducedMotion: true,
+                    subtitleSizePercent: 150,
+                    simplifiedNotifications: true,
+                    visualEventIndicators: true,
+                    largeTouchTargets: true,
+                    toggleInsteadOfHold: true,
+                    holdDurationMilliseconds: 500),
+                brightnessPercent: 110,
+                masterVolumePercent: 90,
+                musicVolumePercent: 70,
+                effectsVolumePercent: 80,
+                controllerSupportEnabled: true));
 
         string payload = serializer.Serialize(profile);
         PlayerProfile restored = serializer.Deserialize(payload);
@@ -179,6 +198,12 @@ public sealed class JsonWorldSaveGameSerializerTests
         Assert.Equal(profile.Achievements.GetAll()[0].AchievementId, restored.Achievements.GetAll()[0].AchievementId);
         Assert.Equal(profile.Achievements.GetAll()[0].UnlockDate, restored.Achievements.GetAll()[0].UnlockDate);
         Assert.Equal(profile.Statistics.TotalDiscoveriesUnlocked, restored.Statistics.TotalDiscoveriesUnlocked);
+        Assert.Equal(profile.Settings.Language, restored.Settings.Language);
+        Assert.Equal(profile.Settings.BrightnessPercent, restored.Settings.BrightnessPercent);
+        Assert.Equal(profile.Settings.MasterVolumePercent, restored.Settings.MasterVolumePercent);
+        Assert.Equal(profile.Settings.Accessibility.UiScalePercent, restored.Settings.Accessibility.UiScalePercent);
+        Assert.Equal(profile.Settings.Accessibility.ColorProfile, restored.Settings.Accessibility.ColorProfile);
+        Assert.Equal(profile.Settings.Accessibility.SimplifiedNotifications, restored.Settings.Accessibility.SimplifiedNotifications);
     }
 
     [Fact]

@@ -104,6 +104,7 @@ public sealed class DeterministicObjectiveSystemTests
             ObjectiveCollection.Empty,
             new PlayerProgression(0, 0, 0, 0),
             AchievementCollection.Empty,
-            new PlayerStatistics(0, 0));
+            new PlayerStatistics(0, 0),
+            PlayerSettings.Default);
     }
 }

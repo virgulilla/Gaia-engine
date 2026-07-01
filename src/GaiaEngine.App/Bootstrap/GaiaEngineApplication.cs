@@ -234,7 +234,8 @@ public sealed class GaiaEngineApplication
                 ProgressionUnlockCollection.Empty,
                 ProgressionMilestoneCollection.Empty),
             AchievementCollection.Empty,
-            new PlayerStatistics(0, 0));
+            new PlayerStatistics(0, 0),
+            PlayerSettings.Default);
         List<DiscoverySignal> initialSignals = new();
         foreach (DiscoverySignal signal in DiscoveryObservationSnapshotFactory.CreateSignals(bootstrapOrganismState.World, bootstrapOrganismState.Species))
         {

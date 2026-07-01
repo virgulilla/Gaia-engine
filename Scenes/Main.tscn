@@ -566,6 +566,135 @@ layout_mode = 2
 autowrap_mode = 3
 text = "Progress Summary"
 
+[node name="SettingsOverlay" type="PanelContainer" parent="HudLayer/HudRoot"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -420.0
+offset_top = -230.0
+offset_right = 420.0
+offset_bottom = 230.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("2")
+
+[node name="SettingsOverlayMargin" type="MarginContainer" parent="HudLayer/HudRoot/SettingsOverlay"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="SettingsOverlayColumn" type="VBoxContainer" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SettingsHeaderLabel" type="Label" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Settings"
+
+[node name="SettingsBodyRow" type="HBoxContainer" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="SettingsNavigationPanel" type="PanelContainer" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(180, 0)
+theme_override_styles/panel = SubResource("4")
+
+[node name="SettingsNavigationMargin" type="MarginContainer" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsNavigationPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="SettingsNavigationColumn" type="VBoxContainer" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsNavigationPanel/SettingsNavigationMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SettingsNavigationTitleLabel" type="Label" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsNavigationPanel/SettingsNavigationMargin/SettingsNavigationColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Categories"
+
+[node name="AccessibilitySettingsCategoryButton" type="Button" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsNavigationPanel/SettingsNavigationMargin/SettingsNavigationColumn"]
+layout_mode = 2
+text = "Accessibility"
+
+[node name="AudioSettingsCategoryButton" type="Button" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsNavigationPanel/SettingsNavigationMargin/SettingsNavigationColumn"]
+layout_mode = 2
+text = "Audio"
+
+[node name="ControlsSettingsCategoryButton" type="Button" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsNavigationPanel/SettingsNavigationMargin/SettingsNavigationColumn"]
+layout_mode = 2
+text = "Controls"
+
+[node name="LanguageSettingsCategoryButton" type="Button" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsNavigationPanel/SettingsNavigationMargin/SettingsNavigationColumn"]
+layout_mode = 2
+text = "Language"
+
+[node name="GraphicsSettingsCategoryButton" type="Button" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsNavigationPanel/SettingsNavigationMargin/SettingsNavigationColumn"]
+layout_mode = 2
+text = "Graphics"
+
+[node name="SettingsContentPanel" type="PanelContainer" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("1")
+
+[node name="SettingsContentMargin" type="MarginContainer" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="SettingsContentColumn" type="VBoxContainer" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SettingsCategoryTitleLabel" type="Label" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Accessibility"
+
+[node name="SettingsCategorySummaryLabel" type="Label" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = "Settings summary."
+
+[node name="SettingsOptionButton1" type="Button" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 42)
+text = "Option 1"
+
+[node name="SettingsOptionButton2" type="Button" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 42)
+text = "Option 2"
+
+[node name="SettingsOptionButton3" type="Button" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 42)
+text = "Option 3"
+
+[node name="SettingsOptionButton4" type="Button" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 42)
+text = "Option 4"
+
+[node name="SettingsFooterLabel" type="Label" parent="HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = "Changes affect presentation only and never modify simulation determinism."
+
 [node name="BottomToolbar" type="PanelContainer" parent="HudLayer/HudRoot"]
 layout_mode = 1
 anchors_preset = 12
@@ -623,7 +752,6 @@ text = "Statistics"
 [node name="SettingsButton" type="Button" parent="HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow"]
 layout_mode = 2
 custom_minimum_size = Vector2(96, 40)
-disabled = true
 text = "Settings"
 
 [node name="NotificationArea" type="VBoxContainer" parent="HudLayer/HudRoot"]

@@ -100,6 +100,7 @@ public sealed class DeterministicDiscoverySystemTests
             ObjectiveCollection.Empty,
             progression ?? new PlayerProgression(0, 0, 0),
             AchievementCollection.Empty,
-            statistics ?? new PlayerStatistics(0, 0));
+            statistics ?? new PlayerStatistics(0, 0),
+            PlayerSettings.Default);
     }
 }

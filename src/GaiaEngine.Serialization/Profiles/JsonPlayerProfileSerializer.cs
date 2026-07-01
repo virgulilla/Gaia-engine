@@ -199,6 +199,29 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
                 TotalDiscoveriesUnlocked = profile.Statistics.TotalDiscoveriesUnlocked,
                 DuplicateDiscoveryObservations = profile.Statistics.DuplicateDiscoveryObservations,
             },
+            Settings = new PlayerSettingsDocument
+            {
+                Language = profile.Settings.Language,
+                BrightnessPercent = profile.Settings.BrightnessPercent,
+                MasterVolumePercent = profile.Settings.MasterVolumePercent,
+                MusicVolumePercent = profile.Settings.MusicVolumePercent,
+                EffectsVolumePercent = profile.Settings.EffectsVolumePercent,
+                ControllerSupportEnabled = profile.Settings.ControllerSupportEnabled,
+                Accessibility = new AccessibilitySettingsDocument
+                {
+                    HighContrastMode = profile.Settings.Accessibility.HighContrastMode,
+                    LargeText = profile.Settings.Accessibility.LargeText,
+                    UiScalePercent = profile.Settings.Accessibility.UiScalePercent,
+                    ColorProfile = profile.Settings.Accessibility.ColorProfile.ToString(),
+                    ReducedMotion = profile.Settings.Accessibility.ReducedMotion,
+                    SubtitleSizePercent = profile.Settings.Accessibility.SubtitleSizePercent,
+                    SimplifiedNotifications = profile.Settings.Accessibility.SimplifiedNotifications,
+                    VisualEventIndicators = profile.Settings.Accessibility.VisualEventIndicators,
+                    LargeTouchTargets = profile.Settings.Accessibility.LargeTouchTargets,
+                    ToggleInsteadOfHold = profile.Settings.Accessibility.ToggleInsteadOfHold,
+                    HoldDurationMilliseconds = profile.Settings.Accessibility.HoldDurationMilliseconds,
+                },
+            },
         };
     }
 
@@ -316,6 +339,30 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
                     entry.UnlockDate));
         }
 
+        PlayerSettings settings = document.Settings is null
+            ? PlayerSettings.Default
+            : new PlayerSettings(
+                document.Settings.Language,
+                document.Settings.Accessibility is null
+                    ? AccessibilitySettings.Default
+                    : new AccessibilitySettings(
+                        document.Settings.Accessibility.HighContrastMode,
+                        document.Settings.Accessibility.LargeText,
+                        document.Settings.Accessibility.UiScalePercent,
+                        Enum.Parse<AccessibilityColorProfile>(document.Settings.Accessibility.ColorProfile, ignoreCase: false),
+                        document.Settings.Accessibility.ReducedMotion,
+                        document.Settings.Accessibility.SubtitleSizePercent,
+                        document.Settings.Accessibility.SimplifiedNotifications,
+                        document.Settings.Accessibility.VisualEventIndicators,
+                        document.Settings.Accessibility.LargeTouchTargets,
+                        document.Settings.Accessibility.ToggleInsteadOfHold,
+                        document.Settings.Accessibility.HoldDurationMilliseconds),
+                document.Settings.BrightnessPercent,
+                document.Settings.MasterVolumePercent,
+                document.Settings.MusicVolumePercent,
+                document.Settings.EffectsVolumePercent,
+                document.Settings.ControllerSupportEnabled);
+
         return new PlayerProfile(
             new PlayerIdentity(document.Identity.PlayerId, document.Identity.ProfileName, document.Identity.CreationDate),
             new PlayerKnowledge(
@@ -330,6 +377,7 @@ public sealed class JsonPlayerProfileSerializer : IPlayerProfileSerializer
                 new ProgressionUnlockCollection(document.Progression.Unlocks.AsReadOnly()),
                 new ProgressionMilestoneCollection(document.Progression.CompletedMilestones.AsReadOnly())),
             new AchievementCollection(achievementEntries.AsReadOnly()),
-            new PlayerStatistics(document.Statistics.TotalDiscoveriesUnlocked, document.Statistics.DuplicateDiscoveryObservations));
+            new PlayerStatistics(document.Statistics.TotalDiscoveriesUnlocked, document.Statistics.DuplicateDiscoveryObservations),
+            settings);
     }
 }
