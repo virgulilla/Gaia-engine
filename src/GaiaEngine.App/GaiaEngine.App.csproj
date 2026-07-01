@@ -9,5 +9,6 @@
     <ProjectReference Include="..\GaiaEngine.Domain\GaiaEngine.Domain.csproj" />
     <ProjectReference Include="..\GaiaEngine.Gameplay\GaiaEngine.Gameplay.csproj" />
     <ProjectReference Include="..\GaiaEngine.Simulation\GaiaEngine.Simulation.csproj" />
+    <ProjectReference Include="..\GaiaEngine.Serialization\GaiaEngine.Serialization.csproj" />
   </ItemGroup>
 </Project>

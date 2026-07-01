@@ -33,6 +33,7 @@ using GaiaEngine.Simulation.World.Climate;
 using GaiaEngine.Simulation.World.Queries;
 using GaiaEngine.Simulation.World.Resources;
 using GaiaEngine.Simulation.World.Water;
+using GaiaEngine.Serialization.SaveGames;
 
 namespace GaiaEngine.App.Bootstrap;
 
@@ -75,7 +76,33 @@ public sealed class GaiaEngineApplication
         return runtime;
     }
 
+    /// <summary>
+    /// Loads one runtime graph from a previously serialized save snapshot.
+    /// </summary>
+    /// <param name="saveGame">The serialized world save snapshot.</param>
+    /// <param name="playerProfile">The serialized player profile snapshot.</param>
+    /// <returns>The restored runtime graph.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="saveGame"/> or <paramref name="playerProfile"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the save content is incompatible with the currently loaded configuration.
+    /// </exception>
+    public GaiaEngineRuntime InitializeFromSaveGame(WorldSaveGame saveGame, PlayerProfile playerProfile)
+    {
+        ArgumentNullException.ThrowIfNull(saveGame);
+        ArgumentNullException.ThrowIfNull(playerProfile);
+
+        runtime = CreateRuntime(saveGame, playerProfile);
+        return runtime;
+    }
+
     private GaiaEngineRuntime CreateRuntime()
+    {
+        return CreateRuntime(null, null);
+    }
+
+    private GaiaEngineRuntime CreateRuntime(WorldSaveGame? saveGame, PlayerProfile? playerProfile)
     {
         EngineConfiguration engineConfiguration = configurationProvider.Load();
         SimulationConfiguration simulationConfiguration = simulationConfigurationProvider.Load();
@@ -195,8 +222,6 @@ public sealed class GaiaEngineApplication
         ITraitExpressionService traitExpressionService = new DeterministicTraitExpressionService();
         IMorphogenesisService morphogenesisService = new DeterministicMorphogenesisService();
         DeterministicOrganismBootstrapFactory organismBootstrapFactory = new(eventIdGenerator, genomeBootstrapFactory, traitExpressionService, morphogenesisService);
-        GaiaEngine.Domain.World.World bootstrapWorld = worldBootstrapFactory.CreateWorld();
-        OrganismBootstrapState bootstrapOrganismState = organismBootstrapFactory.CreateInitialPopulation(bootstrapWorld);
         DeterministicSimulationTickPipeline tickPipeline = new(
             new ISimulationTickPhase[]
             {
@@ -210,49 +235,90 @@ public sealed class GaiaEngineApplication
                 new PostUpdateStatisticsPhase(diagnosticsCollector),
             },
             scheduler);
-        DeterministicSimulationSession simulationSession = new(
-            tickPipeline,
-            bootstrapOrganismState.World,
-            bootstrapOrganismState.Organisms,
-            bootstrapOrganismState.Genomes,
-            bootstrapOrganismState.Species);
-        DiscoveryRuleSet discoveryRuleSet = DefaultDiscoveryRuleSetFactory.Create(bootstrapOrganismState.World, bootstrapOrganismState.Species);
+        DeterministicSimulationSession simulationSession;
+        PlayerProfile? runtimePlayerProfile = playerProfile;
+        GaiaEngine.Domain.World.World runtimeWorld;
+        SpeciesCollection runtimeSpecies;
+        OrganismBootstrapState? bootstrapOrganismState = null;
+
+        if (saveGame is not null && playerProfile is not null)
+        {
+            if (saveGame.ConfigurationVersion != engineConfiguration.ConfigurationVersion)
+            {
+                throw new InvalidOperationException(
+                    $"The save configuration version '{saveGame.ConfigurationVersion}' is incompatible with the current configuration version '{engineConfiguration.ConfigurationVersion}'.");
+            }
+
+            simulationSession = new DeterministicSimulationSession(
+                tickPipeline,
+                saveGame.World,
+                saveGame.Organisms,
+                saveGame.Genomes,
+                saveGame.Species,
+                saveGame.Memories,
+                saveGame.ActionRequests,
+                MovementRequestCollection.Empty,
+                FeedingRequestCollection.Empty,
+                HydrationRequestCollection.Empty);
+            runtimePlayerProfile = playerProfile;
+            runtimeWorld = saveGame.World;
+            runtimeSpecies = saveGame.Species;
+        }
+        else
+        {
+            GaiaEngine.Domain.World.World bootstrapWorld = worldBootstrapFactory.CreateWorld();
+            bootstrapOrganismState = organismBootstrapFactory.CreateInitialPopulation(bootstrapWorld);
+            simulationSession = new DeterministicSimulationSession(
+                tickPipeline,
+                bootstrapOrganismState.World,
+                bootstrapOrganismState.Organisms,
+                bootstrapOrganismState.Genomes,
+                bootstrapOrganismState.Species);
+            runtimeWorld = bootstrapOrganismState.World;
+            runtimeSpecies = bootstrapOrganismState.Species;
+        }
+
+        DiscoveryRuleSet discoveryRuleSet = DefaultDiscoveryRuleSetFactory.Create(runtimeWorld, runtimeSpecies);
         DeterministicEncyclopediaSystem encyclopediaSystem = new();
         DeterministicDiscoverySystem discoverySystem = new(discoveryRuleSet, encyclopediaSystem);
         DeterministicObjectiveSystem objectiveSystem = new(DefaultObjectiveCatalogFactory.Create());
         DeterministicProgressionSystem progressionSystem = new(DefaultProgressionCatalogFactory.Create());
         DeterministicAchievementSystem achievementSystem = new(DefaultAchievementCatalogFactory.Create());
-        PlayerProfile initialProfile = new(
-            new PlayerIdentity("player-001", "Local Observer", bootstrapOrganismState.World.Metadata.CreationDate),
-            new PlayerKnowledge(DiscoveryCollection.Empty, EncyclopediaCollection.Empty),
-            ObjectiveCollection.Empty,
-            new PlayerProgression(
-                0,
-                0,
-                0,
-                0,
-                ProgressionUnlockCollection.Empty,
-                ProgressionMilestoneCollection.Empty),
-            AchievementCollection.Empty,
-            new PlayerStatistics(0, 0),
-            PlayerSettings.Default);
-        List<DiscoverySignal> initialSignals = new();
-        foreach (DiscoverySignal signal in DiscoveryObservationSnapshotFactory.CreateSignals(bootstrapOrganismState.World, bootstrapOrganismState.Species))
-        {
-            initialSignals.Add(signal);
-        }
 
-        PlayerProfile discoveredProfile = discoverySystem.Evaluate(
-            initialProfile,
-            bootstrapOrganismState.World.Id,
-            bootstrapOrganismState.World.TimeState.CurrentTick,
-            initialSignals.AsReadOnly()).Profile;
-        PlayerProfile objectiveReadyProfile = objectiveSystem.Evaluate(
-            discoveredProfile,
-            bootstrapOrganismState.World.TimeState.CurrentTick,
-            Array.Empty<ObjectiveSignal>()).Profile;
-        PlayerProfile progressionReadyProfile = progressionSystem.Evaluate(objectiveReadyProfile).Profile;
-        PlayerProfile achievementReadyProfile = achievementSystem.Evaluate(progressionReadyProfile).Profile;
+        if (bootstrapOrganismState is not null)
+        {
+            PlayerProfile initialProfile = new(
+                new PlayerIdentity("player-001", "Local Observer", bootstrapOrganismState.World.Metadata.CreationDate),
+                new PlayerKnowledge(DiscoveryCollection.Empty, EncyclopediaCollection.Empty),
+                ObjectiveCollection.Empty,
+                new PlayerProgression(
+                    0,
+                    0,
+                    0,
+                    0,
+                    ProgressionUnlockCollection.Empty,
+                    ProgressionMilestoneCollection.Empty),
+                AchievementCollection.Empty,
+                new PlayerStatistics(0, 0),
+                PlayerSettings.Default);
+            List<DiscoverySignal> initialSignals = new();
+            foreach (DiscoverySignal signal in DiscoveryObservationSnapshotFactory.CreateSignals(bootstrapOrganismState.World, bootstrapOrganismState.Species))
+            {
+                initialSignals.Add(signal);
+            }
+
+            PlayerProfile discoveredProfile = discoverySystem.Evaluate(
+                initialProfile,
+                bootstrapOrganismState.World.Id,
+                bootstrapOrganismState.World.TimeState.CurrentTick,
+                initialSignals.AsReadOnly()).Profile;
+            PlayerProfile objectiveReadyProfile = objectiveSystem.Evaluate(
+                discoveredProfile,
+                bootstrapOrganismState.World.TimeState.CurrentTick,
+                Array.Empty<ObjectiveSignal>()).Profile;
+            PlayerProfile progressionReadyProfile = progressionSystem.Evaluate(objectiveReadyProfile).Profile;
+            runtimePlayerProfile = achievementSystem.Evaluate(progressionReadyProfile).Profile;
+        }
 
         return new GaiaEngineRuntime(
             engineConfiguration,
@@ -262,6 +328,6 @@ public sealed class GaiaEngineApplication
             objectiveSystem,
             progressionSystem,
             achievementSystem,
-            achievementReadyProfile);
+            runtimePlayerProfile!);
     }
 }

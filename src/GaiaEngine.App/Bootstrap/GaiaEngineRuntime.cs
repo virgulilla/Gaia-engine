@@ -13,6 +13,7 @@ using GaiaEngine.Gameplay.Achievements;
 using GaiaEngine.Simulation.Actions;
 using GaiaEngine.Simulation.Pipeline;
 using GaiaEngine.Simulation.Runtime;
+using GaiaEngine.Serialization.SaveGames;
 
 namespace GaiaEngine.App.Bootstrap;
 
@@ -157,6 +158,50 @@ public sealed class GaiaEngineRuntime
             PlayerProfile.Achievements,
             PlayerProfile.Statistics,
             settings);
+    }
+
+    /// <summary>
+    /// Creates one persistent world save snapshot from the current runtime state.
+    /// </summary>
+    /// <param name="saveName">The user-visible save name.</param>
+    /// <param name="timestamp">The timestamp used for the metadata.</param>
+    /// <param name="saveVersion">The save format version string.</param>
+    /// <returns>The resulting world save snapshot.</returns>
+    public WorldSaveGame CreateSaveGame(string saveName, string timestamp, string saveVersion)
+    {
+        if (string.IsNullOrWhiteSpace(saveName))
+        {
+            throw new ArgumentException("The save name must contain a value.", nameof(saveName));
+        }
+
+        if (string.IsNullOrWhiteSpace(timestamp))
+        {
+            throw new ArgumentException("The timestamp must contain a value.", nameof(timestamp));
+        }
+
+        if (string.IsNullOrWhiteSpace(saveVersion))
+        {
+            throw new ArgumentException("The save version must contain a value.", nameof(saveVersion));
+        }
+
+        SaveMetadata metadata = new(
+            saveName,
+            timestamp,
+            timestamp,
+            World.Metadata.Seed,
+            World.Metadata.EngineVersion,
+            saveVersion);
+        SaveVersionInfo version = new(saveVersion, World.Metadata.EngineVersion, EngineConfiguration.ConfigurationVersion.ToString());
+        return new WorldSaveGame(
+            metadata,
+            World,
+            Organisms,
+            Genomes,
+            Species,
+            Memories,
+            ActionRequests,
+            EngineConfiguration.ConfigurationVersion,
+            version);
     }
 
     private PlayerProfile EvaluateGameplay(

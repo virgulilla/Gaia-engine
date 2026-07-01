@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using GaiaEngine.App.Bootstrap;
+using GaiaEngine.App.SaveGames;
 using GaiaEngine.Gameplay.Achievements;
 using GaiaEngine.Gameplay.Discovery;
 using GaiaEngine.Gameplay.Encyclopedia;
@@ -10,6 +12,8 @@ using GaiaEngine.Gameplay.Player;
 using GaiaEngine.Godot.UI.Notifications;
 using GaiaEngine.Simulation.Diagnostics;
 using GaiaEngine.Simulation.Pipeline;
+using GaiaEngine.Serialization.Profiles;
+using GaiaEngine.Serialization.SaveGames;
 using Godot;
 
 namespace GaiaEngine.Godot.Bootstrap;
@@ -29,11 +33,13 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string EncyclopediaButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/EncyclopediaButton";
     private const string StatisticsButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/StatisticsButton";
     private const string SettingsButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/SettingsButton";
+    private const string SaveLoadButtonPath = "HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow/SaveLoadButton";
     private const string LeftPanelPath = "HudLayer/HudRoot/LeftPanel";
     private const string ContextPanelPath = "HudLayer/HudRoot/ContextPanel";
     private const string StatisticsOverlayPath = "HudLayer/HudRoot/StatisticsOverlay";
     private const string EncyclopediaOverlayPath = "HudLayer/HudRoot/EncyclopediaOverlay";
     private const string SettingsOverlayPath = "HudLayer/HudRoot/SettingsOverlay";
+    private const string SaveLoadOverlayPath = "HudLayer/HudRoot/SaveLoadOverlay";
     private const string SelectionHintLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionHintLabel";
     private const string SelectionTypeLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionTypeLabel";
     private const string SelectionPrimaryLabelPath = "HudLayer/HudRoot/LeftPanel/LeftPanelMargin/LeftPanelColumn/SelectionPrimaryLabel";
@@ -97,6 +103,14 @@ public sealed partial class GaiaEngineBootstrap : Node
     private const string SettingsOptionButton3Path = "HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn/SettingsOptionButton3";
     private const string SettingsOptionButton4Path = "HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn/SettingsOptionButton4";
     private const string SettingsFooterLabelPath = "HudLayer/HudRoot/SettingsOverlay/SettingsOverlayMargin/SettingsOverlayColumn/SettingsBodyRow/SettingsContentPanel/SettingsContentMargin/SettingsContentColumn/SettingsFooterLabel";
+    private const string SaveLoadStatusLabelPath = "HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadStatusLabel";
+    private const string SaveLoadSlotListPath = "HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadBodyRow/SaveLoadSlotPanel/SaveLoadSlotMargin/SaveLoadSlotColumn/SaveLoadSlotList";
+    private const string SaveLoadDetailsLabelPath = "HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadBodyRow/SaveLoadDetailsPanel/SaveLoadDetailsMargin/SaveLoadDetailsColumn/SaveLoadDetailsLabel";
+    private const string SaveLoadManualButtonPath = "HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadActionsRow/SaveLoadManualButton";
+    private const string SaveLoadQuickButtonPath = "HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadActionsRow/SaveLoadQuickButton";
+    private const string SaveLoadAutoButtonPath = "HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadActionsRow/SaveLoadAutoButton";
+    private const string SaveLoadLoadButtonPath = "HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadActionsRow/SaveLoadLoadButton";
+    private const string SaveLoadRefreshButtonPath = "HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadActionsRow/SaveLoadRefreshButton";
     private const string NotificationCard1Path = "HudLayer/HudRoot/NotificationArea/NotificationCard1";
     private const string NotificationCard2Path = "HudLayer/HudRoot/NotificationArea/NotificationCard2";
     private const string NotificationCard3Path = "HudLayer/HudRoot/NotificationArea/NotificationCard3";
@@ -119,6 +133,7 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Button? encyclopediaButton;
     private Button? statisticsButton;
     private Button? settingsButton;
+    private Button? saveLoadButton;
     private Button? encyclopediaFilterButton;
     private Button? encyclopediaSortButton;
     private Button? encyclopediaCompareButton;
@@ -126,11 +141,17 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Button? settingsOptionButton2;
     private Button? settingsOptionButton3;
     private Button? settingsOptionButton4;
+    private Button? saveLoadManualButton;
+    private Button? saveLoadQuickButton;
+    private Button? saveLoadAutoButton;
+    private Button? saveLoadLoadButton;
+    private Button? saveLoadRefreshButton;
     private PanelContainer? leftPanel;
     private PanelContainer? contextPanel;
     private PanelContainer? statisticsOverlay;
     private PanelContainer? encyclopediaOverlay;
     private PanelContainer? settingsOverlay;
+    private PanelContainer? saveLoadOverlay;
     private Label? selectionHintLabel;
     private Label? selectionTypeLabel;
     private Label? selectionPrimaryLabel;
@@ -171,20 +192,26 @@ public sealed partial class GaiaEngineBootstrap : Node
     private Label? settingsCategoryTitleLabel;
     private Label? settingsCategorySummaryLabel;
     private Label? settingsFooterLabel;
+    private Label? saveLoadStatusLabel;
+    private Label? saveLoadDetailsLabel;
     private LineEdit? encyclopediaSearchBar;
     private ItemList? encyclopediaEntryList;
     private ItemList? relatedEntriesList;
+    private ItemList? saveLoadSlotList;
     private Button[]? encyclopediaCategoryButtons;
     private Button[]? settingsCategoryButtons;
     private PanelContainer[]? notificationCards;
     private Label[]? notificationTitleLabels;
     private Label[]? notificationBodyLabels;
     private HudNotificationQueue? notificationQueue;
+    private GaiaEngineSaveSlotManager? saveSlotManager;
+    private IReadOnlyList<SaveSlotSummary> cachedSaveSlots = Array.Empty<SaveSlotSummary>();
     private double tickAccumulator;
     private HudViewSnapshot? lastSnapshot;
     private StatisticsViewSnapshot? lastStatisticsSnapshot;
     private EncyclopediaViewSnapshot? lastEncyclopediaSnapshot;
     private SettingsViewSnapshot? lastSettingsSnapshot;
+    private SaveLoadViewSnapshot? lastSaveLoadSnapshot;
     private RuntimeObservationSnapshot? lastObservedState;
     private FocusOverrideKind focusOverrideKind;
     private GaiaEngine.Domain.Identifiers.OrganismId? focusedOrganismId;
@@ -192,6 +219,7 @@ public sealed partial class GaiaEngineBootstrap : Node
     private bool isStatisticsOverlayVisible;
     private bool isEncyclopediaOverlayVisible;
     private bool isSettingsOverlayVisible;
+    private bool isSaveLoadOverlayVisible;
     private SimulationTickDiagnostics? lastDiagnostics;
     private readonly List<StatisticsHistorySample> statisticsHistory = new();
     private EncyclopediaCategory selectedEncyclopediaCategory = EncyclopediaCategory.Species;
@@ -200,6 +228,7 @@ public sealed partial class GaiaEngineBootstrap : Node
     private string encyclopediaSearchText = string.Empty;
     private string? selectedEncyclopediaEntryId;
     private string? compareEncyclopediaEntryId;
+    private string? selectedSaveSlotId;
     private SettingsCategory selectedSettingsCategory = SettingsCategory.Accessibility;
 
     /// <summary>
@@ -212,6 +241,10 @@ public sealed partial class GaiaEngineBootstrap : Node
         string worldConfigurationPath = ProjectSettings.GlobalizePath("res://Configuration/World/WorldConfiguration.json");
         application = GaiaEngineCompositionRoot.CreateApplication(engineConfigurationPath, simulationConfigurationPath, worldConfigurationPath);
         runtime = application.Initialize();
+        saveSlotManager = new GaiaEngineSaveSlotManager(
+            ProjectSettings.GlobalizePath("user://Saves"),
+            new JsonWorldSaveGameSerializer(),
+            new JsonPlayerProfileSerializer());
         hudRoot = GetNode<Control>(HudRootPath);
         worldNameLabel = GetNode<Label>(WorldNameLabelPath);
         timeSummaryLabel = GetNode<Label>(TimeSummaryLabelPath);
@@ -222,6 +255,7 @@ public sealed partial class GaiaEngineBootstrap : Node
         encyclopediaButton = GetNode<Button>(EncyclopediaButtonPath);
         statisticsButton = GetNode<Button>(StatisticsButtonPath);
         settingsButton = GetNode<Button>(SettingsButtonPath);
+        saveLoadButton = GetNode<Button>(SaveLoadButtonPath);
         encyclopediaFilterButton = GetNode<Button>(EncyclopediaFilterButtonPath);
         encyclopediaSortButton = GetNode<Button>(EncyclopediaSortButtonPath);
         encyclopediaCompareButton = GetNode<Button>(EncyclopediaCompareButtonPath);
@@ -229,11 +263,17 @@ public sealed partial class GaiaEngineBootstrap : Node
         settingsOptionButton2 = GetNode<Button>(SettingsOptionButton2Path);
         settingsOptionButton3 = GetNode<Button>(SettingsOptionButton3Path);
         settingsOptionButton4 = GetNode<Button>(SettingsOptionButton4Path);
+        saveLoadManualButton = GetNode<Button>(SaveLoadManualButtonPath);
+        saveLoadQuickButton = GetNode<Button>(SaveLoadQuickButtonPath);
+        saveLoadAutoButton = GetNode<Button>(SaveLoadAutoButtonPath);
+        saveLoadLoadButton = GetNode<Button>(SaveLoadLoadButtonPath);
+        saveLoadRefreshButton = GetNode<Button>(SaveLoadRefreshButtonPath);
         leftPanel = GetNode<PanelContainer>(LeftPanelPath);
         contextPanel = GetNode<PanelContainer>(ContextPanelPath);
         statisticsOverlay = GetNode<PanelContainer>(StatisticsOverlayPath);
         encyclopediaOverlay = GetNode<PanelContainer>(EncyclopediaOverlayPath);
         settingsOverlay = GetNode<PanelContainer>(SettingsOverlayPath);
+        saveLoadOverlay = GetNode<PanelContainer>(SaveLoadOverlayPath);
         selectionHintLabel = GetNode<Label>(SelectionHintLabelPath);
         selectionTypeLabel = GetNode<Label>(SelectionTypeLabelPath);
         selectionPrimaryLabel = GetNode<Label>(SelectionPrimaryLabelPath);
@@ -274,9 +314,12 @@ public sealed partial class GaiaEngineBootstrap : Node
         settingsCategoryTitleLabel = GetNode<Label>(SettingsCategoryTitleLabelPath);
         settingsCategorySummaryLabel = GetNode<Label>(SettingsCategorySummaryLabelPath);
         settingsFooterLabel = GetNode<Label>(SettingsFooterLabelPath);
+        saveLoadStatusLabel = GetNode<Label>(SaveLoadStatusLabelPath);
+        saveLoadDetailsLabel = GetNode<Label>(SaveLoadDetailsLabelPath);
         encyclopediaSearchBar = GetNode<LineEdit>(EncyclopediaSearchBarPath);
         encyclopediaEntryList = GetNode<ItemList>(EncyclopediaEntryListPath);
         relatedEntriesList = GetNode<ItemList>(RelatedEntriesListPath);
+        saveLoadSlotList = GetNode<ItemList>(SaveLoadSlotListPath);
         encyclopediaCategoryButtons =
         [
             GetNode<Button>(SpeciesCategoryButtonPath),
@@ -333,6 +376,7 @@ public sealed partial class GaiaEngineBootstrap : Node
         encyclopediaButton.Pressed += OnEncyclopediaPressed;
         statisticsButton.Pressed += OnStatisticsPressed;
         settingsButton.Pressed += OnSettingsPressed;
+        saveLoadButton.Pressed += OnSaveLoadPressed;
         encyclopediaFilterButton.Pressed += OnEncyclopediaFilterPressed;
         encyclopediaSortButton.Pressed += OnEncyclopediaSortPressed;
         encyclopediaCompareButton.Pressed += OnEncyclopediaComparePressed;
@@ -340,17 +384,25 @@ public sealed partial class GaiaEngineBootstrap : Node
         settingsOptionButton2.Pressed += () => OnSettingsOptionPressed(1);
         settingsOptionButton3.Pressed += () => OnSettingsOptionPressed(2);
         settingsOptionButton4.Pressed += () => OnSettingsOptionPressed(3);
+        saveLoadManualButton.Pressed += OnManualSavePressed;
+        saveLoadQuickButton.Pressed += OnQuickSavePressed;
+        saveLoadAutoButton.Pressed += OnAutoSavePressed;
+        saveLoadLoadButton.Pressed += OnLoadSavePressed;
+        saveLoadRefreshButton.Pressed += OnSaveLoadRefreshPressed;
         encyclopediaSearchBar.TextChanged += OnEncyclopediaSearchTextChanged;
         encyclopediaEntryList.ItemSelected += OnEncyclopediaEntrySelected;
         relatedEntriesList.ItemSelected += OnRelatedEntrySelected;
+        saveLoadSlotList.ItemSelected += OnSaveSlotSelected;
         WireCategoryButtons();
         WireSettingsCategoryButtons();
+        RefreshSaveSlots();
         ApplyPresentationSettings();
 
         UpdateSimulationStatusText();
         UpdateStatisticsOverlay();
         UpdateEncyclopediaOverlay();
         UpdateSettingsOverlay();
+        UpdateSaveLoadOverlay();
         UpdateNotificationWidgets();
         GD.Print($"Gaia Engine initialized with tick rate {runtime.EngineConfiguration.TickRate}.");
     }
@@ -383,6 +435,7 @@ public sealed partial class GaiaEngineBootstrap : Node
         UpdateStatisticsOverlay();
         UpdateEncyclopediaOverlay();
         UpdateSettingsOverlay();
+        UpdateSaveLoadOverlay();
         UpdateNotificationWidgets();
     }
 
@@ -398,6 +451,7 @@ public sealed partial class GaiaEngineBootstrap : Node
             || encyclopediaButton is null
             || statisticsButton is null
             || settingsButton is null
+            || saveLoadButton is null
             || leftPanel is null
             || contextPanel is null
             || selectionHintLabel is null
@@ -436,6 +490,8 @@ public sealed partial class GaiaEngineBootstrap : Node
         statisticsButton.Text = isStatisticsOverlayVisible ? "Close Stats" : "Statistics";
         settingsButton.Disabled = false;
         settingsButton.Text = isSettingsOverlayVisible ? "Close Settings" : "Settings";
+        saveLoadButton.Disabled = false;
+        saveLoadButton.Text = isSaveLoadOverlayVisible ? "Close Saves" : "Save / Load";
         GaiaEngine.Domain.World.Chunk primaryChunk = runtime.World.GetChunks()[0];
         HudViewSnapshot snapshot = new(
             runtime.World.Metadata.WorldName,
@@ -1056,6 +1112,207 @@ public sealed partial class GaiaEngineBootstrap : Node
         settingsOptionButton4.Text = snapshot.Option4;
     }
 
+    private void UpdateSaveLoadOverlay()
+    {
+        if (saveLoadOverlay is null
+            || saveLoadStatusLabel is null
+            || saveLoadDetailsLabel is null
+            || saveLoadSlotList is null
+            || saveLoadLoadButton is null)
+        {
+            return;
+        }
+
+        saveLoadOverlay.Visible = isSaveLoadOverlayVisible;
+        saveLoadLoadButton.Disabled = string.IsNullOrWhiteSpace(selectedSaveSlotId);
+
+        string statusText = BuildSaveLoadStatusText();
+        string detailsText = BuildSaveLoadDetailsText();
+        string[] slotIds = new string[cachedSaveSlots.Count];
+        string[] slotLabels = new string[cachedSaveSlots.Count];
+        for (int index = 0; index < cachedSaveSlots.Count; index++)
+        {
+            slotIds[index] = cachedSaveSlots[index].SlotId;
+            slotLabels[index] = BuildSaveSlotLabel(cachedSaveSlots[index]);
+        }
+
+        SaveLoadViewSnapshot snapshot = new(
+            isSaveLoadOverlayVisible,
+            statusText,
+            detailsText,
+            selectedSaveSlotId,
+            slotIds,
+            slotLabels,
+            saveLoadLoadButton.Disabled);
+
+        if (snapshot == lastSaveLoadSnapshot)
+        {
+            return;
+        }
+
+        lastSaveLoadSnapshot = snapshot;
+        saveLoadStatusLabel.Text = snapshot.Status;
+        saveLoadDetailsLabel.Text = snapshot.Details;
+        saveLoadLoadButton.Disabled = snapshot.LoadButtonDisabled;
+        saveLoadSlotList.Clear();
+        for (int index = 0; index < snapshot.SlotLabels.Length; index++)
+        {
+            saveLoadSlotList.AddItem(snapshot.SlotLabels[index]);
+            if (string.Equals(snapshot.SelectedSlotId, snapshot.SlotIds[index], StringComparison.Ordinal))
+            {
+                saveLoadSlotList.Select(index);
+            }
+        }
+    }
+
+    private void RefreshSaveSlots(string? preferredSlotId = null)
+    {
+        if (saveSlotManager is null)
+        {
+            cachedSaveSlots = Array.Empty<SaveSlotSummary>();
+            selectedSaveSlotId = null;
+            lastSaveLoadSnapshot = null;
+            return;
+        }
+
+        try
+        {
+            cachedSaveSlots = saveSlotManager.ListSlots();
+            if (!string.IsNullOrWhiteSpace(preferredSlotId))
+            {
+                selectedSaveSlotId = preferredSlotId;
+            }
+            else if (selectedSaveSlotId is not null)
+            {
+                bool selectionExists = false;
+                foreach (SaveSlotSummary slot in cachedSaveSlots)
+                {
+                    if (string.Equals(slot.SlotId, selectedSaveSlotId, StringComparison.Ordinal))
+                    {
+                        selectionExists = true;
+                        break;
+                    }
+                }
+
+                if (!selectionExists)
+                {
+                    selectedSaveSlotId = null;
+                }
+            }
+
+            if (selectedSaveSlotId is null && cachedSaveSlots.Count > 0)
+            {
+                selectedSaveSlotId = cachedSaveSlots[0].SlotId;
+            }
+        }
+        catch (Exception exception)
+        {
+            cachedSaveSlots = Array.Empty<SaveSlotSummary>();
+            selectedSaveSlotId = null;
+            EnqueueSystemNotification("Save Error", $"Could not refresh save slots. {exception.Message}", HudNotificationPriority.High);
+        }
+
+        lastSaveLoadSnapshot = null;
+    }
+
+    private string BuildSaveLoadStatusText()
+    {
+        if (cachedSaveSlots.Count == 0)
+        {
+            return "No save slots are available yet. Create a manual, quick or auto save to populate this list.";
+        }
+
+        return $"Available saves: {cachedSaveSlots.Count}. Select one slot to inspect metadata or restore the world.";
+    }
+
+    private string BuildSaveLoadDetailsText()
+    {
+        SaveSlotSummary? selectedSlot = TryGetSelectedSaveSlot();
+        if (selectedSlot is null)
+        {
+            return "Select one save slot to inspect the world name, timestamp and slot type.";
+        }
+
+        return
+            $"Slot Type: {selectedSlot.SlotType}\nWorld: {selectedSlot.WorldName}\nSave Name: {selectedSlot.SaveName}\nUpdated: {selectedSlot.LastModified}\nSeed: {selectedSlot.WorldSeed.Value}";
+    }
+
+    private SaveSlotSummary? TryGetSelectedSaveSlot()
+    {
+        if (string.IsNullOrWhiteSpace(selectedSaveSlotId))
+        {
+            return null;
+        }
+
+        foreach (SaveSlotSummary slot in cachedSaveSlots)
+        {
+            if (string.Equals(slot.SlotId, selectedSaveSlotId, StringComparison.Ordinal))
+            {
+                return slot;
+            }
+        }
+
+        return null;
+    }
+
+    private static string BuildSaveSlotLabel(SaveSlotSummary slot)
+    {
+        return $"{slot.SlotType} | {slot.SaveName} | {slot.WorldName} | {slot.LastModified}";
+    }
+
+    private static string CreateSaveTimestamp()
+    {
+        return DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture);
+    }
+
+    private static string CreateManualSaveName(GaiaEngineRuntime runtime)
+    {
+        return FormattableString.Invariant(
+            $"Manual Save Day {runtime.SimulationSession.CurrentTimeState.CurrentDay} Year {runtime.SimulationSession.CurrentTimeState.CurrentYear}");
+    }
+
+    private void ResetUiStateAfterRuntimeChanged()
+    {
+        tickAccumulator = 0d;
+        isStatisticsOverlayVisible = false;
+        isEncyclopediaOverlayVisible = false;
+        isSettingsOverlayVisible = false;
+        isSaveLoadOverlayVisible = false;
+        focusOverrideKind = FocusOverrideKind.Automatic;
+        focusedOrganismId = null;
+        selectedEncyclopediaEntryId = null;
+        compareEncyclopediaEntryId = null;
+        encyclopediaSearchText = string.Empty;
+        lastDiagnostics = null;
+        statisticsHistory.Clear();
+        lastSnapshot = null;
+        lastStatisticsSnapshot = null;
+        lastEncyclopediaSnapshot = null;
+        lastSettingsSnapshot = null;
+        lastSaveLoadSnapshot = null;
+        notificationQueue = new HudNotificationQueue(activeLimit: 3, historyLimit: 24);
+        lastObservedState = CreateObservationSnapshot();
+    }
+
+    private void EnqueueSystemNotification(string title, string body, HudNotificationPriority priority)
+    {
+        if (notificationQueue is null || runtime is null)
+        {
+            return;
+        }
+
+        notificationQueue.Enqueue(
+            new HudNotificationEntry(
+                $"system.message.{runtime.World.TimeState.CurrentTick}.{title.Replace(' ', '.').ToLowerInvariant()}",
+                HudNotificationCategory.System,
+                priority,
+                title,
+                body,
+                runtime.World.TimeState.CurrentTick,
+                GetDurationSeconds(priority),
+                actionLabel: null));
+    }
+
     private void WireSettingsCategoryButtons()
     {
         if (settingsCategoryButtons is null)
@@ -1143,6 +1400,7 @@ public sealed partial class GaiaEngineBootstrap : Node
         ApplyButtonSize(encyclopediaButton, minimumButtonHeight);
         ApplyButtonSize(statisticsButton, minimumButtonHeight);
         ApplyButtonSize(settingsButton, minimumButtonHeight);
+        ApplyButtonSize(saveLoadButton, minimumButtonHeight);
         ApplyButtonSize(encyclopediaFilterButton, minimumButtonHeight);
         ApplyButtonSize(encyclopediaSortButton, minimumButtonHeight);
         ApplyButtonSize(encyclopediaCompareButton, minimumButtonHeight);
@@ -1150,6 +1408,11 @@ public sealed partial class GaiaEngineBootstrap : Node
         ApplyButtonSize(settingsOptionButton2, minimumButtonHeight + 2f);
         ApplyButtonSize(settingsOptionButton3, minimumButtonHeight + 2f);
         ApplyButtonSize(settingsOptionButton4, minimumButtonHeight + 2f);
+        ApplyButtonSize(saveLoadManualButton, minimumButtonHeight + 2f);
+        ApplyButtonSize(saveLoadQuickButton, minimumButtonHeight + 2f);
+        ApplyButtonSize(saveLoadAutoButton, minimumButtonHeight + 2f);
+        ApplyButtonSize(saveLoadLoadButton, minimumButtonHeight + 2f);
+        ApplyButtonSize(saveLoadRefreshButton, minimumButtonHeight + 2f);
     }
 
     private static void ApplyButtonSize(Button? button, float minimumHeight)
@@ -2123,6 +2386,115 @@ public sealed partial class GaiaEngineBootstrap : Node
         }
     }
 
+    private void OnSaveLoadPressed()
+    {
+        isSaveLoadOverlayVisible = !isSaveLoadOverlayVisible;
+        if (isSaveLoadOverlayVisible)
+        {
+            isStatisticsOverlayVisible = false;
+            isEncyclopediaOverlayVisible = false;
+            isSettingsOverlayVisible = false;
+            RefreshSaveSlots();
+        }
+    }
+
+    private void OnSaveSlotSelected(long index)
+    {
+        if (index < 0 || index >= cachedSaveSlots.Count)
+        {
+            return;
+        }
+
+        selectedSaveSlotId = cachedSaveSlots[(int)index].SlotId;
+        lastSaveLoadSnapshot = null;
+    }
+
+    private void OnManualSavePressed()
+    {
+        if (runtime is null || saveSlotManager is null)
+        {
+            return;
+        }
+
+        try
+        {
+            string timestamp = CreateSaveTimestamp();
+            SaveSlotSummary summary = saveSlotManager.SaveManual(runtime, CreateManualSaveName(runtime), timestamp);
+            RefreshSaveSlots(summary.SlotId);
+            EnqueueSystemNotification("Manual Save Complete", $"Saved {summary.WorldName} to manual slot '{summary.SaveName}'.", HudNotificationPriority.Low);
+        }
+        catch (Exception exception)
+        {
+            EnqueueSystemNotification("Manual Save Failed", exception.Message, HudNotificationPriority.High);
+        }
+    }
+
+    private void OnQuickSavePressed()
+    {
+        if (runtime is null || saveSlotManager is null)
+        {
+            return;
+        }
+
+        try
+        {
+            string timestamp = CreateSaveTimestamp();
+            SaveSlotSummary summary = saveSlotManager.SaveQuick(runtime, timestamp);
+            RefreshSaveSlots(summary.SlotId);
+            EnqueueSystemNotification("Quick Save Complete", $"Updated quick save for {summary.WorldName}.", HudNotificationPriority.Low);
+        }
+        catch (Exception exception)
+        {
+            EnqueueSystemNotification("Quick Save Failed", exception.Message, HudNotificationPriority.High);
+        }
+    }
+
+    private void OnAutoSavePressed()
+    {
+        if (runtime is null || saveSlotManager is null)
+        {
+            return;
+        }
+
+        try
+        {
+            string timestamp = CreateSaveTimestamp();
+            SaveSlotSummary summary = saveSlotManager.SaveAuto(runtime, timestamp);
+            RefreshSaveSlots(summary.SlotId);
+            EnqueueSystemNotification("Auto Save Complete", $"Updated auto save for {summary.WorldName}.", HudNotificationPriority.Low);
+        }
+        catch (Exception exception)
+        {
+            EnqueueSystemNotification("Auto Save Failed", exception.Message, HudNotificationPriority.High);
+        }
+    }
+
+    private void OnLoadSavePressed()
+    {
+        if (application is null || saveSlotManager is null || string.IsNullOrWhiteSpace(selectedSaveSlotId))
+        {
+            return;
+        }
+
+        try
+        {
+            LoadedSaveSlot loadedSlot = saveSlotManager.Load(selectedSaveSlotId);
+            runtime = application.InitializeFromSaveGame(loadedSlot.WorldSaveGame, loadedSlot.PlayerProfile);
+            ResetUiStateAfterRuntimeChanged();
+            RefreshSaveSlots(loadedSlot.Summary.SlotId);
+            EnqueueSystemNotification("World Loaded", $"Restored {loadedSlot.Summary.WorldName} from '{loadedSlot.Summary.SaveName}'.", HudNotificationPriority.Normal);
+        }
+        catch (Exception exception)
+        {
+            EnqueueSystemNotification("Load Failed", exception.Message, HudNotificationPriority.High);
+        }
+    }
+
+    private void OnSaveLoadRefreshPressed()
+    {
+        RefreshSaveSlots();
+    }
+
     private void OnSettingsOptionPressed(int optionIndex)
     {
         if (runtime is null)
@@ -2543,6 +2915,15 @@ public sealed partial class GaiaEngineBootstrap : Node
         string Option2,
         string Option3,
         string Option4);
+
+    private sealed record SaveLoadViewSnapshot(
+        bool IsVisible,
+        string Status,
+        string Details,
+        string? SelectedSlotId,
+        string[] SlotIds,
+        string[] SlotLabels,
+        bool LoadButtonDisabled);
 
     private sealed record StatisticsHistorySample(
         long Tick,

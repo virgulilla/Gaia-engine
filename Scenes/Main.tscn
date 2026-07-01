@@ -695,6 +695,132 @@ layout_mode = 2
 autowrap_mode = 3
 text = "Changes affect presentation only and never modify simulation determinism."
 
+[node name="SaveLoadOverlay" type="PanelContainer" parent="HudLayer/HudRoot"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -430.0
+offset_top = -230.0
+offset_right = 430.0
+offset_bottom = 230.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("2")
+
+[node name="SaveLoadOverlayMargin" type="MarginContainer" parent="HudLayer/HudRoot/SaveLoadOverlay"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="SaveLoadOverlayColumn" type="VBoxContainer" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SaveLoadTitleLabel" type="Label" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Save / Load"
+
+[node name="SaveLoadStatusLabel" type="Label" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn"]
+layout_mode = 2
+autowrap_mode = 3
+text = "No save slots are available yet."
+
+[node name="SaveLoadBodyRow" type="HBoxContainer" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="SaveLoadSlotPanel" type="PanelContainer" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadBodyRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("1")
+
+[node name="SaveLoadSlotMargin" type="MarginContainer" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadBodyRow/SaveLoadSlotPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="SaveLoadSlotColumn" type="VBoxContainer" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadBodyRow/SaveLoadSlotPanel/SaveLoadSlotMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SaveLoadSlotTitleLabel" type="Label" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadBodyRow/SaveLoadSlotPanel/SaveLoadSlotMargin/SaveLoadSlotColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Slots"
+
+[node name="SaveLoadSlotList" type="ItemList" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadBodyRow/SaveLoadSlotPanel/SaveLoadSlotMargin/SaveLoadSlotColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+allow_reselect = true
+same_column_width = true
+
+[node name="SaveLoadDetailsPanel" type="PanelContainer" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadBodyRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("1")
+
+[node name="SaveLoadDetailsMargin" type="MarginContainer" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadBodyRow/SaveLoadDetailsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="SaveLoadDetailsColumn" type="VBoxContainer" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadBodyRow/SaveLoadDetailsPanel/SaveLoadDetailsMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SaveLoadDetailsTitleLabel" type="Label" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadBodyRow/SaveLoadDetailsPanel/SaveLoadDetailsMargin/SaveLoadDetailsColumn"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Selected Slot"
+
+[node name="SaveLoadDetailsLabel" type="Label" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadBodyRow/SaveLoadDetailsPanel/SaveLoadDetailsMargin/SaveLoadDetailsColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+autowrap_mode = 3
+text = "Select one slot to inspect the world name, timestamp and slot type."
+
+[node name="SaveLoadActionsRow" type="HBoxContainer" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="SaveLoadManualButton" type="Button" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadActionsRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(128, 42)
+text = "Manual Save"
+
+[node name="SaveLoadQuickButton" type="Button" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadActionsRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 42)
+text = "Quick Save"
+
+[node name="SaveLoadAutoButton" type="Button" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadActionsRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(112, 42)
+text = "Auto Save"
+
+[node name="SaveLoadLoadButton" type="Button" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadActionsRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(104, 42)
+text = "Load"
+
+[node name="SaveLoadRefreshButton" type="Button" parent="HudLayer/HudRoot/SaveLoadOverlay/SaveLoadOverlayMargin/SaveLoadOverlayColumn/SaveLoadActionsRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(104, 42)
+text = "Refresh"
+
 [node name="BottomToolbar" type="PanelContainer" parent="HudLayer/HudRoot"]
 layout_mode = 1
 anchors_preset = 12
@@ -702,9 +828,9 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -328.0
+offset_left = -386.0
 offset_top = -80.0
-offset_right = 328.0
+offset_right = 386.0
 offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 0
@@ -753,6 +879,11 @@ text = "Statistics"
 layout_mode = 2
 custom_minimum_size = Vector2(96, 40)
 text = "Settings"
+
+[node name="SaveLoadButton" type="Button" parent="HudLayer/HudRoot/BottomToolbar/BottomToolbarMargin/BottomToolbarRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(116, 40)
+text = "Save / Load"
 
 [node name="NotificationArea" type="VBoxContainer" parent="HudLayer/HudRoot"]
 layout_mode = 1
